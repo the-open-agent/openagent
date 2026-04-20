@@ -23,6 +23,7 @@ import * as Setting from "./Setting";
 import * as AccountBackend from "./backend/AccountBackend";
 import AuthCallback from "./AuthCallback";
 import * as Conf from "./Conf";
+import {shadcnThemeComponents, shadcnThemeToken} from "./shadcnTheme";
 import HomePage from "./HomePage";
 import StoreListPage from "./StoreListPage";
 import StoreEditPage from "./StoreEditPage";
@@ -1104,10 +1105,12 @@ class App extends Component {
           locale={this.getAntdLocale()}
           theme={{
             token: {
+              ...shadcnThemeToken,
               colorPrimary: this.state.themeData.colorPrimary,
               colorInfo: this.state.themeData.colorPrimary,
               borderRadius: this.state.themeData.borderRadius,
             },
+            components: shadcnThemeComponents,
             algorithm: Setting.getAlgorithm(this.state.themeAlgorithm),
           }}>
           <StyleProvider hashPriority="high" transformers={[legacyLogicalPropertiesTransformer]}>
