@@ -49,4 +49,20 @@ module.exports = {
       return webpackConfig;
     },
   },
+  jest: {
+    configure: (jestConfig) => {
+      jestConfig.moduleNameMapper = {
+        ...(jestConfig.moduleNameMapper || {}),
+        "\\.(css|less)$": "identity-obj-proxy",
+        "^@rc-component/picker/locale/(.*)$": "<rootDir>/node_modules/@rc-component/picker/lib/locale/$1",
+        "^@rc-component/picker/generate/(.*)$": "<rootDir>/node_modules/@rc-component/picker/lib/generate/$1",
+      };
+
+      jestConfig.transformIgnorePatterns = [
+        "node_modules/(?!(antd|@ant-design/x|@ant-design|@rc-component|react-markdown|remark-gfm|remark-frontmatter|remark-math|rehype-katex)/)",
+      ];
+
+      return jestConfig;
+    },
+  },
 };

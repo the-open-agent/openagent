@@ -2,5 +2,13 @@
   "extends": [
     "stylelint-config-standard",
     "stylelint-config-recommended-less"
-  ]
+  ],
+  "customSyntax": "postcss-less",
+  "ignoreFiles": [
+    "src/font.css"
+  ],
+  "rules": {
+    "selector-class-pattern": null,
+    "font-family-no-missing-generic-family-keyword": null
+  }
 }

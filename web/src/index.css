@@ -2,15 +2,30 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Microsoft YaHei",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Fira Sans",
+    "Droid Sans",
+    "Helvetica Neue",
     sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+  font-family:
+    source-code-pro,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Courier New",
     monospace;
 }
 
@@ -20,7 +35,9 @@ code {
   float: left;
 }
 
-.ant-table.ant-table-middle .ant-table-title, .ant-table.ant-table-middle .ant-table-footer, .ant-table.ant-table-middle thead > tr > th, .ant-table.ant-table-middle tbody > tr > td {
+.ant-table.ant-table-medium .ant-table-title,
+.ant-table.ant-table-medium .ant-table-footer,
+.ant-table.ant-table-medium .ant-table-cell {
   padding: 1px 8px !important;
 }
 
@@ -29,11 +46,11 @@ code {
 }
 
 .highlight-row {
-  background: rgb(249,198,205);
+  background: rgb(249 198 205);
 }
 
 .alert-row {
-  background: rgba(143, 121, 223, 0.6);
+  background: rgb(143 121 223 / 60%);
 }
 
 /* http://react-china.org/t/topic/33846/3 */
@@ -80,7 +97,7 @@ code {
 } */
 
 .conferenceMenu {
-  background-color: rgb(242,242,242) !important;
+  background-color: rgb(242 242 242) !important;
 }
 
 .react-codemirror2 {
@@ -96,7 +113,7 @@ code {
 .markdownContainer {
   width: 100%;
   overflow: hidden;
-  background-color: rgb(251,240,217);
+  background-color: rgb(251 240 217);
   padding: 10px;
 }
 
@@ -105,11 +122,15 @@ code {
   height: auto;
 }
 
-/*.ant-modal-content {*/
-/*  padding: 0 !important;*/
-/*  background-color: transparent !important;*/
-/*  box-shadow: none !important;*/
-/*}*/
+/* .ant-modal-content { */
+
+/*  padding: 0 !important; */
+
+/*  background-color: transparent !important; */
+
+/*  box-shadow: none !important; */
+
+/* } */
 
 .builtin-tools-cascader .ant-cascader-menu {
   min-width: 300px !important;
@@ -125,5 +146,5 @@ code {
 }
 
 .chat-message-collapse-panel .ant-collapse-header {
-  padding: 0 0 5px 0 !important;
+  padding: 0 0 5px !important;
 }

@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@ant-design/cssinjs": "^1.23.0",
-    "@ant-design/icons": "^5.6.1",
+    "@ant-design/cssinjs": "^2.1.2",
+    "@ant-design/icons": "^6.1.1",
     "@ant-design/x": "^1.0.5",
     "@bpmn-io/cm-theme": "0.1.0-alpha.2",
     "@bpmn-io/properties-panel": "^3.26.4",
@@ -16,8 +16,8 @@
     "@uiw/codemirror-theme-material": "^4.23.8",
     "@uiw/react-codemirror": "^4.23.8",
     "aliplayer-react": "^0.7.0",
-    "antd": "5.24.0",
-    "antd-token-previewer": "^2.0.8",
+    "antd": "6.3.5",
+    "antd-token-previewer": "^3.0.0",
     "bpmn-font": "^0.12.1",
     "bpmn-js": "^18.4.0",
     "bpmn-js-color-picker": "^0.7.2",
@@ -83,6 +83,9 @@
     "lint:css": "stylelint src/**/*.{css,less} --fix",
     "lint": "yarn lint:js && yarn lint:css"
   },
+  "resolutions": {
+    "@ant-design/cssinjs": "^2.1.2"
+  },
   "eslintConfig": {
     "extends": "react-app"
   },
@@ -110,6 +113,7 @@
     "eslint-plugin-react": "^7.31.1",
     "husky": "^4.3.8",
     "lint-staged": "^13.0.3",
+    "postcss-less": "^6.0.0",
     "stylelint": "^14.11.0",
     "stylelint-config-recommended-less": "^1.0.4",
     "stylelint-config-standard": "^28.0.0"
