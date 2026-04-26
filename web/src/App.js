@@ -110,6 +110,7 @@ import CaaseListPage from "./CaaseListPage";
 import CaaseEditPage from "./CaaseEditPage";
 import ConsultationListPage from "./ConsultationListPage";
 import ConsultationEditPage from "./ConsultationEditPage";
+import {shadcnThemeComponents, shadcnThemeToken} from "./shadcnTheme";
 
 const {Header, Footer, Content} = Layout;
 
@@ -1104,11 +1105,13 @@ class App extends Component {
           locale={this.getAntdLocale()}
           theme={{
             token: {
+              ...shadcnThemeToken,
               colorPrimary: this.state.themeData.colorPrimary,
               colorInfo: this.state.themeData.colorPrimary,
               borderRadius: this.state.themeData.borderRadius,
             },
             algorithm: Setting.getAlgorithm(this.state.themeAlgorithm),
+            components: shadcnThemeComponents,
           }}>
           <StyleProvider hashPriority="high" transformers={[legacyLogicalPropertiesTransformer]}>
             {
