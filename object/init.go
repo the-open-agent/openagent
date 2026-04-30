@@ -323,6 +323,14 @@ func initBuiltInTools() {
 				"Download a video and tell me its resolution and file size.",
 			},
 		},
+		{
+			Owner:       "admin",
+			Name:        "browser_use",
+			Type:        "browser_use",
+			SubType:     "Default",
+			TestContent: `{"tool":"browser_use_open","arguments":{"url":"https://casibase.org"}}`,
+			State:       "Active",
+		},
 	}
 
 	for _, t := range builtInTools {

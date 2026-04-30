@@ -77,6 +77,7 @@ const DEFAULT_TOOL_CONTENT = {
   web_browser: JSON.stringify({tool: "web_browser", arguments: {url: "https://casibase.org", timeout: 60}}, null, 2),
   gui: JSON.stringify({tool: "win_open_application", arguments: {target: "calc", method: "auto", wait_seconds: 2}}, null, 2),
   video_download: JSON.stringify({tool: "video_info", arguments: {url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}}, null, 2),
+  browser_use: JSON.stringify({tool: "browser_use_open", arguments: {url: "https://casibase.org"}}, null, 2),
 };
 
 function tryFormatJson(str) {

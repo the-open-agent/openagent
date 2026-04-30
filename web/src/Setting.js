@@ -1135,6 +1135,10 @@ export function getOtherProviderInfo() {
         logo: `${StaticBaseUrl}/img/social_mcp.png`,
         url: "https://github.com/yt-dlp/yt-dlp",
       },
+      browser_use: {
+        logo: `${StaticBaseUrl}/img/social_mcp.png`,
+        url: "https://github.com/the-open-agent/openagent",
+      },
     },
     "Public Cloud": {
       "Aliyun": {
@@ -1459,6 +1463,7 @@ export function getProviderTypeOptions(category) {
       {id: "web_browser", name: "web_browser"},
       {id: "gui", name: "gui"},
       {id: "video_download", name: "video_download"},
+      {id: "browser_use", name: "browser_use"},
     ];
   } else if (category === "Public Cloud") {
     return ([
@@ -2238,6 +2243,10 @@ export function getProviderSubTypeOptions(category, type) {
         {id: "Windows UIA", name: "Windows UIA"},
       ];
     } else if (type === "video_download") {
+      return [
+        {id: "Default", name: "Default"},
+      ];
+    } else if (type === "browser_use") {
       return [
         {id: "Default", name: "Default"},
       ];

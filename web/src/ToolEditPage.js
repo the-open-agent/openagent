@@ -127,6 +127,8 @@ class ToolEditPage extends React.Component {
                 this.updateToolField("subType", "Windows UIA");
               } else if (value === "video_download") {
                 this.updateToolField("subType", "Default");
+              } else if (value === "browser_use") {
+                this.updateToolField("subType", "Default");
               }
             }}
             showSearch
@@ -203,7 +205,7 @@ class ToolEditPage extends React.Component {
             </Col>
           </Row>
         ) : null}
-        {["web_search", "web_fetch", "web_browser"].includes(this.state.tool.type) ? (
+        {["web_search", "web_fetch", "web_browser", "browser_use"].includes(this.state.tool.type) ? (
           <Row style={{marginTop: "20px"}}>
             <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
               {Setting.getLabel(i18next.t("provider:Enable proxy"), i18next.t("provider:Enable proxy - Tooltip"))} :

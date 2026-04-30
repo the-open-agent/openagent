@@ -55,6 +55,8 @@ func New(config Config, lang string) (Tool, error) {
 		return NewWindowsUiaTool(config)
 	case "video_download":
 		return &VideoDownloadTool{}, nil
+	case "browser_use":
+		return NewBrowserUseTool(config)
 	default:
 		return nil, fmt.Errorf(i18n.Translate(lang, "tool:unsupported tool type: %s"), config.Type)
 	}
