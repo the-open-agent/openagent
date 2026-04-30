@@ -213,6 +213,8 @@ func (s *browserUseSession) ensureLocked() error {
 		chromedp.Flag("disable-dev-shm-usage", true),
 		chromedp.Flag("restore-on-startup", false),
 		chromedp.Flag("autoplay-policy", "no-user-gesture-required"),
+		chromedp.Flag("enable-automation", false),
+		chromedp.Flag("disable-blink-features", "AutomationControlled"),
 		chromedp.NoFirstRun,
 		chromedp.NoDefaultBrowserCheck,
 		chromedp.UserDataDir(s.userDataDir),
