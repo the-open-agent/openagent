@@ -63,11 +63,7 @@ func reverseToolsToOpenAi(tools []*protocol.Tool) ([]openai.Tool, error) {
 		if err := json.Unmarshal(schemaBytes, &parameters); err != nil {
 			return nil, err
 		}
-		if parameters["type"] == "object" {
-			if _, ok := parameters["properties"]; !ok {
-				parameters["properties"] = map[string]interface{}{}
-			}
-		}
+		normalizeToolParametersSchema(parameters)
 		openaiTools = append(openaiTools, openai.Tool{
 			Type: "function",
 			Function: &openai.FunctionDefinition{
@@ -78,6 +74,14 @@ func reverseToolsToOpenAi(tools []*protocol.Tool) ([]openai.Tool, error) {
 		})
 	}
 	return openaiTools, nil
+}
+
+func normalizeToolParametersSchema(parameters map[string]interface{}) {
+	if parameters["type"] == "object" {
+		if _, ok := parameters["properties"]; !ok {
+			parameters["properties"] = map[string]interface{}{}
+		}
+	}
 }
 
 func handleToolCallsParameters(toolCall openai.ToolCall, toolCalls []openai.ToolCall, toolCallsMap map[int]int) ([]openai.ToolCall, map[int]int) {

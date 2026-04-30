@@ -765,6 +765,7 @@ func reverseMcpToolsToOpenAi(tools []*protocol.Tool) ([]responses.ToolUnionParam
 		if err := json.Unmarshal(schemaBytes, &parameters); err != nil {
 			return nil, err
 		}
+		normalizeToolParametersSchema(parameters)
 		openaiTools = append(openaiTools, responses.ToolUnionParam{
 			OfFunction: &responses.FunctionToolParam{
 				Type:        "function",
