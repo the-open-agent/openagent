@@ -177,7 +177,7 @@ func (s *browserUseSession) ensureLocked() error {
 	var allocCancel context.CancelFunc
 	var err error
 
-	if err = os.MkdirAll(s.userDataDir, 0755); err != nil {
+	if err = os.MkdirAll(s.userDataDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create browser profile directory %s: %w", s.userDataDir, err)
 	}
 	if s.executablePath == "" || !fileExists(s.executablePath) {
@@ -316,7 +316,7 @@ func ensureBrowserUseChromeForTesting() (string, error) {
 	if err = os.RemoveAll(installDir); err != nil {
 		return "", fmt.Errorf("failed to reset Chrome for Testing install directory %s: %w", installDir, err)
 	}
-	if err = os.MkdirAll(installDir, 0755); err != nil {
+	if err = os.MkdirAll(installDir, 0o755); err != nil {
 		return "", fmt.Errorf("failed to create Chrome for Testing install directory %s: %w", installDir, err)
 	}
 
@@ -330,7 +330,7 @@ func ensureBrowserUseChromeForTesting() (string, error) {
 	if !fileExists(executablePath) {
 		return "", fmt.Errorf("Chrome for Testing executable was not found after install: %s", executablePath)
 	}
-	if err = os.Chmod(executablePath, 0755); err != nil {
+	if err = os.Chmod(executablePath, 0o755); err != nil {
 		return "", fmt.Errorf("failed to mark Chrome for Testing executable as runnable: %w", err)
 	}
 	return executablePath, nil
@@ -397,7 +397,7 @@ func downloadBrowserUseArchive(downloadURL, archivePath string) error {
 }
 
 func downloadBrowserUseArchiveOnce(downloadURL, archivePath string) error {
-	if err := os.MkdirAll(filepath.Dir(archivePath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(archivePath), 0o755); err != nil {
 		return fmt.Errorf("failed to create browser download directory: %w", err)
 	}
 
@@ -471,7 +471,7 @@ func unzipBrowserUseArchive(archivePath, destDir string) error {
 			continue
 		}
 
-		if err = os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+		if err = os.MkdirAll(filepath.Dir(targetPath), 0o755); err != nil {
 			return fmt.Errorf("failed to create browser file directory %s: %w", filepath.Dir(targetPath), err)
 		}
 		src, err := file.Open()
