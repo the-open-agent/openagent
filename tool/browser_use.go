@@ -866,27 +866,34 @@ func browserUseErrorWithState(provider *BrowserUseTool, text string) *protocol.C
 func browserUseSnapshotScript() string {
 	return fmt.Sprintf(`(() => {
   const maxElements = %d;
-  const selector = [
-    'a[href]',
-    'button',
-    'input',
-    'textarea',
-    'select',
-    '[role="button"]',
-    '[role="link"]',
-    '[role="menuitem"]',
-    '[onclick]',
-    'summary',
-    'audio',
-    'video'
-  ].join(',');
   const isVisible = (el) => {
+    if (el === document.documentElement || el === document.body) {
+      return false;
+    }
     const style = window.getComputedStyle(el);
     if (!style || style.visibility === 'hidden' || style.display === 'none' || Number(style.opacity) === 0) {
       return false;
     }
     const rect = el.getBoundingClientRect();
     return rect.width > 0 && rect.height > 0;
+  };
+  const isInteractive = (el) => {
+    const tag = el.tagName.toLowerCase();
+    if (['a', 'button', 'input', 'textarea', 'select', 'summary', 'audio', 'video', 'label'].includes(tag)) {
+      return true;
+    }
+    const role = el.getAttribute('role') || '';
+    if (['button', 'link', 'menuitem', 'option', 'tab', 'checkbox', 'radio', 'switch'].includes(role)) {
+      return true;
+    }
+    if (el.hasAttribute('onclick') || el.hasAttribute('contenteditable')) {
+      return true;
+    }
+    if (el.tabIndex >= 0) {
+      return true;
+    }
+    const style = window.getComputedStyle(el);
+    return style && style.cursor === 'pointer';
   };
   const priorityOf = (el) => {
     const tag = el.tagName.toLowerCase();
@@ -912,8 +919,9 @@ func browserUseSnapshotScript() string {
     ].filter(Boolean);
     return parts.join(' ').replace(/\s+/g, ' ').trim().slice(0, 180);
   };
-  const nodes = Array.from(document.querySelectorAll(selector))
+  const nodes = Array.from(document.querySelectorAll('*'))
     .filter(isVisible)
+    .filter(isInteractive)
     .filter((el) => {
       const tag = el.tagName.toLowerCase();
       return textOf(el) || tag === 'input' || tag === 'textarea' || tag === 'audio' || tag === 'video';
@@ -987,6 +995,43 @@ func browserUseSelectOptionScript(selector, text string) string {
   el.dispatchEvent(new Event('change', {bubbles: true}));
   return 'Selected option: ' + (option.text || option.value);
 })()`, browserUseJSONLiteral(selector), browserUseJSONLiteral(text))
+}
+
+func browserUseSetTextValueScript(selector, text string, clear bool) string {
+	return fmt.Sprintf(`(() => {
+  const el = document.querySelector(%s);
+  if (!el) {
+    return 'element not found';
+  }
+  if (!%t) {
+    return 'fallback';
+  }
+  const tag = el.tagName.toLowerCase();
+  if (tag !== 'input' && tag !== 'textarea') {
+    return 'fallback';
+  }
+  if (tag === 'input') {
+    const type = (el.getAttribute('type') || 'text').toLowerCase();
+    if (['button', 'checkbox', 'color', 'file', 'hidden', 'image', 'radio', 'range', 'reset', 'submit'].includes(type)) {
+      return 'fallback';
+    }
+  }
+  const value = %s;
+  const proto = tag === 'textarea' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+  const descriptor = Object.getOwnPropertyDescriptor(proto, 'value');
+  if (descriptor && descriptor.set) {
+    descriptor.set.call(el, value);
+  } else {
+    el.value = value;
+  }
+  try {
+    el.dispatchEvent(new InputEvent('input', {bubbles: true, inputType: 'insertText', data: value}));
+  } catch (e) {
+    el.dispatchEvent(new Event('input', {bubbles: true}));
+  }
+  el.dispatchEvent(new Event('change', {bubbles: true}));
+  return 'set text value';
+})()`, browserUseJSONLiteral(selector), clear, browserUseJSONLiteral(text))
 }
 
 func browserUseFormatSnapshot(rawURL, title, visibleText string, elements []browserUseElement) string {
@@ -1258,6 +1303,16 @@ func (b *browserUseTypeBuiltin) Execute(ctx context.Context, arguments map[strin
 				}
 				if strings.HasPrefix(result, "select option not found") {
 					return fmt.Errorf("%s", result)
+				}
+				return nil
+			}
+			var setValueResult string
+			if err := chromedp.Evaluate(browserUseSetTextValueScript(selector, text, clear), &setValueResult).Do(ctx); err != nil {
+				return err
+			}
+			if setValueResult != "fallback" {
+				if strings.HasPrefix(setValueResult, "element not found") {
+					return fmt.Errorf("%s", setValueResult)
 				}
 				return nil
 			}

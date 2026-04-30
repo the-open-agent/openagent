@@ -330,6 +330,12 @@ func initBuiltInTools() {
 			SubType:     "Default",
 			TestContent: `{"tool":"browser_use_open","arguments":{"url":"https://casibase.org"}}`,
 			State:       "Active",
+			PromptExamples: []string{
+				"Play a Jay Chou song on Bilibili.",
+				"Create a paste with \"Hello from OpenAgent\" and give me the link.",
+				"Start a 45-minute Pomofocus session for my Work task.",
+				"Generate a QR code for https://casibase.org.",
+			},
 		},
 	}
 
