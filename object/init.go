@@ -328,13 +328,13 @@ func initBuiltInTools() {
 			Name:        "browser_use",
 			Type:        "browser_use",
 			SubType:     "Default",
-			TestContent: `{"tool":"browser_use_open","arguments":{"url":"https://casibase.org"}}`,
+			TestContent: `{"tool":"browser_use_open","arguments":{"url":"https://www.openagentai.org"}}`,
 			State:       "Active",
 			PromptExamples: []string{
-				"Play a Jay Chou song on Bilibili.",
+				"Play a Michael Jackson song on YouTube.",
 				"Create a paste with \"Hello from OpenAgent\" and give me the link.",
 				"Start a 45-minute Pomofocus session for my Work task.",
-				"Generate a QR code for https://casibase.org.",
+				"Generate a QR code for https://www.openagentai.org.",
 			},
 		},
 	}
