@@ -24,8 +24,8 @@ import (
 	"github.com/ThinkInAIXYZ/go-mcp/protocol"
 	"github.com/openai/openai-go/v2/responses"
 	"github.com/sashabaranov/go-openai"
+	"github.com/the-open-agent/openagent/agent"
 	"github.com/the-open-agent/openagent/i18n"
-	"github.com/the-open-agent/openagent/mcp"
 )
 
 type AgentMessages struct {
@@ -34,7 +34,7 @@ type AgentMessages struct {
 }
 
 type AgentInfo struct {
-	AgentClients  *mcp.AgentClients
+	AgentClients  *agent.AgentClients
 	AgentMessages *AgentMessages
 }
 
@@ -131,7 +131,7 @@ func QueryTextWithTools(p ModelProvider, question string, writer io.Writer, hist
 
 	for len(toolCalls) > 0 {
 		for _, toolCall := range toolCalls {
-			serverName, toolName := mcp.GetServerNameAndToolNameFromId(toolCall.Function.Name)
+			serverName, toolName := agent.GetServerNameAndToolNameFromId(toolCall.Function.Name)
 
 			messages = append(messages, &RawMessage{
 				Text:     "Call result from " + toolCall.Function.Name,
@@ -177,7 +177,7 @@ func createToolMessage(toolCall openai.ToolCall, text string) *RawMessage {
 	}
 }
 
-func callTools(toolCall openai.ToolCall, serverName, toolName string, agentClients *mcp.AgentClients, messages []*RawMessage, writer io.Writer, lang string) ([]*RawMessage, error) {
+func callTools(toolCall openai.ToolCall, serverName, toolName string, agentClients *agent.AgentClients, messages []*RawMessage, writer io.Writer, lang string) ([]*RawMessage, error) {
 	var arguments map[string]interface{}
 	ctx := context.Background()
 

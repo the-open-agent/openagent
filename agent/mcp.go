@@ -14,12 +14,55 @@
 
 package agent
 
-import "github.com/the-open-agent/openagent/mcp"
+import (
+	"encoding/json"
 
-// Deprecated: use mcp.McpAgentProvider instead.
-type McpAgentProvider = mcp.McpAgentProvider
+	"github.com/ThinkInAIXYZ/go-mcp/protocol"
+)
 
-// Deprecated: use mcp.NewMcpAgentProvider instead.
+type McpAgentProvider struct {
+	Typ        string
+	SubType    string
+	McpServers string
+	McpTools   []*McpTools
+}
+
 func NewMcpAgentProvider(typ string, subType string, mcpServers string, mcpTools []*McpTools) (*McpAgentProvider, error) {
-	return mcp.NewMcpAgentProvider(typ, subType, mcpServers, mcpTools)
+	p := &McpAgentProvider{
+		Typ:        typ,
+		SubType:    subType,
+		McpServers: mcpServers,
+		McpTools:   mcpTools,
+	}
+	return p, nil
+}
+
+func (p *McpAgentProvider) GetAgentClients() (*AgentClients, error) {
+	toolsMap := make(map[string]bool)
+	for _, tool := range p.McpTools {
+		toolsMap[tool.ServerName] = tool.IsEnabled
+	}
+	clients, err := GetMCPClientMap(p.McpServers, toolsMap)
+	if err != nil {
+		return nil, err
+	}
+	var tools []*protocol.Tool
+	for _, mcpTool := range p.McpTools {
+		if !mcpTool.IsEnabled {
+			continue
+		}
+		toolsStr := mcpTool.Tools
+		var toolsList []*protocol.Tool
+		if err := json.Unmarshal([]byte(toolsStr), &toolsList); err != nil {
+			return nil, err
+		}
+		for _, tool := range toolsList {
+			tool.Name = GetIdFromServerNameAndToolName(mcpTool.ServerName, tool.Name)
+		}
+		tools = append(tools, toolsList...)
+	}
+	return &AgentClients{
+		Clients: clients,
+		Tools:   tools,
+	}, nil
 }

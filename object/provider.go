@@ -19,11 +19,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/the-open-agent/openagent/agent"
 	"github.com/the-open-agent/openagent/auth"
 	"github.com/the-open-agent/openagent/chat"
 	"github.com/the-open-agent/openagent/embedding"
 	"github.com/the-open-agent/openagent/i18n"
-	"github.com/the-open-agent/openagent/mcp"
 	"github.com/the-open-agent/openagent/model"
 	"github.com/the-open-agent/openagent/scan"
 	"github.com/the-open-agent/openagent/storage"
@@ -39,24 +39,24 @@ type Provider struct {
 	Name        string `xorm:"varchar(100) notnull pk" json:"name"`
 	CreatedTime string `xorm:"varchar(100)" json:"createdTime"`
 
-	DisplayName        string          `xorm:"varchar(100)" json:"displayName"`
-	DisplayName2       string          `xorm:"varchar(100)" json:"displayName2"`
-	Category           string          `xorm:"varchar(100)" json:"category"`
-	Type               string          `xorm:"varchar(100)" json:"type"`
-	SubType            string          `xorm:"varchar(100)" json:"subType"`
-	Flavor             string          `xorm:"varchar(100)" json:"flavor"`
-	ClientId           string          `xorm:"varchar(100)" json:"clientId"`
-	ClientSecret       string          `xorm:"varchar(2000)" json:"clientSecret"`
-	Region             string          `xorm:"varchar(100)" json:"region"`
-	ProviderKey        string          `xorm:"varchar(100)" json:"providerKey"`
-	ProviderUrl        string          `xorm:"varchar(200)" json:"providerUrl"`
-	ApiVersion         string          `xorm:"varchar(100)" json:"apiVersion"`
-	CompatibleProvider string          `xorm:"varchar(100)" json:"compatibleProvider"`
-	Domain             string          `xorm:"varchar(200)" json:"domain"`
-	McpTools           []*mcp.McpTools `xorm:"text" json:"mcpTools"`
-	Text               string          `xorm:"mediumtext" json:"text"`
-	ConfigText         string          `xorm:"mediumtext" json:"configText"`
-	RawText            string          `xorm:"mediumtext" json:"rawText"` // Raw result from scan (for Scan category providers)
+	DisplayName        string            `xorm:"varchar(100)" json:"displayName"`
+	DisplayName2       string            `xorm:"varchar(100)" json:"displayName2"`
+	Category           string            `xorm:"varchar(100)" json:"category"`
+	Type               string            `xorm:"varchar(100)" json:"type"`
+	SubType            string            `xorm:"varchar(100)" json:"subType"`
+	Flavor             string            `xorm:"varchar(100)" json:"flavor"`
+	ClientId           string            `xorm:"varchar(100)" json:"clientId"`
+	ClientSecret       string            `xorm:"varchar(2000)" json:"clientSecret"`
+	Region             string            `xorm:"varchar(100)" json:"region"`
+	ProviderKey        string            `xorm:"varchar(100)" json:"providerKey"`
+	ProviderUrl        string            `xorm:"varchar(200)" json:"providerUrl"`
+	ApiVersion         string            `xorm:"varchar(100)" json:"apiVersion"`
+	CompatibleProvider string            `xorm:"varchar(100)" json:"compatibleProvider"`
+	Domain             string            `xorm:"varchar(200)" json:"domain"`
+	McpTools           []*agent.McpTools `xorm:"text" json:"mcpTools"`
+	Text               string            `xorm:"mediumtext" json:"text"`
+	ConfigText         string            `xorm:"mediumtext" json:"configText"`
+	RawText            string            `xorm:"mediumtext" json:"rawText"` // Raw result from scan (for Scan category providers)
 
 	EnableThinking   bool    `json:"enableThinking"`
 	Temperature      float32 `xorm:"float" json:"temperature"`
@@ -375,8 +375,8 @@ func (p *Provider) GetEmbeddingProvider(lang string) (embedding.EmbeddingProvide
 	return pProvider, nil
 }
 
-func (p *Provider) GetAgentProvider(lang string) (mcp.AgentProvider, error) {
-	pProvider, err := mcp.GetAgentProvider(p.Type, p.SubType, p.Text, p.McpTools, lang)
+func (p *Provider) GetAgentProvider(lang string) (agent.AgentProvider, error) {
+	pProvider, err := agent.GetAgentProvider(p.Type, p.SubType, p.Text, p.McpTools, lang)
 	if err != nil {
 		return nil, err
 	}
@@ -476,7 +476,7 @@ func GetEmbeddingProviderFromContext(owner string, name string, lang string) (*P
 	return getEmbeddingProviderFromName(owner, providerName, lang)
 }
 
-func GetAgentProviderFromContext(owner string, name string, lang string) (*Provider, mcp.AgentProvider, error) {
+func GetAgentProviderFromContext(owner string, name string, lang string) (*Provider, agent.AgentProvider, error) {
 	var providerName string
 	if name != "" {
 		providerName = name
@@ -494,7 +494,7 @@ func GetAgentProviderFromContext(owner string, name string, lang string) (*Provi
 	return getAgentProviderFromName(owner, providerName, lang)
 }
 
-func GetAgentClients(agentProviderObj mcp.AgentProvider) (*mcp.AgentClients, error) {
+func GetAgentClients(agentProviderObj agent.AgentProvider) (*agent.AgentClients, error) {
 	if agentProviderObj == nil {
 		return nil, nil
 	}
@@ -666,7 +666,7 @@ func GetPaginationProviders(owner, storeName string, offset, limit int, field, v
 }
 
 func RefreshMcpTools(provider *Provider) error {
-	tools, err := mcp.GetToolsList(provider.Text)
+	tools, err := agent.GetToolsList(provider.Text)
 	if err != nil {
 		return err
 	}
@@ -696,7 +696,7 @@ func TestMcpProvider(p *Provider, lang string) (string, error) {
 	if payload.Arguments == nil {
 		payload.Arguments = map[string]interface{}{}
 	}
-	return mcp.TestMcpToolCall(p.Text, p.McpTools, payload.Tool, payload.Arguments)
+	return agent.TestMcpToolCall(p.Text, p.McpTools, payload.Tool, payload.Arguments)
 }
 
 func (p *Provider) processProviderParams(providerDb *Provider) {

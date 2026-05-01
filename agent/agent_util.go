@@ -14,14 +14,25 @@
 
 package agent
 
-import "github.com/the-open-agent/openagent/mcp"
+import (
+	"errors"
+	"strings"
+)
 
-// Deprecated: use mcp.GetServerNameAndToolNameFromId instead.
 func GetServerNameAndToolNameFromId(id string) (string, string) {
-	return mcp.GetServerNameAndToolNameFromId(id)
+	tokens := strings.Split(id, "__")
+
+	if len(tokens) == 1 {
+		return "", tokens[0]
+	}
+
+	if len(tokens) > 2 {
+		panic(errors.New("GetServerNameAndToolNameFromName() error, wrong token count for ID: " + id))
+	}
+
+	return tokens[0], tokens[1]
 }
 
-// Deprecated: use mcp.GetIdFromServerNameAndToolName instead.
-func GetIdFromServerNameAndToolName(serverName, toolName string) string {
-	return mcp.GetIdFromServerNameAndToolName(serverName, toolName)
+func GetIdFromServerNameAndToolName(ServerName, toolName string) string {
+	return ServerName + "__" + toolName
 }
