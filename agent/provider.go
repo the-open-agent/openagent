@@ -14,38 +14,15 @@
 
 package agent
 
-import (
-	"fmt"
+import "github.com/the-open-agent/openagent/mcp"
 
-	"github.com/ThinkInAIXYZ/go-mcp/client"
-	"github.com/ThinkInAIXYZ/go-mcp/protocol"
-	"github.com/the-open-agent/openagent/agent/builtin_tool"
-	"github.com/the-open-agent/openagent/i18n"
-)
+// Deprecated: use mcp.AgentProvider instead.
+type AgentProvider = mcp.AgentProvider
 
-type AgentProvider interface {
-	GetAgentClients() (*AgentClients, error)
-}
+// Deprecated: use mcp.AgentClients instead.
+type AgentClients = mcp.AgentClients
 
-type AgentClients struct {
-	Clients          map[string]*client.Client
-	Tools            []*protocol.Tool
-	BuiltinToolReg   *builtin_tool.ToolRegistry
-	WebSearchEnabled bool
-}
-
+// Deprecated: use mcp.GetAgentProvider instead.
 func GetAgentProvider(typ string, subType string, text string, mcpTools []*McpTools, lang string) (AgentProvider, error) {
-	var p AgentProvider
-	var err error
-	if typ == "MCP" {
-		p, err = NewMcpAgentProvider(typ, subType, text, mcpTools)
-	} else {
-		return nil, fmt.Errorf(i18n.Translate(lang, "agent:the agent provider type: %s is not supported"), typ)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return p, nil
+	return mcp.GetAgentProvider(typ, subType, text, mcpTools, lang)
 }

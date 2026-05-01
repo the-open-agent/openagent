@@ -1,4 +1,4 @@
-// Copyright 2023 The OpenAgent Authors. All Rights Reserved.
+// Copyright 2026 The OpenAgent Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,29 +24,26 @@ import * as Provider from "./Provider";
 import {DeleteOutlined} from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 
-class ProviderListPage extends BaseListPage {
+class McpListPage extends BaseListPage {
   constructor(props) {
     super(props);
   }
 
-  getExcludedTypes() {
-    return ["MCP"];
-  }
-
-  newProvider() {
+  newMcpProvider() {
     const randomName = Setting.getRandomName();
     return {
       owner: "admin",
-      name: `provider_${randomName}`,
+      name: `mcp_${randomName}`,
       createdTime: moment().format(),
-      displayName: `New Provider - ${randomName}`,
+      displayName: `New MCP - ${randomName}`,
       displayName2: "",
-      category: "Model",
-      type: "OpenAI",
-      subType: "text-davinci-003",
+      category: "Agent",
+      type: "MCP",
+      subType: "",
       clientId: "",
       clientSecret: "",
       mcpTools: [],
+      text: "",
       enableThinking: false,
       temperature: 1,
       topP: 1,
@@ -72,32 +69,14 @@ class ProviderListPage extends BaseListPage {
     };
   }
 
-  newStorageProvider() {
-    const randomName = Setting.getRandomName();
-    return {
-      owner: "admin",
-      name: `provider_${randomName}`,
-      createdTime: moment().format(),
-      displayName: `New Provider - ${randomName}`,
-      displayName2: "",
-      category: "Storage",
-      type: "Local File System",
-      subType: "",
-      clientId: "C:/storage_casibase",
-      providerUrl: "",
-      state: "Active",
-      isRemote: false,
-    };
-  }
-
   addProvider() {
-    const newProvider = this.newProvider();
+    const newProvider = this.newMcpProvider();
     ProviderBackend.addProvider(newProvider)
       .then((res) => {
         if (res.status === "ok") {
           Setting.showMessage("success", i18next.t("general:Successfully added"));
           this.props.history.push({
-            pathname: `/providers/${newProvider.name}`,
+            pathname: `/mcp/${newProvider.name}`,
             state: {isNewProvider: true},
           });
         } else {
@@ -143,9 +122,9 @@ class ProviderListPage extends BaseListPage {
         width: "180px",
         sorter: (a, b) => a.name.localeCompare(b.name),
         ...this.getColumnSearchProps("name"),
-        render: (text, record, index) => {
+        render: (text) => {
           return (
-            <Link to={`/providers/${text}`}>
+            <Link to={`/mcp/${text}`}>
               {text}
             </Link>
           );
@@ -184,19 +163,7 @@ class ProviderListPage extends BaseListPage {
         width: "110px",
         filterMultiple: false,
         filters: [
-          {text: "Model", value: "Model"},
-          {text: "Embedding", value: "Embedding"},
-          {text: "Storage", value: "Storage"},
           {text: "Agent", value: "Agent"},
-          {text: "Public Cloud", value: "Public Cloud"},
-          {text: "Private Cloud", value: "Private Cloud"},
-          {text: "Blockchain", value: "Blockchain"},
-          {text: "Video", value: "Video"},
-          {text: "Text-to-Speech", value: "Text-to-Speech"},
-          {text: "Speech-to-Text", value: "Speech-to-Text"},
-          {text: "Bot", value: "Bot"},
-          {text: "Chat", value: "Chat"},
-          {text: "Scan", value: "Scan"},
         ],
         sorter: (a, b) => a.category.localeCompare(b.category),
       },
@@ -208,86 +175,11 @@ class ProviderListPage extends BaseListPage {
         align: "center",
         filterMultiple: false,
         filters: [
-          {text: "Model", value: "Model", children: Setting.getProviderTypeOptions("Model").map((o) => {return {text: o.id, value: o.name};})},
-          {text: "Embedding", value: "Embedding", children: Setting.getProviderTypeOptions("Embedding").map((o) => {return {text: o.id, value: o.name};})},
-          {text: "Storage", value: "Storage", children: Setting.getProviderTypeOptions("Storage").map((o) => {return {text: o.id, value: o.name};})},
           {text: "Agent", value: "Agent", children: Setting.getProviderTypeOptions("Agent").map((o) => {return {text: o.id, value: o.name};})},
-          {text: "Public Cloud", value: "Public Cloud", children: Setting.getProviderTypeOptions("Public Cloud").map((o) => {return {text: o.id, value: o.name};})},
-          {text: "Private Cloud", value: "Private Cloud", children: Setting.getProviderTypeOptions("Private Cloud").map((o) => {return {text: o.id, value: o.name};})},
-          {text: "Blockchain", value: "Blockchain", children: Setting.getProviderTypeOptions("Blockchain").map((o) => {return {text: o.id, value: o.name};})},
-          {text: "Video", value: "Video", children: Setting.getProviderTypeOptions("Video").map((o) => {return {text: o.id, value: o.name};})},
-          {text: "Text-to-Speech", value: "Text-to-Speech", children: Setting.getProviderTypeOptions("Text-to-Speech").map((o) => {return {text: o.id, value: o.name};})},
-          {text: "Speech-to-Text", value: "Speech-to-Text", children: Setting.getProviderTypeOptions("Speech-to-Text").map((o) => {return {text: o.id, value: o.name};})},
-          {text: "Bot", value: "Bot", children: Setting.getProviderTypeOptions("Bot").map((o) => {return {text: o.id, value: o.name};})},
-          {text: "Chat", value: "Chat", children: Setting.getProviderTypeOptions("Chat").map((o) => {return {text: o.id, value: o.name};})},
-          {text: "Scan", value: "Scan", children: Setting.getProviderTypeOptions("Scan").map((o) => {return {text: o.id, value: o.name};})},
         ],
         sorter: (a, b) => a.type.localeCompare(b.type),
-        render: (text, record, index) => {
+        render: (text, record) => {
           return Provider.getProviderLogoWidget(record);
-        },
-      },
-      {
-        title: i18next.t("provider:Sub type"),
-        dataIndex: "subType",
-        key: "subType",
-        width: "180px",
-        sorter: (a, b) => a.subType.localeCompare(b.subType),
-        ...this.getColumnSearchProps("subType"),
-      },
-      {
-        title: i18next.t("provider:Client ID"),
-        dataIndex: "clientId",
-        key: "clientId",
-        width: "240px",
-        sorter: (a, b) => a.clientId.localeCompare(b.clientId),
-        ...this.getColumnSearchProps("clientId"),
-      },
-      {
-        title: i18next.t("general:Secret key"),
-        dataIndex: "clientSecret",
-        key: "clientSecret",
-        width: "120px",
-        sorter: (a, b) => a.clientSecret.localeCompare(b.clientSecret),
-      },
-      {
-        title: i18next.t("general:Region"),
-        dataIndex: "region",
-        key: "region",
-        width: "120px",
-        sorter: (a, b) => a.region.localeCompare(b.region),
-        ...this.getColumnSearchProps("region"),
-      },
-      {
-        title: i18next.t("provider:API key"),
-        dataIndex: "apiKey",
-        key: "apiKey",
-        width: "240px",
-        sorter: (a, b) => a.apiKey.localeCompare(b.apiKey),
-      },
-      {
-        title: i18next.t("store:Is default"),
-        dataIndex: "isDefault",
-        key: "isDefault",
-        width: "120px",
-        sorter: (a, b) => a.isDefault - b.isDefault,
-        // ...this.getColumnSearchProps("isDefault"),
-        render: (text, record, index) => {
-          return (
-            <Switch disabled checkedChildren={i18next.t("general:ON")} unCheckedChildren={i18next.t("general:OFF")} checked={text} />
-          );
-        },
-      },
-      {
-        title: i18next.t("provider:Is remote"),
-        dataIndex: "isRemote",
-        key: "isRemote",
-        width: "120px",
-        sorter: (a, b) => a.isRemote - b.isRemote,
-        render: (text, record, index) => {
-          return (
-            <Switch disabled checkedChildren={i18next.t("general:ON")} unCheckedChildren={i18next.t("general:OFF")} checked={text} />
-          );
         },
       },
       {
@@ -298,18 +190,30 @@ class ProviderListPage extends BaseListPage {
         sorter: (a, b) => a.state.localeCompare(b.state),
       },
       {
+        title: i18next.t("provider:Is remote"),
+        dataIndex: "isRemote",
+        key: "isRemote",
+        width: "120px",
+        sorter: (a, b) => a.isRemote - b.isRemote,
+        render: (text) => {
+          return (
+            <Switch disabled checkedChildren={i18next.t("general:ON")} unCheckedChildren={i18next.t("general:OFF")} checked={text} />
+          );
+        },
+      },
+      {
         title: i18next.t("general:Action"),
         dataIndex: "action",
         key: "action",
         width: "180px",
         fixed: "right",
-        render: (text, record, index) => {
+        render: (text, record) => {
           return (
             <div>
               <Button
                 style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}}
                 type={record.isRemote ? "default" : "primary"}
-                onClick={() => this.props.history.push(`/providers/${record.name}`)}
+                onClick={() => this.props.history.push(`/mcp/${record.name}`)}
               >
                 {record.isRemote ? i18next.t("general:View") : i18next.t("general:Edit")}
               </Button>
@@ -348,7 +252,7 @@ class ProviderListPage extends BaseListPage {
         <Table scroll={{x: "max-content"}} columns={columns} dataSource={providers} rowKey="name" rowSelection={this.getRowSelection()} size="middle" bordered pagination={paginationProps}
           title={() => (
             <div>
-              {i18next.t("general:Providers")}&nbsp;&nbsp;&nbsp;&nbsp;
+              {i18next.t("general:MCP")}&nbsp;&nbsp;&nbsp;&nbsp;
               <Button type="primary" size="small" onClick={() => this.addProvider()}>{i18next.t("general:Add")}</Button>
               {this.state.selectedRowKeys.length > 0 && (
                 <Popconfirm title={`${i18next.t("general:Sure to delete")}: ${this.state.selectedRowKeys.length} ${i18next.t("general:items")} ?`} onConfirm={() => this.performBulkDelete(this.state.selectedRows, this.state.selectedRowKeys)} okText={i18next.t("general:OK")} cancelText={i18next.t("general:Cancel")}>
@@ -376,6 +280,13 @@ class ProviderListPage extends BaseListPage {
       field = "type";
       value = params.type;
     }
+
+    const hasFilter = !!field || !!value;
+    if (!hasFilter) {
+      field = "type";
+      value = "MCP";
+    }
+
     this.setState({loading: true});
     ProviderBackend.getProviders(this.props.account.name, Setting.getRequestStore(this.props.account), params.pagination.current, params.pagination.pageSize, field, value, sortField, sortOrder)
       .then((res) => {
@@ -383,13 +294,13 @@ class ProviderListPage extends BaseListPage {
           loading: false,
         });
         if (res.status === "ok") {
-          const excludedTypes = this.getExcludedTypes();
-          const filtered = excludedTypes.length === 0 ? res.data : res.data.filter((item) => !excludedTypes.includes(item.type));
+          const filtered = res.data.filter((item) => item.type === "MCP");
+          const total = (!hasFilter && field === "type" && value === "MCP") ? res.data2 : filtered.length;
           this.setState({
             data: filtered,
             pagination: {
               ...params.pagination,
-              total: res.data2,
+              total,
             },
             searchText: params.searchText,
             searchedColumn: params.searchedColumn,
@@ -407,4 +318,4 @@ class ProviderListPage extends BaseListPage {
   };
 }
 
-export default ProviderListPage;
+export default McpListPage;

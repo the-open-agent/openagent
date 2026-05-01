@@ -15,8 +15,8 @@
 package object
 
 import (
-	"github.com/the-open-agent/openagent/agent"
 	"github.com/the-open-agent/openagent/agent/builtin_tool"
+	"github.com/the-open-agent/openagent/mcp"
 	"github.com/the-open-agent/openagent/tool"
 	"github.com/the-open-agent/openagent/util"
 )
@@ -47,10 +47,10 @@ func buildMergedBuiltinRegistry(store *Store, lang string) *builtin_tool.ToolReg
 }
 
 // MergeAgentToolClients merges MCP agent tools with tools from configured Tools, plus web-search flag.
-func MergeAgentToolClients(agentClients *agent.AgentClients, store *Store, webSearchEnabled bool, lang string) *agent.AgentClients {
+func MergeAgentToolClients(agentClients *mcp.AgentClients, store *Store, webSearchEnabled bool, lang string) *mcp.AgentClients {
 	if webSearchEnabled {
 		if agentClients == nil {
-			agentClients = &agent.AgentClients{}
+			agentClients = &mcp.AgentClients{}
 		}
 		agentClients.WebSearchEnabled = true
 	}
@@ -62,7 +62,7 @@ func MergeAgentToolClients(agentClients *agent.AgentClients, store *Store, webSe
 	}
 
 	if agentClients == nil {
-		return &agent.AgentClients{
+		return &mcp.AgentClients{
 			Tools:          allTools,
 			BuiltinToolReg: reg,
 		}

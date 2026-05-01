@@ -17,14 +17,14 @@ package object
 import (
 	"strings"
 
-	"github.com/the-open-agent/openagent/agent"
 	"github.com/the-open-agent/openagent/agent/builtin_tool"
+	"github.com/the-open-agent/openagent/mcp"
 	"github.com/the-open-agent/openagent/model"
 	"github.com/the-open-agent/openagent/tool"
 	"github.com/the-open-agent/openagent/util"
 )
 
-func buildAgentClientsForTool(toolName string, lang string) (*agent.AgentClients, error) {
+func buildAgentClientsForTool(toolName string, lang string) (*mcp.AgentClients, error) {
 	if toolName == "" {
 		return nil, nil
 	}
@@ -53,7 +53,7 @@ func buildAgentClientsForTool(toolName string, lang string) (*agent.AgentClients
 		return nil, nil
 	}
 
-	return &agent.AgentClients{
+	return &mcp.AgentClients{
 		Tools:          allTools,
 		BuiltinToolReg: reg,
 	}, nil

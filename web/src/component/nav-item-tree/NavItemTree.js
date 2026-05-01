@@ -45,6 +45,7 @@ export const NavItemTree = ({disabled, checkedKeys, defaultExpandedKeys, onCheck
           key: "/connectors",
           children: [
             {title: i18next.t("general:Providers"), key: "/providers"},
+            {title: i18next.t("general:MCP"), key: "/mcps"},
             {title: i18next.t("general:Tools"), key: "/tools"},
           ],
         },

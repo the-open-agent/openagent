@@ -17,9 +17,9 @@ package object
 import (
 	"fmt"
 
-	"github.com/the-open-agent/openagent/agent"
 	"github.com/the-open-agent/openagent/embedding"
 	"github.com/the-open-agent/openagent/i18n"
+	"github.com/the-open-agent/openagent/mcp"
 	"github.com/the-open-agent/openagent/model"
 	"github.com/the-open-agent/openagent/util"
 	"github.com/the-open-agent/openagent/video"
@@ -93,7 +93,7 @@ func getEmbeddingProviderFromName(owner string, providerName string, lang string
 	return provider, providerObj, err
 }
 
-func getAgentProviderFromName(owner string, providerName string, lang string) (*Provider, agent.AgentProvider, error) {
+func getAgentProviderFromName(owner string, providerName string, lang string) (*Provider, mcp.AgentProvider, error) {
 	var provider *Provider
 	var err error
 	if providerName != "" {

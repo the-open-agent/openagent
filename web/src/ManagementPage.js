@@ -87,6 +87,8 @@ import VideoPage from "./VideoPage";
 import PublicVideoListPage from "./basic/PublicVideoListPage";
 import ProviderListPage from "./ProviderListPage";
 import ProviderEditPage from "./ProviderEditPage";
+import McpListPage from "./McpListPage";
+import McpEditPages from "./McpEditPages";
 import ToolListPage from "./ToolListPage";
 import ToolEditPage from "./ToolEditPage";
 import VectorListPage from "./VectorListPage";
@@ -150,7 +152,7 @@ const {Header, Footer, Content, Sider} = Layout;
 function getMenuParentKey(uri) {
   if (!uri) {return null;}
   if (uri.includes("/chats") || uri.includes("/messages") || uri.includes("/stores")) {return "/basic";}
-  if (uri.includes("/providers") || uri.includes("/tools")) {return "/connectors";}
+  if (uri.includes("/providers") || uri.includes("/tools") || uri.includes("/mcps")) {return "/connectors";}
   if (uri.includes("/files") || uri.includes("/vectors") || uri.includes("/resources")) {return "/knowledge-base";}
   if (uri.includes("/templates") || uri.includes("/application-store") || uri.includes("/applications") || uri.includes("/nodes") || uri.includes("/machines") || uri.includes("/assets") || uri.includes("/images") || uri.includes("/containers") || uri.includes("/pods") || uri.includes("/workbench") || uri.includes("/desktop") || uri.includes("/connections")) {return "/cloud";}
   if (uri.includes("/videos") || uri.includes("/public-videos") || uri.includes("/tasks") || uri.includes("/scales") || uri.includes("/forms") || uri.includes("/workflows") || uri.includes("/audit") || uri.includes("/articles") || uri.includes("/graphs") || uri.includes("/scans")) {return "/multimedia";}
@@ -267,7 +269,7 @@ function ManagementPage(props) {
     if (currentUri.includes("/chat")) {
       return true;
     }
-    const enabledStartsWith = ["/stores", "/providers", "/vectors", "/chats", "/messages", "/usages", "/files"];
+    const enabledStartsWith = ["/stores", "/providers", "/mcps", "/vectors", "/chats", "/messages", "/usages", "/files"];
     if (enabledStartsWith.some(prefix => currentUri.startsWith(prefix))) {
       return true;
     }
@@ -559,6 +561,7 @@ function ManagementPage(props) {
 
       res.push(Setting.getItem(<Link style={{color: textColor}} to="/providers">{i18next.t("general:Connectors")}</Link>, "/connectors", <ApiOutlined />, [
         Setting.getItem(<Link to="/providers">{i18next.t("general:Providers")}</Link>, "/providers", <ThunderboltOutlined />),
+        Setting.getItem(<Link to="/mcp">{i18next.t("general:MCP")}</Link>, "/mcps", <ApiOutlined />),
         Setting.getItem(<Link to="/tools">{i18next.t("general:Tools")}</Link>, "/tools", <ToolOutlined />),
       ]));
 
@@ -688,6 +691,8 @@ function ManagementPage(props) {
         <Route exact path="/public-videos/:owner/:videoName" render={(props) => <VideoPage account={account} {...props} />} />
         <Route exact path="/providers" render={(props) => renderSigninIfNotSignedIn(<ProviderListPage account={account} {...props} />)} />
         <Route exact path="/providers/:providerName" render={(props) => renderSigninIfNotSignedIn(<ProviderEditPage account={account} {...props} />)} />
+        <Route exact path="/mcp" render={(props) => renderSigninIfNotSignedIn(<McpListPage account={account} {...props} />)} />
+        <Route exact path="/mcp/:providerName" render={(props) => renderSigninIfNotSignedIn(<McpEditPages account={account} {...props} />)} />
         <Route exact path="/tools" render={(props) => renderSigninIfNotSignedIn(<ToolListPage account={account} {...props} />)} />
         <Route exact path="/tools/:toolName" render={(props) => renderSigninIfNotSignedIn(<ToolEditPage account={account} {...props} />)} />
         <Route exact path="/files" render={(props) => renderSigninIfNotSignedIn(<FileListPage account={account} {...props} />)} />

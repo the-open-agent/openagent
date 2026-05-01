@@ -21,11 +21,9 @@ import * as Setting from "./Setting";
 import i18next from "i18next";
 import copy from "copy-to-clipboard";
 import FileSaver from "file-saver";
-import McpToolsTable from "./table/McpToolsTable";
 import ModelTestWidget from "./common/TestModelWidget";
 import TtsTestWidget from "./common/TestTtsWidget";
 import EmbedTestWidget from "./common/TestEmbedWidget";
-import TestMcpWidget from "./common/TestMcpWidget";
 import TestScanWidget from "./common/TestScanWidget";
 import Editor from "./common/Editor";
 
@@ -41,7 +39,6 @@ class ProviderEditPage extends React.Component {
       provider: null,
       originalProvider: null,
       modelProviders: [],
-      refreshButtonLoading: false,
       isNewProvider: props.location?.state?.isNewProvider || false,
     };
   }
@@ -217,22 +214,6 @@ class ProviderEditPage extends React.Component {
       value = Setting.myParseFloat(value);
     }
     return value;
-  }
-
-  parseMcpToolsField(key, value) {
-    if ([""].includes(key)) {
-      value = Setting.myParseInt(value);
-    }
-    return value;
-  }
-
-  updateMcpToolsField(key, value) {
-    value = this.parseMcpToolsField(key, value);
-    const provider = this.state.provider;
-    provider[key] = value;
-    this.setState({
-      provider: provider,
-    });
   }
 
   updateProviderField(key, value) {
@@ -798,52 +779,6 @@ class ProviderEditPage extends React.Component {
           ) : null
         }
         {
-          !["Agent"].includes(this.state.provider.category) ? null : (
-            <>
-              <Row style={{marginTop: "20px"}} >
-                <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {Setting.getLabel(i18next.t("provider:MCP servers"), i18next.t("provider:MCP servers - Tooltip"))} :
-                </Col>
-                <Col span={10} >
-                  <div style={{height: "500px"}}>
-                    <Editor
-                      editable={!isRemote}
-                      value={this.state.provider.text}
-                      lang="json"
-                      fillHeight
-                      dark
-                      onChange={value => {
-                        this.updateProviderField("text", value);
-                      }}
-                    />
-                  </div>
-                  <br />
-                  <Button disabled={isRemote} loading={this.state.refreshButtonLoading} style={{marginBottom: "10px"}} type="primary" onClick={() => {
-                    this.refreshMcpTools();
-                  }}
-                  >
-                    {i18next.t("provider:Refresh MCP tools")}
-                  </Button>
-                </Col>
-              </Row>
-              <Row style={{marginTop: "20px"}} >
-                <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {Setting.getLabel(i18next.t("provider:MCP tools"), i18next.t("provider:MCP tools - Tooltip"))} :
-                </Col>
-                <Col span={22}>
-                  <McpToolsTable
-                    title={i18next.t("provider:MCP tools")}
-                    table={this.state.provider.mcpTools}
-                    onUpdateTable={(value) => {
-                      this.updateMcpToolsField("mcpTools", value);
-                    }}
-                  />
-                </Col>
-              </Row>
-            </>
-          )
-        }
-        {
           ["Storage", "Model", "Embedding", "Agent", "Text-to-Speech", "Speech-to-Text", "Scan"].includes(this.state.provider.category) || (this.state.provider.category === "Blockchain" && this.state.provider.type === "Ethereum") || (this.state.provider.category === "Private Cloud" && this.state.provider.type === "Kubernetes") ? null : (
             <Row style={{marginTop: "20px"}} >
               <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
@@ -1186,11 +1121,6 @@ class ProviderEditPage extends React.Component {
           account={this.props.account}
           onUpdateProvider={this.updateProviderField.bind(this)}
         />
-        <TestMcpWidget
-          provider={this.state.provider}
-          originalProvider={this.state.originalProvider}
-          onUpdateProvider={this.updateProviderField.bind(this)}
-        />
         <TestScanWidget
           provider={this.state.provider}
           originalProvider={this.state.originalProvider}
@@ -1356,39 +1286,6 @@ class ProviderEditPage extends React.Component {
       })
       .catch((error) => {
         Setting.showMessage("error", `${i18next.t("general:Failed to save")}: ${error}`);
-      });
-  }
-
-  refreshMcpTools() {
-    this.setState({
-      refreshButtonLoading: true,
-    });
-    const provider = Setting.deepCopy(this.state.provider);
-    provider.mcpTools = [];
-    ProviderBackend.refreshMcpTools(provider)
-      .then((res) => {
-        if (res.status === "ok") {
-          Setting.showMessage("success", i18next.t("general:Successfully saved"));
-          this.setState({
-            provider: res.data,
-          }, () => {
-            this.submitProviderEdit(false);
-          });
-        } else {
-          Setting.showMessage("error", `${i18next.t("general:Failed to save")}: ${res.msg}`);
-          this.setState({
-            provider: provider,
-          });
-        }
-      })
-      .catch((error) => {
-        Setting.showMessage("error", `${i18next.t("general:Failed to save")}: ${error}`);
-        this.setState({
-          provider: provider,
-        });
-      })
-      .finally(() => {
-        this.setState({refreshButtonLoading: false});
       });
   }
 
