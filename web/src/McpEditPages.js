@@ -15,7 +15,7 @@
 import React from "react";
 import Loading from "./common/Loading";
 import {Button, Card, Col, Input, Row, Select, Switch} from "antd";
-import * as ProviderBackend from "./backend/ProviderBackend";
+import * as McpBackend from "./backend/McpBackend";
 import * as Setting from "./Setting";
 import i18next from "i18next";
 import McpToolsTable from "./table/McpToolsTable";
@@ -40,7 +40,7 @@ class McpEditPages extends React.Component {
   }
 
   getProvider() {
-    ProviderBackend.getProvider("admin", this.state.providerName)
+    McpBackend.getMcp("admin", this.state.providerName)
       .then((res) => {
         if (res.status === "ok") {
           this.setState({
@@ -54,11 +54,6 @@ class McpEditPages extends React.Component {
   }
 
   parseProviderField(key, value) {
-    if (["topK"].includes(key)) {
-      value = Setting.myParseInt(value);
-    } else if (["temperature", "topP", "frequencyPenalty", "presencePenalty"].includes(key)) {
-      value = Setting.myParseFloat(value);
-    }
     return value;
   }
 
@@ -87,7 +82,7 @@ class McpEditPages extends React.Component {
     this.setState({refreshButtonLoading: true});
     const provider = Setting.deepCopy(this.state.provider);
     provider.mcpTools = [];
-    ProviderBackend.refreshMcpTools(provider)
+    McpBackend.refreshMcpTools(provider)
       .then((res) => {
         if (res.status === "ok") {
           Setting.showMessage("success", i18next.t("general:Successfully saved"));
@@ -112,7 +107,7 @@ class McpEditPages extends React.Component {
 
   submitProviderEdit(exitAfterSave) {
     const provider = Setting.deepCopy(this.state.provider);
-    ProviderBackend.updateProvider(this.state.provider.owner, this.state.providerName, provider)
+    McpBackend.updateMcp(this.state.provider.owner, this.state.providerName, provider)
       .then((res) => {
         if (res.status === "ok") {
           if (res.data) {
@@ -142,7 +137,7 @@ class McpEditPages extends React.Component {
 
   cancelProviderEdit() {
     if (this.state.isNewProvider) {
-      ProviderBackend.deleteProvider(this.state.provider)
+      McpBackend.deleteMcp(this.state.provider)
         .then((res) => {
           if (res.status === "ok") {
             Setting.showMessage("success", i18next.t("general:Cancelled successfully"));
@@ -241,16 +236,6 @@ class McpEditPages extends React.Component {
           originalProvider={this.state.originalProvider}
           onUpdateProvider={this.updateProviderField.bind(this)}
         />
-        <Row style={{marginTop: "20px"}}>
-          <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-            {Setting.getLabel(i18next.t("store:Is default"), i18next.t("store:Is default - Tooltip"))} :
-          </Col>
-          <Col span={1}>
-            <Switch disabled={isRemote} checked={provider.isDefault} onChange={checked => {
-              this.updateProviderField("isDefault", checked);
-            }} />
-          </Col>
-        </Row>
         <Row style={{marginTop: "20px"}}>
           <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
             {Setting.getLabel(i18next.t("provider:Is remote"), i18next.t("provider:Is remote - Tooltip"))} :

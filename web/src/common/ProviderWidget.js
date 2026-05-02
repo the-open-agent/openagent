@@ -25,3 +25,13 @@ export async function checkProvider(provider, originalProvider) {
     }
   }
 }
+
+export async function checkMcpProvider(provider, originalProvider, updateMcpFn) {
+  const hasChanges = JSON.stringify(originalProvider) !== JSON.stringify(provider);
+  if (hasChanges) {
+    const saveRes = await updateMcpFn(provider.owner, provider.name, provider);
+    if (saveRes.status !== "ok") {
+      Setting.showMessage("error", `${i18next.t("general:Failed to save")}: ${saveRes.msg}`);
+    }
+  }
+}

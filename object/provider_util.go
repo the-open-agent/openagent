@@ -17,7 +17,6 @@ package object
 import (
 	"fmt"
 
-	"github.com/the-open-agent/openagent/agent"
 	"github.com/the-open-agent/openagent/embedding"
 	"github.com/the-open-agent/openagent/i18n"
 	"github.com/the-open-agent/openagent/model"
@@ -86,33 +85,6 @@ func getEmbeddingProviderFromName(owner string, providerName string, lang string
 	}
 
 	providerObj, err := provider.GetEmbeddingProvider(lang)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return provider, providerObj, err
-}
-
-func getAgentProviderFromName(owner string, providerName string, lang string) (*Provider, agent.AgentProvider, error) {
-	var provider *Provider
-	var err error
-	if providerName != "" {
-		provider, err = GetProviderByOwnerAndName(owner, providerName)
-	} else {
-		provider, err = GetDefaultAgentProvider()
-	}
-	if err != nil {
-		return nil, nil, err
-	}
-	if provider == nil {
-		return nil, nil, nil
-	}
-
-	if provider.Category != "Agent" {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "object:The agent provider: %s is expected to be \")Agent\" category, got: \"%s\""), provider.GetId(), provider.Category)
-	}
-
-	providerObj, err := provider.GetAgentProvider(lang)
 	if err != nil {
 		return nil, nil, err
 	}

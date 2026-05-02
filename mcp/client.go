@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package agent
+package mcp
 
 import (
 	"context"
@@ -26,18 +26,12 @@ import (
 )
 
 type ServerConfig struct {
-	// Stdio config
 	Command string            `json:"command"`
 	Args    []string          `json:"args"`
 	Env     map[string]string `json:"env"`
 
-	// SSE config
 	URL string `json:"url"`
 
-	// Transport type: "sse", "stdio", "streamablehttp"
-	// If not specified, auto-detected based on URL field:
-	// - URL not empty -> SSE
-	// - URL empty -> Stdio
 	Type string `json:"type,omitempty"`
 }
 
@@ -81,10 +75,8 @@ func createMCPClient(srv ServerConfig) (*client.Client, error) {
 	var transportClient transport.ClientTransport
 	var err error
 
-	// Determine transport type
 	transportType := srv.Type
 	if transportType == "" {
-		// Auto-detect based on URL field for backward compatibility
 		if srv.URL != "" {
 			transportType = "sse"
 		} else {
@@ -92,7 +84,6 @@ func createMCPClient(srv ServerConfig) (*client.Client, error) {
 		}
 	}
 
-	// Create appropriate transport
 	switch transportType {
 	case "sse":
 		if srv.URL == "" {
@@ -106,7 +97,6 @@ func createMCPClient(srv ServerConfig) (*client.Client, error) {
 		if len(srv.Env) > 0 {
 			transportClient, err = transport.NewStreamableHTTPClientTransport(srv.URL, transport.WithStreamableHTTPClientOptionHeader(srv.Env))
 		} else {
-			// Initialize StreamableHTTP transport without headers when Env is empty or nil
 			transportClient, err = transport.NewStreamableHTTPClientTransport(srv.URL)
 		}
 	case "stdio":
@@ -163,9 +153,6 @@ func GetMCPClientMap(config string, toolsMap map[string]bool) (map[string]*clien
 	return clients, nil
 }
 
-// ResolveMcpToolTarget resolves MCP server name and native tool name.
-// toolKey may be "serverName__toolName" (see GetIdFromServerNameAndToolName) or a bare tool name
-// that appears in exactly one enabled server's tool list.
 func ResolveMcpToolTarget(mcpTools []*McpTools, toolKey string) (serverName, nativeToolName string, err error) {
 	sn, tn := GetServerNameAndToolNameFromId(toolKey)
 	if sn != "" {
@@ -196,7 +183,6 @@ func ResolveMcpToolTarget(mcpTools []*McpTools, toolKey string) (serverName, nat
 	return foundServer, foundName, nil
 }
 
-// TestMcpToolCall connects to the configured MCP server and invokes tools/call once.
 func TestMcpToolCall(mcpServers string, mcpTools []*McpTools, toolKey string, arguments map[string]interface{}) (string, error) {
 	serverName, toolName, err := ResolveMcpToolTarget(mcpTools, toolKey)
 	if err != nil {

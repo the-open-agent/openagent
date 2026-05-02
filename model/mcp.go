@@ -26,6 +26,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 	"github.com/the-open-agent/openagent/agent"
 	"github.com/the-open-agent/openagent/i18n"
+	"github.com/the-open-agent/openagent/mcp"
 )
 
 type AgentMessages struct {
@@ -131,7 +132,7 @@ func QueryTextWithTools(p ModelProvider, question string, writer io.Writer, hist
 
 	for len(toolCalls) > 0 {
 		for _, toolCall := range toolCalls {
-			serverName, toolName := agent.GetServerNameAndToolNameFromId(toolCall.Function.Name)
+			serverName, toolName := mcp.GetServerNameAndToolNameFromId(toolCall.Function.Name)
 
 			messages = append(messages, &RawMessage{
 				Text:     "Call result from " + toolCall.Function.Name,

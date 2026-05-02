@@ -16,8 +16,8 @@ import React from "react";
 import {Button, Col, Row} from "antd";
 import * as Setting from "../Setting";
 import i18next from "i18next";
-import * as ProviderBackend from "../backend/ProviderBackend";
-import {checkProvider} from "./ProviderWidget";
+import * as McpBackend from "../backend/McpBackend";
+import {checkMcpProvider} from "./ProviderWidget";
 import Editor from "./Editor";
 
 function buildDefaultMcpTestJson(provider) {
@@ -58,7 +58,7 @@ class TestMcpWidget extends React.Component {
 
   syncFromProvider(provider, prevProvider) {
     const {onUpdateProvider} = this.props;
-    if (!provider || provider.category !== "Agent" || provider.type !== "MCP") {
+    if (!provider) {
       return;
     }
     if (!provider.testContent || provider.testContent.trim() === "") {
@@ -86,16 +86,16 @@ class TestMcpWidget extends React.Component {
       return;
     }
 
-    await checkProvider(provider, originalProvider);
+    await checkMcpProvider(provider, originalProvider, McpBackend.updateMcp);
     this.setState({testButtonLoading: true, testResult: ""});
 
     try {
-      const res = await ProviderBackend.testMcpProvider(provider);
+      const res = await McpBackend.testMcpProvider(provider);
       if (res.status === "ok") {
         const out = typeof res.data === "string" ? res.data : JSON.stringify(res.data, null, 2);
         this.setState({testResult: out});
         Setting.showMessage("success", i18next.t("general:Success"));
-        await ProviderBackend.updateProvider(provider.owner, provider.name, {...provider, resultSummary: out, errorText: ""});
+        await McpBackend.updateMcp(provider.owner, provider.name, {...provider, resultSummary: out, errorText: ""});
       } else {
         Setting.showMessage("error", res.msg || i18next.t("general:Failed to save"));
       }
@@ -109,7 +109,7 @@ class TestMcpWidget extends React.Component {
   render() {
     const {provider, originalProvider, onUpdateProvider} = this.props;
 
-    if (!provider || provider.category !== "Agent" || provider.type !== "MCP") {
+    if (!provider) {
       return null;
     }
 

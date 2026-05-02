@@ -18,9 +18,9 @@ import {Button, Popconfirm, Switch, Table} from "antd";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
-import * as ProviderBackend from "./backend/ProviderBackend";
+import * as McpBackend from "./backend/McpBackend";
 import i18next from "i18next";
-import * as Provider from "./Provider";
+
 import {DeleteOutlined} from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 
@@ -37,33 +37,10 @@ class McpListPage extends BaseListPage {
       createdTime: moment().format(),
       displayName: `New MCP - ${randomName}`,
       displayName2: "",
-      category: "Agent",
-      type: "MCP",
-      subType: "",
-      clientId: "",
-      clientSecret: "",
-      mcpTools: [],
       text: "",
-      enableThinking: false,
-      temperature: 1,
-      topP: 1,
-      topK: 4,
-      frequencyPenalty: 0,
-      presencePenalty: 0,
-      inputPricePerThousandTokens: 0.0,
-      outputPricePerThousandTokens: 0.0,
-      currency: "USD",
-      providerUrl: "",
-      apiVersion: "",
-      apiKey: "",
-      network: "",
-      userKey: "",
-      userCert: "",
-      signKey: "",
-      signCert: "",
-      compatibleProvider: "",
-      contractName: "",
-      contractMethod: "",
+      mcpTools: [],
+      testContent: "",
+      resultSummary: "",
       state: "Active",
       isRemote: false,
     };
@@ -71,7 +48,7 @@ class McpListPage extends BaseListPage {
 
   addProvider() {
     const newProvider = this.newMcpProvider();
-    ProviderBackend.addProvider(newProvider)
+    McpBackend.addMcp(newProvider)
       .then((res) => {
         if (res.status === "ok") {
           Setting.showMessage("success", i18next.t("general:Successfully added"));
@@ -89,11 +66,11 @@ class McpListPage extends BaseListPage {
   }
 
   deleteItem = async(i) => {
-    return ProviderBackend.deleteProvider(this.state.data[i]);
+    return McpBackend.deleteMcp(this.state.data[i]);
   };
 
   deleteProvider(record) {
-    ProviderBackend.deleteProvider(record)
+    McpBackend.deleteMcp(record)
       .then((res) => {
         if (res.status === "ok") {
           Setting.showMessage("success", i18next.t("general:Successfully deleted"));
@@ -154,32 +131,6 @@ class McpListPage extends BaseListPage {
           ) : (
             visible
           );
-        },
-      },
-      {
-        title: i18next.t("general:Category"),
-        dataIndex: "category",
-        key: "category",
-        width: "110px",
-        filterMultiple: false,
-        filters: [
-          {text: "Agent", value: "Agent"},
-        ],
-        sorter: (a, b) => a.category.localeCompare(b.category),
-      },
-      {
-        title: i18next.t("general:Type"),
-        dataIndex: "type",
-        key: "type",
-        width: "150px",
-        align: "center",
-        filterMultiple: false,
-        filters: [
-          {text: "Agent", value: "Agent", children: Setting.getProviderTypeOptions("Agent").map((o) => {return {text: o.id, value: o.name};})},
-        ],
-        sorter: (a, b) => a.type.localeCompare(b.type),
-        render: (text, record) => {
-          return Provider.getProviderLogoWidget(record);
         },
       },
       {
@@ -271,36 +222,18 @@ class McpListPage extends BaseListPage {
   }
 
   fetch = (params = {}) => {
-    let field = params.searchedColumn, value = params.searchText;
-    const sortField = params.sortField, sortOrder = params.sortOrder;
-    if (params.category !== undefined && params.category !== null) {
-      field = "category";
-      value = params.category;
-    } else if (params.type !== undefined && params.type !== null) {
-      field = "type";
-      value = params.type;
-    }
-
-    const hasFilter = !!field || !!value;
-    if (!hasFilter) {
-      field = "type";
-      value = "MCP";
-    }
-
     this.setState({loading: true});
-    ProviderBackend.getProviders(this.props.account.name, Setting.getRequestStore(this.props.account), params.pagination.current, params.pagination.pageSize, field, value, sortField, sortOrder)
+    McpBackend.getMcps()
       .then((res) => {
         this.setState({
           loading: false,
         });
         if (res.status === "ok") {
-          const filtered = res.data.filter((item) => item.type === "MCP");
-          const total = (!hasFilter && field === "type" && value === "MCP") ? res.data2 : filtered.length;
           this.setState({
-            data: filtered,
+            data: res.data,
             pagination: {
               ...params.pagination,
-              total,
+              total: res.data.length,
             },
             searchText: params.searchText,
             searchedColumn: params.searchedColumn,
