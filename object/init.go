@@ -256,6 +256,7 @@ func initBuiltInTools() {
 			SubType:     "Default",
 			TestContent: `{"tool":"time","arguments":{"operation":"current"}}`,
 			State:       "Active",
+
 			PromptExamples: []string{
 				"What is the current date and time?",
 				"What time is it right now in Tokyo?",
@@ -264,13 +265,14 @@ func initBuiltInTools() {
 			},
 		},
 		{
-			Owner:        "admin",
-			Name:         "web_search",
-			Type:         "web_search",
-			SubType:      "DuckDuckGo",
-			EnableProxy:  true,
-			TestContent:  `{"tool":"web_search","arguments":{"query":"hello world"}}`,
-			State:        "Active",
+			Owner:       "admin",
+			Name:        "web_search",
+			Type:        "web_search",
+			SubType:     "DuckDuckGo",
+			EnableProxy: true,
+			TestContent: `{"tool":"web_search","arguments":{"query":"hello world"}}`,
+			State:       "Active",
+
 			PromptExamples: []string{
 				"Search for the latest news about artificial intelligence.",
 				"Find the best restaurants in New York City.",
@@ -285,6 +287,7 @@ func initBuiltInTools() {
 			SubType:     "Default",
 			TestContent: `{"tool":"shell","arguments":{"command":"echo hello"}}`,
 			State:       "Active",
+
 			PromptExamples: []string{
 				"List all files in the current directory.",
 				"Check the available disk space on the system.",
@@ -299,6 +302,7 @@ func initBuiltInTools() {
 			SubType:     "Default",
 			TestContent: `{"tool":"word_read","arguments":{"path":"test.docx"}}`,
 			State:       "Active",
+
 			PromptExamples: []string{
 				"Read the content of a Word document at /path/to/report.docx.",
 				"Create an Excel spreadsheet with sales data for Q1 2025.",
@@ -307,13 +311,14 @@ func initBuiltInTools() {
 			},
 		},
 		{
-			Owner:        "admin",
-			Name:         "web_fetch",
-			Type:         "web_fetch",
-			SubType:      "Default",
-			EnableProxy:  true,
-			TestContent:  `{"tool":"web_fetch","arguments":{"url":"https://example.com"}}`,
-			State:        "Active",
+			Owner:       "admin",
+			Name:        "web_fetch",
+			Type:        "web_fetch",
+			SubType:     "Default",
+			EnableProxy: true,
+			TestContent: `{"tool":"web_fetch","arguments":{"url":"https://example.com"}}`,
+			State:       "Active",
+
 			PromptExamples: []string{
 				"Fetch and summarize the content of https://openagentai.org.",
 				"Get the main text from https://en.wikipedia.org/wiki/Go_(programming_language).",
@@ -328,6 +333,7 @@ func initBuiltInTools() {
 			SubType:     "Default",
 			TestContent: `{"tool":"web_browser","arguments":{"url":"https://example.com"}}`,
 			State:       "Active",
+
 			PromptExamples: []string{
 				"Open GitHub and find the trending repositories today.",
 				"Navigate to a website and take a screenshot.",
@@ -342,6 +348,7 @@ func initBuiltInTools() {
 			SubType:     "Windows UIA",
 			TestContent: `{"tool":"win_open_application","arguments":{"target":"calc","method":"auto","wait_seconds":2}}`,
 			State:       "Active",
+
 			PromptExamples: []string{
 				"Open the Calculator application and compute 123 * 456.",
 				"Take a screenshot of the current desktop.",
@@ -355,6 +362,7 @@ func initBuiltInTools() {
 			Type:        "video_download",
 			SubType:     "Default",
 			TestContent: `{"tool":"video_info","arguments":{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}}`,
+
 			PromptExamples: []string{
 				"Get the title and duration of this YouTube video: https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 				"Download a YouTube video to the videos folder in the best available quality.",
@@ -370,6 +378,7 @@ func initBuiltInTools() {
 			SubType:     "Default",
 			TestContent: `{"tool":"browser_use_open","arguments":{"url":"https://www.openagentai.org"}}`,
 			State:       "Active",
+
 			PromptExamples: []string{
 				"Play a Michael Jackson song on YouTube.",
 				"Create a paste with \"Hello from OpenAgent\" and give me the link.",
