@@ -4,7 +4,7 @@ info:
   description: Swagger Docs of OpenAgent Backend API
   version: 1.70.0
   contact:
-    email: admin@casibase.org
+    email: admin@openagentai.org
 basePath: /api
 schemes:
 - https

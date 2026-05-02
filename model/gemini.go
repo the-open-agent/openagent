@@ -53,9 +53,9 @@ func (p *GeminiModelProvider) GetPricing() string {
 | Gemini 3.1 Pro Preview                         | $2.00 (≤200k), $4.00 (>200k)           | $12.00 (≤200k), $18.00 (>200k)           |
 | Gemini 3.1 Flash-Lite Preview                  | $0.25 (text/image/video)                | $1.50                                     |
 | Gemini 3.1 Flash Live Preview                  | $0.75 (text), $3.00 (audio/image/video) | $4.50 (text), $12.00 (audio)              |
-| Gemini 3.1 Flash Image Preview                 | $0.50 (text/image)                      | $3.00 (text) + image output pricing       |
+| Gemini 3.1 Flash Image Preview                 | $0.25 (text input)                      | $0.067 per image                          |
 | Gemini 3 Flash Preview                         | $0.50 (text/image/video), $1.00 (audio) | $3.00                                     |
-| Gemini 3 Pro Image Preview                     | $2.00 (text/image)                      | $12.00 (text) + image output pricing      |
+| Gemini 3 Pro Image Preview                     | $2.00 (text input)                      | $0.134 per image                          |
 | Gemini 2.5 Pro                                 | $1.25 (≤200k), $2.50 (>200k)           | $10.00 (≤200k), $15.00 (>200k)           |
 | Gemini 2.5 Flash                               | $0.30 (text/image/video), $1.00 (audio) | $2.50                                     |
 | Gemini 2.5 Flash-Lite                          | $0.10 (text/image/video), $0.30 (audio) | $0.40                                     |
@@ -72,7 +72,6 @@ func (p *GeminiModelProvider) GetPricing() string {
 | Imagen 4 Fast                                  | $0.02 per image                         | -                                         |
 | Imagen 4 Standard                              | $0.04 per image                         | -                                         |
 | Imagen 4 Ultra                                 | $0.06 per image                         | -                                         |
-| Imagen 3                                       | $0.03 per image                         | -                                         |
 | Veo 3.1 Standard                               | $0.40 per second                        | -                                         |
 | Veo 3.1 Fast                                   | $0.10 per second (720p)                 | -                                         |
 | Veo 3.0 Standard                               | $0.40 per second                        | -                                         |
@@ -105,8 +104,8 @@ func (p *GeminiModelProvider) calculatePrice(modelResult *ModelResult, lang stri
 		outputPricePerMillionTokens = 4.50 // text output
 
 	case strings.Contains(p.subType, "gemini-3.1-flash-image"):
-		inputPricePerMillionTokens = 0.50
-		outputPricePerMillionTokens = 3.00
+		inputPricePerMillionTokens = 0.25
+		outputPricePerMillionTokens = 3.00 // image output is $0.067/image; token price used for text output
 
 	// Gemini 3 series (Preview)
 	case strings.Contains(p.subType, "gemini-3-pro-image"):
@@ -233,12 +232,6 @@ func (p *GeminiModelProvider) calculatePrice(modelResult *ModelResult, lang stri
 		modelResult.Currency = "USD"
 		return nil
 
-	// Imagen 3 image generation models
-	case strings.Contains(p.subType, "imagen-3"):
-		modelResult.TotalPrice = 0.03
-		modelResult.Currency = "USD"
-		return nil
-
 	// Veo 3.1 video generation models
 	case strings.Contains(p.subType, "veo-3.1-fast") || strings.Contains(p.subType, "veo-3.0-fast"):
 		return fmt.Errorf(i18n.Translate(lang, "model:calculatePrice() error: video generation pricing requires duration information"))
@@ -277,7 +270,14 @@ func (p *GeminiModelProvider) calculatePrice(modelResult *ModelResult, lang stri
 }
 
 func isGeminiImagenModel(subType string) bool {
+	// Imagen models use the GenerateImages API
 	return strings.Contains(strings.ToLower(subType), "imagen-")
+}
+
+func isGeminiImagePreviewModel(subType string) bool {
+	lower := strings.ToLower(subType)
+	// Nano Banana models (gemini-*-image-preview, gemini-*-image) use GenerateContent with ResponseModalities
+	return strings.Contains(lower, "-image") && !isGeminiImagenModel(subType)
 }
 
 // queryImagen uses the Imagen image API (GenerateImages). These models do not support CountTokens or GenerateContent.
@@ -377,7 +377,15 @@ func (p *GeminiModelProvider) QueryText(question string, writer io.Writer, histo
 	}
 
 	messages := GenaiRawMessagesToMessages(question, history)
-	resp, err := model.GenerateContent(ctx, p.subType, messages, nil)
+
+	var generateConfig *genai.GenerateContentConfig
+	if isGeminiImagePreviewModel(p.subType) {
+		generateConfig = &genai.GenerateContentConfig{
+			ResponseModalities: []string{"TEXT", "IMAGE"},
+		}
+	}
+
+	resp, err := model.GenerateContent(ctx, p.subType, messages, generateConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -388,9 +396,22 @@ func (p *GeminiModelProvider) QueryText(question string, writer io.Writer, histo
 	}
 
 	flushData := func(data []*genai.Part) error {
-		for _, message := range data {
-			if _, err := fmt.Fprintf(writer, "event: message\ndata: %s\n\n", message.Text); err != nil {
-				return err
+		for _, part := range data {
+			var output string
+			if part.InlineData != nil && len(part.InlineData.Data) > 0 {
+				mime := part.InlineData.MIMEType
+				if mime == "" {
+					mime = "image/png"
+				}
+				b64 := base64.StdEncoding.EncodeToString(part.InlineData.Data)
+				output = fmt.Sprintf("<img src=\"data:%s;base64,%s\" width=\"100%%\" height=\"auto\">", mime, b64)
+				if _, err := fmt.Fprint(writer, output); err != nil {
+					return err
+				}
+			} else if part.Text != "" {
+				if _, err := fmt.Fprintf(writer, "event: message\ndata: %s\n\n", part.Text); err != nil {
+					return err
+				}
 			}
 			flusher.Flush()
 		}

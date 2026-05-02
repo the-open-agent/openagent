@@ -125,6 +125,8 @@ class ProviderEditPage extends React.Component {
     if (["Model", "Blockchain"].includes(provider.category)) {
       if (provider.type === "Volcano Engine") {
         return Setting.getLabel(i18next.t("provider:Endpoint ID"), i18next.t("provider:Endpoint ID - Tooltip"));
+      } else if (provider.type === "OpenAI Compatible") {
+        return Setting.getLabel(i18next.t("provider:Endpoint"), i18next.t("provider:Endpoint - Tooltip"));
       } else if (provider.type === "ChainMaker") {
         return Setting.getLabel(i18next.t("general:Provider URL"), i18next.t("general:Provider URL - Tooltip"));
       }
@@ -415,7 +417,9 @@ class ProviderEditPage extends React.Component {
             <Select virtual={false} disabled={isRemote} style={{width: "100%"}} value={this.state.provider.type} onChange={(value => {
               this.updateProviderField("type", value);
               if (this.state.provider.category === "Model") {
-                if (value === "OpenAI") {
+                if (value === "OpenAI Compatible") {
+                  this.updateProviderField("subType", "gpt-image-2");
+                } else if (value === "OpenAI") {
                   this.updateProviderField("subType", "gpt-4");
                 } else if (value === "Gemini") {
                   this.updateProviderField("subType", "gemini-pro");
@@ -566,6 +570,20 @@ class ProviderEditPage extends React.Component {
           )
         }
         {
+          (this.state.provider.category === "Model" && this.state.provider.type === "OpenAI Compatible") ? (
+            <Row style={{marginTop: "20px"}} >
+              <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
+                {this.getProviderUrlLabel(this.state.provider)} :
+              </Col>
+              <Col span={22} >
+                <Input prefix={<LinkOutlined />} value={this.state.provider.providerUrl} onChange={e => {
+                  this.updateProviderField("providerUrl", e.target.value);
+                }} />
+              </Col>
+            </Row>
+          ) : null
+        }
+        {
           (this.state.provider.type === "Cohere" && this.state.provider.category === "Embedding") && (
             <Row style={{marginTop: "20px"}} >
               <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
@@ -641,7 +659,7 @@ class ProviderEditPage extends React.Component {
           ) : null
         }
         {
-          !(this.state.provider.category === "Model" && (this.state.provider.type === "Local" || this.state.provider.type === "Ollama")) ? null : (
+          !(this.state.provider.category === "Model" && (this.state.provider.type === "Local" || this.state.provider.type === "Ollama" || this.state.provider.type === "OpenAI Compatible")) ? null : (
             <>
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
@@ -683,7 +701,7 @@ class ProviderEditPage extends React.Component {
           )
         }
         {
-          (this.state.provider.type === "Local" || this.state.provider.type === "Ollama") ? (
+          (this.state.provider.type === "Local" || this.state.provider.type === "Ollama" || this.state.provider.type === "OpenAI Compatible") ? (
             <>
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>

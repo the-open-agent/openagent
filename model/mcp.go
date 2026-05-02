@@ -189,8 +189,18 @@ func callTools(toolCall openai.ToolCall, serverName, toolName string, agentClien
 	fmt.Printf("Tool Call: [%s]\n", toolCall.Function.Name)
 	fmt.Printf("Arguments: [%s]\n", toolCall.Function.Arguments)
 
+	// Send tool-start event immediately so the frontend can show the tool call before execution
+	toolStartData := ToolCall{
+		Name:      toolCall.Function.Name,
+		Arguments: toolCall.Function.Arguments,
+		Content:   "",
+	}
+	toolStartJSON, err := json.Marshal(toolStartData)
+	if err == nil {
+		_ = flushDataThink(string(toolStartJSON), "tool-start", writer, lang)
+	}
+
 	var result *protocol.CallToolResult
-	var err error
 
 	if serverName == "" {
 		// builtin tools

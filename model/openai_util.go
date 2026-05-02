@@ -93,7 +93,7 @@ func getOpenAiModelType(model string) string {
 	}
 
 	imageModels := []string{
-		"gpt-image-1.5", "gpt-image-1", "gpt-image-1-mini", "dall-e-3", "dall-e-2",
+		"gpt-image-2", "gpt-image-1.5", "gpt-image-1", "gpt-image-1-mini", "dall-e-3", "dall-e-2",
 	}
 
 	for _, chatModel := range chatModels {

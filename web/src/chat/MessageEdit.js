@@ -13,34 +13,12 @@
 // limitations under the License.
 
 import React, {useState} from "react";
-import {Button, Input, Space} from "antd";
+import {Button, Input, Space, Tooltip} from "antd";
 import {CheckOutlined, CloseOutlined, EditOutlined} from "@ant-design/icons";
 import i18next from "i18next";
-import {ThemeDefault} from "../Conf";
 
 // Styles for edit components
 export const editStyles = {
-  // Edit button container styles
-  editButtonContainer: (isHovering) => ({
-    marginRight: "8px",
-    opacity: isHovering ? 0.8 : 0,
-    transition: "opacity 0.2s ease-in-out",
-  }),
-
-  // Edit button styles
-  editButton: {
-    border: "none",
-    color: ThemeDefault.colorPrimary,
-    background: "rgba(255, 255, 255, 0.8)",
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-    borderRadius: "50%",
-    width: "32px",
-    height: "32px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
   // Edit form styles
   editForm: {
     width: "100%",
@@ -126,15 +104,14 @@ const MessageEdit = ({
   const renderEditButton = () => {
     if (message.author !== "AI" && !isEditing && (disableInput === false || index !== isLastMessage)) {
       return (
-        <div style={editStyles.editButtonContainer(isHovering)}>
+        <Tooltip title={i18next.t("general:Edit")} arrow={false}>
           <Button
-            className="cs-button"
             icon={<EditOutlined />}
-            style={editStyles.editButton}
+            color="primary"
+            variant="text"
             onClick={handleEditActions.start}
-            size="small"
           />
-        </div>
+        </Tooltip>
       );
     }
     return null;
@@ -143,6 +120,7 @@ const MessageEdit = ({
   // Return the editing state and render functions
   return {
     isEditing,
+    isHovering,
     editedText,
     setIsHovering,
     renderEditForm,

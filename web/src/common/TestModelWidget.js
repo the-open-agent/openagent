@@ -20,11 +20,13 @@ import ChatWidget from "./ChatWidget";
 
 class ModelTestWidget extends React.Component {
   render() {
-    const {provider, account} = this.props;
+    const {provider, originalProvider, account} = this.props;
 
     if (!provider || provider.category !== "Model") {
       return null;
     }
+
+    const stableName = originalProvider?.name || provider.name;
 
     return (
       <React.Fragment>
@@ -34,8 +36,8 @@ class ModelTestWidget extends React.Component {
           </Col>
           <Col span={20}>
             <ChatWidget
-              key={provider.name}
-              chatName={`chat_${provider.name}`}
+              key={stableName}
+              chatName={`chat_${stableName}`}
               displayName={provider.displayName || provider.name}
               category="ModelTest"
               modelProvider={provider.name}

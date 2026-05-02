@@ -176,7 +176,7 @@ class MachineListPage extends BaseListPage {
         sorter: (a, b) => a.size.localeCompare(b.size),
       },
       {
-        title: i18next.t("machine:Image"),
+        title: i18next.t("general:Image"),
         dataIndex: "image",
         key: "image",
         width: "120px",

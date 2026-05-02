@@ -24,6 +24,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/beego/beego"
 	"github.com/the-open-agent/openagent/i18n"
 	"github.com/the-open-agent/openagent/object"
 	"github.com/the-open-agent/openagent/txt"
@@ -123,14 +124,14 @@ func tryStoreRemoteImage(message *object.Message, host string, lang string) {
 	// DALL·E etc.: remote image URL in <img src="http...">
 	if strings.Contains(message.Text, "<img src=\"http") {
 		if err := storeImage(message, origin, lang); err != nil {
-			fmt.Printf("storeImage() error: %s\n", err.Error())
+			beego.Info(fmt.Sprintf("tryStoreRemoteImage(): failed to upload image to CDN for message %s: %s", message.GetId(), err.Error()))
 		}
 		return
 	}
 	// gpt-image and similar: inline data URL (tryStoreRemoteImage previously skipped these)
 	if strings.Contains(message.Text, ";base64,") && strings.Contains(message.Text, "data:") {
 		if err := storeInlineBase64Images(message, origin, lang); err != nil {
-			fmt.Printf("storeInlineBase64Images() error: %s\n", err.Error())
+			beego.Info(fmt.Sprintf("tryStoreRemoteImage(): failed to upload inline base64 image to CDN for message %s: %s", message.GetId(), err.Error()))
 		}
 	}
 }

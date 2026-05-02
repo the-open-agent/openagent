@@ -73,7 +73,7 @@ class StoreListPage extends BaseListPage {
 
   getAllProviders() {
     this.setState({loading: true});
-    const storageProvidersPromise = Setting.isBasicUser(this.props.account) ? Promise.resolve({status: "ok", data: []}) : StorageProviderBackend.getStorageProviders(this.props.account.name);
+    const storageProvidersPromise = StorageProviderBackend.getStorageProviders(this.props.account.name);
     Promise.all([
       storageProvidersPromise,
       ProviderBackend.getProviders(this.props.account.name),
@@ -121,7 +121,12 @@ class StoreListPage extends BaseListPage {
     const isLocalStorage = ["Local File System", "OpenAI File System"].includes(provider.type);
     const providerType = provider.category;
 
-    if (!Setting.isBasicUser(this.props.account) && (providerType === "Image" || (providerType === "Storage" && !isLocalStorage))) {
+    const openInCasdoorAdmin =
+      Setting.isCasdoorAvailable() &&
+      !Setting.isBasicLoginMode(this.props.account) &&
+      (providerType === "Image" || (providerType === "Storage" && !isLocalStorage));
+
+    if (openInCasdoorAdmin) {
       return (
         <a target="_blank" rel="noreferrer" href={Setting.getMyProfileUrl(this.props.account).replace("/account", `/providers/admin/${provider.name}`)}>
           {provider.name && providerLogo} {provider.name}
@@ -493,15 +498,11 @@ class StoreListPage extends BaseListPage {
           if (this.state.hideChat) {
             return (
               <div>
-                {Setting.isBasicUser(this.props.account) ? null : (
-                  <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}/view`)}>{i18next.t("general:Files")}</Button>
-                )}
+                <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}/view`)}>{i18next.t("general:Files")}</Button>
                 {
                   !Setting.isLocalAdminUser(this.props.account) ? null : (
                     <React.Fragment>
-                      {Setting.isBasicUser(this.props.account) ? null : (
-                        <Button style={{marginBottom: "10px", marginRight: "10px"}} icon={<ShareAltOutlined />} onClick={() => this.openShareModal(record)}>{i18next.t("store:Share")}</Button>
-                      )}
+                      <Button style={{marginBottom: "10px", marginRight: "10px"}} icon={<ShareAltOutlined />} onClick={() => this.openShareModal(record)}>{i18next.t("store:Share")}</Button>
                       <Button style={{marginBottom: "10px", marginRight: "10px"}} type="primary" onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}`)}>{i18next.t("general:Edit")}</Button>
                       <Popconfirm
                         title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
@@ -521,9 +522,7 @@ class StoreListPage extends BaseListPage {
 
           return (
             <div>
-              {Setting.isBasicUser(this.props.account) ? null : (
-                <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}/view`)}>{i18next.t("general:Files")}</Button>
-              )}
+              <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}/view`)}>{i18next.t("general:Files")}</Button>
               <Button style={{marginBottom: "10px", marginRight: "10px"}} icon={<CopyOutlined />} onClick={() => {copy(`${window.location.origin}/${record.owner}/${record.name}/chat`);Setting.showMessage("success", i18next.t("general:Successfully copied"));}}>{i18next.t("general:Copy Link")}</Button>
               <Button style={{marginBottom: "10px", marginRight: "10px"}} onClick={() => {
                 Setting.setStore(record.name);
@@ -532,9 +531,7 @@ class StoreListPage extends BaseListPage {
               {
                 !Setting.isLocalAdminUser(this.props.account) ? null : (
                   <React.Fragment>
-                    {Setting.isBasicUser(this.props.account) ? null : (
-                      <Button style={{marginBottom: "10px", marginRight: "10px"}} icon={<ShareAltOutlined />} onClick={() => this.openShareModal(record)}>{i18next.t("store:Share")}</Button>
-                    )}
+                    <Button style={{marginBottom: "10px", marginRight: "10px"}} icon={<ShareAltOutlined />} onClick={() => this.openShareModal(record)}>{i18next.t("store:Share")}</Button>
                     <Button style={{marginBottom: "10px", marginRight: "10px"}} loading={this.state.generating[index]} onClick={() => this.refreshStoreVectors(index)}>{i18next.t("general:Refresh Vectors")}</Button>
                     <Button style={{marginBottom: "10px", marginRight: "10px"}} type="primary" onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}`)}>{i18next.t("general:Edit")}</Button>
                     <Popconfirm
@@ -561,9 +558,6 @@ class StoreListPage extends BaseListPage {
         column.key !== "chatCount" && column.key !== "messageCount" && column.key !== "vectorCount" && column.key !== "imageProvider" && column.key !== "modelProvider" && column.key !== "embeddingProvider" &&
         column.key !== "textToSpeechProvider" && column.key !== "speechToTextProvider" && column.key !== "agentProvider" && column.key !== "tools" && column.key !== "memoryLimit"
       );
-    }
-    if (Setting.isBasicUser(this.props.account)) {
-      filteredColumns = filteredColumns.filter(column => column.key !== "imageProvider");
     }
 
     const paginationProps = {

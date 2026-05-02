@@ -24,6 +24,7 @@ const IconFont = createFromIconfontCN({
 });
 
 const KnowledgeSourceItem = ({vectorScore, vectorData, idx, themeColor, account}) => {
+  const isDark = Setting.getIsDark();
   if (!vectorData) {
     return null;
   }
@@ -52,18 +53,18 @@ const KnowledgeSourceItem = ({vectorScore, vectorData, idx, themeColor, account}
     <div
       style={{
         padding: "12px",
-        background: "#fff",
+        background: isDark ? "#1e2028" : "#fff",
         borderRadius: "8px",
-        border: "1px solid #e8e8e8",
+        border: isDark ? "1px solid #383d47" : "1px solid #e8e8e8",
         transition: "all 0.2s",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
+        e.currentTarget.style.boxShadow = isDark ? "0 2px 8px rgba(0,0,0,0.4)" : "0 2px 8px rgba(0,0,0,0.1)";
         e.currentTarget.style.borderColor = themeColor;
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.boxShadow = "none";
-        e.currentTarget.style.borderColor = "#e8e8e8";
+        e.currentTarget.style.borderColor = isDark ? "#383d47" : "#e8e8e8";
       }}
     >
       <div
@@ -95,7 +96,7 @@ const KnowledgeSourceItem = ({vectorScore, vectorData, idx, themeColor, account}
         <span
           style={{
             fontSize: "20px",
-            color: "#666",
+            color: isDark ? "#9ca3af" : "#666",
             display: "flex",
             alignItems: "center",
             cursor: "pointer",
@@ -119,10 +120,10 @@ const KnowledgeSourceItem = ({vectorScore, vectorData, idx, themeColor, account}
         </span>
         <span style={{
           padding: "2px 8px",
-          background: "#f0f0f0",
+          background: isDark ? "#2d3139" : "#f0f0f0",
           borderRadius: "4px",
           fontSize: "12px",
-          color: "#666",
+          color: isDark ? "#9ca3af" : "#666",
           fontWeight: "500",
         }}>
           {i18next.t("chat:Relevance")}: {(vectorScore.score * 100).toFixed(1)}%
@@ -131,7 +132,7 @@ const KnowledgeSourceItem = ({vectorScore, vectorData, idx, themeColor, account}
       <div
         style={{
           fontSize: "13px",
-          color: "#666",
+          color: isDark ? "#9ca3af" : "#666",
           lineHeight: "1.5",
           whiteSpace: "pre-line",
           wordBreak: "break-word",

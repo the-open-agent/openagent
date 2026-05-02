@@ -89,7 +89,7 @@ class PasswordSigninPage extends React.Component {
       <div style={{display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#ffffff"}}>
         <div style={{width: "340px"}}>
           <div style={{textAlign: "center", marginBottom: "36px"}}>
-            <img src={this.props.logo} alt="Casibase" style={{width: "260px", maxWidth: "100%"}} />
+            <img src={this.props.logo} alt="OpenAgent" style={{width: "260px", maxWidth: "100%"}} />
           </div>
           <Form initialValues={{username: "admin"}} onFinish={(values) => this.onFinish(values)} requiredMark={false}>
             <Form.Item name="username" rules={[{required: true, message: i18next.t("account:Please input your username")}]}>

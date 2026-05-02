@@ -41,7 +41,7 @@ function getDefaultLogoURL(provider) {
   }
 
   // Extract the path after StaticBaseUrl and prepend the default CDN URL
-  const defaultCdnUrl = "https://cdn.casibase.org";
+  const defaultCdnUrl = "https://cdn.openagentai.org";
   const pathMatch = logoPath.match(/\/img\/.+$/);
   if (pathMatch) {
     return `${defaultCdnUrl}${pathMatch[0]}`;

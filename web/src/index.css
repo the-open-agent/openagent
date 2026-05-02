@@ -253,7 +253,7 @@ a.ant-typography-link:active {
 a:not([class]):not(.login-link),
 a[class=""],
 a[href^="mailto:"] {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, color 0.2s ease;
 }
 
 a:not([class]):not(.login-link):hover,
@@ -267,6 +267,36 @@ a[class=""]:active,
 a[href^="mailto:"]:active {
   opacity: 0.4;
   transition: opacity 0.08s ease;
+}
+
+/* Dark mode: override all link colors to light neutral gray (shadcn monochrome aesthetic) */
+[data-theme="dark"] a:not(.login-link),
+[data-theme="dark"] .ant-typography a,
+[data-theme="dark"] a.ant-typography-link {
+  color: #d4d4d4 !important;
+}
+
+[data-theme="dark"] a:not(.login-link):hover,
+[data-theme="dark"] .ant-typography a:hover,
+[data-theme="dark"] a.ant-typography-link:hover {
+  color: #f5f5f5 !important;
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] a:not(.login-link):active,
+[data-theme="dark"] .ant-typography a:active,
+[data-theme="dark"] a.ant-typography-link:active {
+  color: #a3a3a3 !important;
+  opacity: 1 !important;
+}
+
+/* Exception: user message bubble links stay white (dark bg from theme color) */
+[data-theme="dark"] .user-message-content a {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="dark"] .user-message-content a:hover {
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 /* Bold overrides for key UI elements */

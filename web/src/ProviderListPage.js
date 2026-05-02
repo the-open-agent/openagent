@@ -83,7 +83,7 @@ class ProviderListPage extends BaseListPage {
       category: "Storage",
       type: "Local File System",
       subType: "",
-      clientId: "C:/storage_casibase",
+      clientId: "C:/storage_openagent",
       providerUrl: "",
       state: "Active",
       isRemote: false,

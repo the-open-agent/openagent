@@ -21,7 +21,7 @@ import xlsx from "xlsx";
 import FileSaver from "file-saver";
 import moment from "moment/moment";
 import * as StoreBackend from "./backend/StoreBackend";
-import {DisablePreviewMode, StaticBaseUrl, ThemeDefault} from "./Conf";
+import {StaticBaseUrl, ThemeDefault} from "./Conf";
 import Identicon from "identicon.js";
 import md5 from "md5";
 import React from "react";
@@ -85,7 +85,7 @@ export function getSigninUrl() {
 }
 
 export function getUserProfileUrl(userName, account) {
-  if (isBasicUser(account)) {
+  if (isBasicLoginMode(account)) {
     return "#";
   }
 
@@ -93,7 +93,7 @@ export function getUserProfileUrl(userName, account) {
 }
 
 export function getMyProfileUrl(account) {
-  if (isBasicUser(account)) {
+  if (isBasicLoginMode(account)) {
     return "#";
   }
 
@@ -229,7 +229,12 @@ export function canViewAllUsers(account) {
   return account.name === "admin" || isChatAdminUser(account);
 }
 
-export function isBasicUser(account) {
+/**
+ * Built-in login mode (`account.owner === "basic"`): not a Casdoor-synced identity session.
+ * The account may still be admin; this only distinguishes login/identity plumbing (profile URLs,
+ * Casdoor sidebar links), not role or permissions.
+ */
+export function isBasicLoginMode(account) {
   if (account === undefined || account === null) {
     return false;
   }
@@ -239,10 +244,6 @@ export function isBasicUser(account) {
 export function isLocalAdminUser(account) {
   if (account === undefined || account === null) {
     return false;
-  }
-
-  if (!DisablePreviewMode && isAnonymousUser(account)) {
-    return true;
   }
 
   if (isChatAdminUser(account)) {
@@ -259,10 +260,6 @@ export function isLocalAndStoreAdminUser(account) {
 
   if (account.homepage === "non-store-admin") {
     return false;
-  }
-
-  if (!DisablePreviewMode && isAnonymousUser(account)) {
-    return true;
   }
 
   if (isChatAdminUser(account)) {
@@ -828,7 +825,7 @@ export function submitStoreEdit(storeObj) {
 }
 
 export function getDefaultAiAvatar() {
-  return `${StaticBaseUrl}/img/casibase.png`;
+  return `${StaticBaseUrl}/img/openagent.png`;
 }
 
 export const Countries = [
@@ -840,6 +837,10 @@ export function getOtherProviderInfo() {
   const res = {
     Model: {
       "OpenAI": {
+        logo: `${StaticBaseUrl}/img/social_openai.svg`,
+        url: "https://platform.openai.com",
+      },
+      "OpenAI Compatible": {
         logo: `${StaticBaseUrl}/img/social_openai.svg`,
         url: "https://platform.openai.com",
       },
@@ -1401,6 +1402,7 @@ export function getProviderTypeOptions(category) {
     return (
       [
         {id: "OpenAI", name: "OpenAI"},
+        {id: "OpenAI Compatible", name: "OpenAI Compatible"},
         {id: "Gemini", name: "Gemini"},
         {id: "Hugging Face", name: "Hugging Face"},
         {id: "Claude", name: "Claude"},
@@ -1590,6 +1592,7 @@ const openaiModels = [
   // GPT-3.5 (legacy)
   {id: "gpt-3.5-turbo", name: "gpt-3.5-turbo"},
   // Image generation models (latest first)
+  {id: "gpt-image-2", name: "gpt-image-2"},
   {id: "gpt-image-1.5", name: "gpt-image-1.5"},
   {id: "gpt-image-1", name: "gpt-image-1"},
   {id: "gpt-image-1-mini", name: "gpt-image-1-mini"},
@@ -1635,7 +1638,7 @@ export function getTtsFlavorOptions(type, subType) {
 }
 
 export function getModelSubTypeOptions(type) {
-  if (type === "OpenAI" || type === "Azure") {
+  if (type === "OpenAI" || type === "Azure" || type === "OpenAI Compatible") {
     return openaiModels;
   } else if (type === "Gemini") {
     return [
@@ -1675,7 +1678,6 @@ export function getModelSubTypeOptions(type) {
       {id: "imagen-4.0-generate-001", name: "imagen-4.0-generate-001"},
       {id: "imagen-4.0-ultra-generate-001", name: "imagen-4.0-ultra-generate-001"},
       {id: "imagen-4.0-fast-generate-001", name: "imagen-4.0-fast-generate-001"},
-      {id: "imagen-3.0-generate-002", name: "imagen-3.0-generate-002"},
       // Video generation models
       {id: "veo-3.1-generate-preview", name: "veo-3.1-generate-preview"},
       {id: "veo-3.1-fast-generate-preview", name: "veo-3.1-fast-generate-preview"},
@@ -2711,6 +2713,15 @@ export function getAlgorithm(themeAlgorithmNames) {
   });
 }
 
+export function getIsDark() {
+  try {
+    const stored = localStorage.getItem("themeAlgorithm");
+    return stored ? JSON.parse(stored).includes("dark") : false;
+  } catch (_) {
+    return false;
+  }
+}
+
 export function getHtmlTitle(storeHtmlTitle) {
   const defaultHtmlTitle = "OpenAgent";
   let htmlTitle = Conf.HtmlTitle;
@@ -2742,12 +2753,12 @@ export function getStoreIconUrl(store) {
 }
 
 export function getLogo(themes, storeLogoUrl) {
-  const defaultLogoUrl = "https://cdn.casibase.org/img/casibase-logo_1200x256.png";
+  const defaultLogoUrl = "https://cdn.openagentai.org/img/openagent-logo_1600x276.png";
   let logoUrl = Conf.LogoUrl;
   if (storeLogoUrl && storeLogoUrl !== defaultLogoUrl) {
     logoUrl = storeLogoUrl;
   }
-  logoUrl = logoUrl.replace("https://cdn.casibase.org", Conf.StaticBaseUrl);
+  logoUrl = logoUrl.replace("https://cdn.openagentai.org", Conf.StaticBaseUrl);
   if (themes.includes("dark")) {
     return logoUrl.replace(/\.png$/, "_white.png");
   } else {
@@ -2756,12 +2767,12 @@ export function getLogo(themes, storeLogoUrl) {
 }
 
 export function getFooterHtml(themes, storeFooterHtml) {
-  const defaultFooterHtml = "Powered by <a target=\"_blank\" href=\"https://github.com/the-open-agent/openagent\" rel=\"noreferrer\"><img style=\"padding-bottom: 3px;\" height=\"20\" alt=\"Casibase\" src=\"https://cdn.casibase.org/img/casibase-logo_1200x256.png\" /></a>";
+  const defaultFooterHtml = "Powered by <a target=\"_blank\" href=\"https://github.com/the-open-agent/openagent\" rel=\"noreferrer\"><img style=\"padding-bottom: 3px;\" height=\"20\" alt=\"OpenAgent\" src=\"https://cdn.openagentai.org/img/openagent-logo_1600x276.png\" /></a>";
   let footerHtml = Conf.FooterHtml;
   if (storeFooterHtml && storeFooterHtml !== defaultFooterHtml) {
     footerHtml = storeFooterHtml;
   }
-  footerHtml = footerHtml.replace("https://cdn.casibase.org", Conf.StaticBaseUrl);
+  footerHtml = footerHtml.replace("https://cdn.openagentai.org", Conf.StaticBaseUrl);
   if (themes.includes("dark")) {
     return footerHtml.replace(/(\.png)/g, "_white$1");
   } else {
@@ -3005,21 +3016,21 @@ export function getToolFunctions(tool) {
     return [{
       name: "web_fetch",
       description: "Fetch and extract content from a web URL",
-      testContent: JSON.stringify({tool: "web_fetch", arguments: {url: "https://casibase.org", max_length: 3000}}, null, 2),
+      testContent: JSON.stringify({tool: "web_fetch", arguments: {url: "https://openagentai.org", max_length: 3000}}, null, 2),
     }];
   }
   if (type === "web_browser") {
     return [{
       name: "web_browser",
       description: "Open a web page in a browser and capture a screenshot",
-      testContent: JSON.stringify({tool: "web_browser", arguments: {url: "https://casibase.org", timeout: 60}}, null, 2),
+      testContent: JSON.stringify({tool: "web_browser", arguments: {url: "https://openagentai.org", timeout: 60}}, null, 2),
     }];
   }
   if (type === "browser_use") {
     return [{
       name: "browser_use",
       description: "Automate browser interactions using AI-driven control",
-      testContent: JSON.stringify({tool: "browser_use_open", arguments: {url: "https://casibase.org"}}, null, 2),
+      testContent: JSON.stringify({tool: "browser_use_open", arguments: {url: "https://openagentai.org"}}, null, 2),
     }];
   }
   if (type === "gui") {

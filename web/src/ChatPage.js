@@ -430,7 +430,7 @@ class ChatPage extends BaseListPage {
                 messages: res.data,
               });
             }, (data) => {
-              // onTool callback
+              // onTool callback (handles both tool-start and tool-complete events)
               if (!chat || (this.state.chat.name !== chat.name)) {
                 return;
               }
@@ -438,11 +438,36 @@ class ChatPage extends BaseListPage {
 
               const currentMessage = res.data[res.data.length - 1];
               const toolCalls = currentMessage.toolCalls || [];
-              toolCalls.push({
-                name: jsonData.name,
-                arguments: jsonData.arguments,
-                content: jsonData.content,
-              });
+
+              if (!jsonData.content) {
+                // tool-start: add new entry with empty content (tool is executing)
+                toolCalls.push({
+                  name: jsonData.name,
+                  arguments: jsonData.arguments,
+                  content: "",
+                });
+              } else {
+                // tool-complete: find the last pending entry with same name and update it
+                let found = false;
+                for (let i = toolCalls.length - 1; i >= 0; i--) {
+                  if (toolCalls[i].name === jsonData.name && !toolCalls[i].content) {
+                    toolCalls[i] = {
+                      name: jsonData.name,
+                      arguments: jsonData.arguments,
+                      content: jsonData.content,
+                    };
+                    found = true;
+                    break;
+                  }
+                }
+                if (!found) {
+                  toolCalls.push({
+                    name: jsonData.name,
+                    arguments: jsonData.arguments,
+                    content: jsonData.content,
+                  });
+                }
+              }
 
               const lastMessage2 = Setting.deepCopy(currentMessage);
               lastMessage2.toolCalls = toolCalls;
@@ -745,6 +770,8 @@ class ChatPage extends BaseListPage {
   }
 
   renderTable(chats) {
+    const isDark = Setting.getIsDark();
+
     const onSelectChat = (i) => {
       const chat = chats[i];
       this.setState({
@@ -797,8 +824,8 @@ class ChatPage extends BaseListPage {
               width: "250px",
               height: "100%",
               marginRight: "0",
-              background: "#f7f8fa",
-              borderRight: "1px solid #ebebeb",
+              background: isDark ? "#1a1a1a" : "#f7f8fa",
+              borderRight: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #ebebeb",
               flexShrink: 0,
             }}>
               <ChatMenu ref={this.menu} chats={chats} chatName={this.getChat()} onSelectChat={onSelectChat} onAddChat={onAddChat} onDeleteChat={onDeleteChat} onUpdateChatName={onUpdateChatName} stores={this.state.stores} currentStoreName={currentStoreName} />
@@ -815,7 +842,7 @@ class ChatPage extends BaseListPage {
 
         <div style={{flex: 1, height: "100%", position: "relative", display: "flex", flexDirection: "column", minWidth: 0}}>
           {this.state.paneCount === 1 && (this.state.chat || Setting.isMobile() || Setting.getUrlParam("isRaw") === null) && (
-            <div style={{display: "flex", alignItems: "center", borderBottom: "1px solid #f0f0f0", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)"}}>
+            <div style={{display: "flex", alignItems: "center", borderBottom: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #f0f0f0", background: isDark ? "rgba(20,20,20,0.9)" : "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)"}}>
               {Setting.isMobile() && (
                 <Button type="text" icon={<BarsOutlined />} onClick={this.toggleChatMenu} style={{margin: "0 4px"}} />
               )}
@@ -843,7 +870,7 @@ class ChatPage extends BaseListPage {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundImage: `url(${Conf.StaticBaseUrl}/img/casibase-logo_1200x256.png)`,
+                  backgroundImage: `url(${Conf.StaticBaseUrl}/img/openagent-logo_1600x276.png)`,
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
                   backgroundSize: "200px auto",

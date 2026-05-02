@@ -173,7 +173,7 @@ class ChatBox extends React.Component {
     const messages = this.state.messages || [];
     const message = [...messages].reverse().find(message => message.author !== "AI");
 
-    this.handleEditMessage({...message, text: message.text, updatedTime: new Date().toISOString()});
+    this.handleEditMessage({...message, text: message.text, updatedTime: new Date().toISOString()}, true);
   };
 
   copyMessageFromHTML(message) {
@@ -344,7 +344,7 @@ class ChatBox extends React.Component {
     }
   };
 
-  handleEditMessage = (message) => {
+  handleEditMessage = (message, silent = false) => {
     const editedMessage = {
       ...message,
       createdTime: moment().format(),
@@ -361,7 +361,9 @@ class ChatBox extends React.Component {
             this.props.onMessageEdit(chat.name);
           }
 
-          Setting.showMessage("success", i18next.t("general:Successfully saved"));
+          if (!silent) {
+            Setting.showMessage("success", i18next.t("general:Successfully saved"));
+          }
         } else {
           Setting.showMessage("error", `${i18next.t("general:Failed to add")}: ${res.msg}`);
         }
@@ -400,7 +402,6 @@ class ChatBox extends React.Component {
             onCopyMessage={this.copyMessageFromHTML}
             onToggleRead={this.toggleMessageReadState}
             onEditMessage={this.handleEditMessage}
-            previewMode={this.props.previewMode}
             hideInput={this.props.hideInput}
             disableInput={this.props.disableInput}
             isReading={this.state.isReading}

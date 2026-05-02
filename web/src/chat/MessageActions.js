@@ -27,6 +27,17 @@ import {
 } from "@ant-design/icons";
 import i18next from "i18next";
 
+export const CopyButton = ({message, onCopy}) => (
+  <Tooltip title={i18next.t("general:Copy")} arrow={false}>
+    <Button
+      icon={<CopyOutlined />}
+      color="primary"
+      variant="text"
+      onClick={() => onCopy(message)}
+    />
+  </Tooltip>
+);
+
 const MessageActions = ({
   message,
   isLastMessage,
@@ -76,14 +87,7 @@ const MessageActions = ({
         opacity: 0.8,
       }}
     >
-      <Tooltip title={i18next.t("general:Copy")} arrow={false}>
-        <Button
-          icon={<CopyOutlined />}
-          color="primary"
-          variant="text"
-          onClick={() => onCopy(message)}
-        />
-      </Tooltip>
+      <CopyButton message={message} onCopy={onCopy} />
 
       <Tooltip title={i18next.t("general:Like")} arrow={false}>
         <Button
@@ -114,7 +118,7 @@ const MessageActions = ({
       </Tooltip>
 
       {!isLastMessage ? null : (
-        <Tooltip title={i18next.t("general:Regenerate Answer")} arrow={false}>
+        <Tooltip title={i18next.t("general:Regenerate")} arrow={false}>
           <Button
             icon={<ReloadOutlined />}
             color="primary"

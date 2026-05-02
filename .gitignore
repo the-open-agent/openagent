@@ -5,6 +5,7 @@
 *.so
 *.dylib
 casibase
+openagent
 
 # Test binary, built with `go test -c`
 *.test
@@ -19,6 +20,7 @@ data/**
 !data/template/
 !data/template/**
 files/
+images/
 
 .idea/
 *.iml

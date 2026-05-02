@@ -1,4 +1,4 @@
-apiVersion: app.casibase.org/v1
+apiVersion: app.openagentai.org/v1
 kind: Template
 metadata:
   name: kuboard

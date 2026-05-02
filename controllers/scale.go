@@ -87,7 +87,7 @@ func (c *ApiController) GetScale() {
 		c.ResponseOk(nil)
 		return
 	}
-	if !c.IsAdmin() && !c.IsPreviewMode() {
+	if !c.IsAdmin() {
 		username := c.GetSessionUsername()
 		if s.Owner != username {
 			c.ResponseError(c.T("auth:Unauthorized operation"))
@@ -141,7 +141,7 @@ func (c *ApiController) UpdateScale() {
 	} else {
 		s.State = object.ScaleStatePublic
 	}
-	if !c.IsAdmin() && !c.IsPreviewMode() {
+	if !c.IsAdmin() {
 		username := c.GetSessionUsername()
 		if existing.Owner != username {
 			c.ResponseError(c.T("auth:Unauthorized operation"))

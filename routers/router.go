@@ -16,11 +16,11 @@
 // @APIVersion 1.70.0
 // @Title OpenAgent RESTful API
 // @Description Swagger Docs of OpenAgent Backend API
-// @Contact admin@casibase.org
+// @Contact admin@openagentai.org
 // @SecurityDefinition AccessToken apiKey Authorization header
 // @Schemes https,http
 // @ExternalDocs Find out more about OpenAgent
-// @ExternalDocsUrl https://casibase.org/
+// @ExternalDocsUrl https://openagentai.org/
 package routers
 
 import (

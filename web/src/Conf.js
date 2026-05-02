@@ -29,7 +29,6 @@ export let NavbarHtml = "";
 export let FooterHtml = "";
 export let AppUrl = "";
 export let ShowGithubCorner = false;
-export let DisablePreviewMode = false;
 export let IsDemoMode = false;
 // eslint-disable-next-line
 export let ThemeDefault = {
@@ -67,7 +66,6 @@ export function setConfig(config) {
   if (config.isDemoMode !== undefined) {
     IsDemoMode = config.isDemoMode;
   }
-  if (config.disablePreviewMode !== undefined) {DisablePreviewMode = config.disablePreviewMode;}
 
   if (config.themeDefault) {
     Object.assign(ThemeDefault, config.themeDefault);

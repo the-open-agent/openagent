@@ -45,13 +45,6 @@ const ChatInput = React.forwardRef(({
     focus: () => senderRef.current?.focus(),
   }));
 
-  let storageThemeAlgorithm = [];
-  try {
-    storageThemeAlgorithm = localStorage.getItem("themeAlgorithm") ? JSON.parse(localStorage.getItem("themeAlgorithm")) : ["default"];
-  } catch {
-    storageThemeAlgorithm = ["default"];
-  }
-
   const sendButtonDisabled = messageError || (value === "" && files.length === 0) || disableInput;
 
   async function handleInputChange(file) {
@@ -119,7 +112,7 @@ const ChatInput = React.forwardRef(({
   // const isSpeechDisabled = store?.speechToTextProvider === "";
   const isSpeechDisabled = false;
 
-  const isDark = storageThemeAlgorithm.includes("dark");
+  const isDark = Setting.getIsDark();
 
   return (
     <div style={{position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 24px 16px", zIndex: 1}}>

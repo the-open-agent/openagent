@@ -15,11 +15,13 @@
 import React from "react";
 import {Image} from "antd";
 import {CloseCircleOutlined, FileTextOutlined} from "@ant-design/icons";
+import * as Setting from "../Setting";
 
 const ChatFileInput = ({
   files,
   onFileChange,
 }) => {
+  const isDark = Setting.getIsDark();
 
   function handleRemoveFile(uid) {
     onFileChange(
@@ -47,9 +49,9 @@ const ChatFileInput = ({
       return (
         <div style={{display: "flex", flexDirection: "column", alignItems: "center", gap: "4px"}}>
           <div
-            style={{width: 50, height: 50, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f5"}}
+            style={{width: 50, height: 50, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: isDark ? "#2a2a2a" : "#f5f5f5"}}
           >
-            <FileTextOutlined style={{fontSize: 30, color: "#666"}} />
+            <FileTextOutlined style={{fontSize: 30, color: isDark ? "#aaa" : "#666"}} />
           </div>
           <div
             style={{fontSize: 10, textAlign: "center", maxWidth: "80px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}
@@ -74,7 +76,7 @@ const ChatFileInput = ({
           {renderFilePreview(uploadedFile)}
           <CloseCircleOutlined
             onClick={() => handleRemoveFile(uploadedFile.uid)}
-            style={{position: "absolute", top: -6, right: -6, color: "red", fontSize: 16, cursor: "pointer", background: "#fff", borderRadius: "50%"}}
+            style={{position: "absolute", top: -6, right: -6, color: "red", fontSize: 16, cursor: "pointer", background: isDark ? "#1a1a1a" : "#fff", borderRadius: "50%"}}
           />
         </div>
       ))}

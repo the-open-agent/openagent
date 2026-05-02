@@ -58,7 +58,7 @@ class AuthCallback extends React.Component {
   }
 
   handleHelp = () => {
-    window.open("https://casibase.org/help/", "_blank");
+    window.open("https://openagentai.org/help/", "_blank");
   };
 
   handleDetails = () => {

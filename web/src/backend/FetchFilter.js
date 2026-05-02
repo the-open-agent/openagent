@@ -31,7 +31,7 @@ const demoModeCallback = (res) => {
         okText: i18next.t("general:OK"),
         cancelText: i18next.t("general:Cancel"),
         onOk() {
-          Setting.openLink(`https://demo.casibase.com${location.pathname}${location.search}?username=built-in/admin&password=123`);
+          Setting.openLink(`https://try.openagentai.org${location.pathname}${location.search}?username=built-in/admin&password=123`);
         },
         onCancel() {},
       });

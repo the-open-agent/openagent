@@ -40,7 +40,7 @@ func NewOpenRouterModelProvider(subType string, secretKey string, temperature fl
 		subType:     subType,
 		secretKey:   secretKey,
 		siteName:    "OpenAgent",
-		siteUrl:     "https://casibase.org",
+		siteUrl:     "https://openagentai.org",
 		temperature: &temperature,
 		topP:        &topP,
 	}

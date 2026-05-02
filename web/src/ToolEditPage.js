@@ -187,7 +187,7 @@ class ToolEditPage extends React.Component {
                     render: (text) => <Tag style={{fontFamily: "monospace"}}>{text}</Tag>,
                   },
                   {
-                    title: i18next.t("tool:Description"),
+                    title: i18next.t("general:Description"),
                     dataIndex: "description",
                     key: "description",
                   },

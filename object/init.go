@@ -24,14 +24,14 @@ import (
 )
 
 func InitDb() {
-	modelProviderName, embeddingProviderName, ttsProviderName, sttProviderName := initBuiltInProviders()
-	initBuiltInStore(modelProviderName, embeddingProviderName, ttsProviderName, sttProviderName)
+	modelProviderName, embeddingProviderName, ttsProviderName, sttProviderName, imageProviderName := initBuiltInProviders()
+	initBuiltInStore(modelProviderName, embeddingProviderName, ttsProviderName, sttProviderName, imageProviderName)
 	initBuiltInTools()
 	initBuiltInSite()
 	InitUsers()
 }
 
-func initBuiltInStore(modelProviderName string, embeddingProviderName string, ttsProviderName string, sttProviderName string) {
+func initBuiltInStore(modelProviderName string, embeddingProviderName string, ttsProviderName string, sttProviderName string, imageProviderName string) {
 	stores, err := GetGlobalStores()
 	if err != nil {
 		panic(err)
@@ -39,12 +39,6 @@ func initBuiltInStore(modelProviderName string, embeddingProviderName string, tt
 
 	if len(stores) > 0 {
 		return
-	}
-
-	imageProviderName := ""
-	providerDbName := conf.GetConfigString("providerDbName")
-	if providerDbName != "" {
-		imageProviderName = "provider_storage_casibase_default"
 	}
 
 	store := &Store{
@@ -82,7 +76,7 @@ func initBuiltInStore(modelProviderName string, embeddingProviderName string, tt
 		PropertiesMap:        map[string]*Properties{},
 	}
 
-	if providerDbName != "" {
+	if conf.GetConfigString("providerDbName") != "" {
 		store.ShowAutoRead = true
 		store.DisableFileUpload = true
 
@@ -107,7 +101,7 @@ func getDefaultStoragePath() (string, error) {
 	providerDbName := conf.GetConfigString("providerDbName")
 	if providerDbName != "" {
 		dbName := conf.GetConfigString("dbName")
-		return fmt.Sprintf("C:/casibase_data/%s", dbName), nil
+		return fmt.Sprintf("C:/openagent_data/%s", dbName), nil
 	}
 
 	cwd, err := os.Getwd()
@@ -119,7 +113,16 @@ func getDefaultStoragePath() (string, error) {
 	return res, nil
 }
 
-func initBuiltInProviders() (string, string, string, string) {
+func getDefaultImageStoragePath() (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(cwd, "images"), nil
+}
+
+func initBuiltInProviders() (string, string, string, string, string) {
 	storageProvider, err := GetDefaultStorageProvider()
 	if err != nil {
 		panic(err)
@@ -165,6 +168,41 @@ func initBuiltInProviders() (string, string, string, string) {
 		}
 	}
 
+	imageProviderName := ""
+	providerDbName := conf.GetConfigString("providerDbName")
+	if providerDbName != "" {
+		imageProviderName = "provider_storage_casibase_default"
+	} else {
+		imageProvider, err := getProvider("admin", "provider-image-built-in")
+		if err != nil {
+			panic(err)
+		}
+		if imageProvider == nil {
+			var imagePath string
+			imagePath, err = getDefaultImageStoragePath()
+			if err != nil {
+				panic(err)
+			}
+
+			util.EnsureFileFolderExists(imagePath)
+
+			imageProvider = &Provider{
+				Owner:       "admin",
+				Name:        "provider-image-built-in",
+				CreatedTime: util.GetCurrentTime(),
+				DisplayName: "Built-in Image Storage Provider",
+				Category:    "Storage",
+				Type:        "Local File System",
+				ClientId:    imagePath,
+			}
+			_, err = AddProvider(imageProvider)
+			if err != nil && !isUniqueConstraintError(err) {
+				panic(err)
+			}
+		}
+		imageProviderName = "provider-image-built-in"
+	}
+
 	if modelProvider == nil {
 		modelProvider = &Provider{
 			Owner:       "admin",
@@ -206,7 +244,7 @@ func initBuiltInProviders() (string, string, string, string) {
 
 	sttProviderName := "Browser Built-In"
 
-	return modelProvider.Name, embeddingProvider.Name, ttsProviderName, sttProviderName
+	return modelProvider.Name, embeddingProvider.Name, ttsProviderName, sttProviderName, imageProviderName
 }
 
 func initBuiltInTools() {
@@ -226,12 +264,13 @@ func initBuiltInTools() {
 			},
 		},
 		{
-			Owner:       "admin",
-			Name:        "web_search",
-			Type:        "web_search",
-			SubType:     "DuckDuckGo",
-			TestContent: `{"tool":"web_search","arguments":{"query":"hello world"}}`,
-			State:       "Active",
+			Owner:        "admin",
+			Name:         "web_search",
+			Type:         "web_search",
+			SubType:      "DuckDuckGo",
+			EnableProxy:  true,
+			TestContent:  `{"tool":"web_search","arguments":{"query":"hello world"}}`,
+			State:        "Active",
 			PromptExamples: []string{
 				"Search for the latest news about artificial intelligence.",
 				"Find the best restaurants in New York City.",
@@ -268,14 +307,15 @@ func initBuiltInTools() {
 			},
 		},
 		{
-			Owner:       "admin",
-			Name:        "web_fetch",
-			Type:        "web_fetch",
-			SubType:     "Default",
-			TestContent: `{"tool":"web_fetch","arguments":{"url":"https://example.com"}}`,
-			State:       "Active",
+			Owner:        "admin",
+			Name:         "web_fetch",
+			Type:         "web_fetch",
+			SubType:      "Default",
+			EnableProxy:  true,
+			TestContent:  `{"tool":"web_fetch","arguments":{"url":"https://example.com"}}`,
+			State:        "Active",
 			PromptExamples: []string{
-				"Fetch and summarize the content of https://casibase.org.",
+				"Fetch and summarize the content of https://openagentai.org.",
 				"Get the main text from https://en.wikipedia.org/wiki/Go_(programming_language).",
 				"Retrieve the JSON response from a REST API endpoint.",
 				"Download and read the release notes from a GitHub page.",
@@ -391,8 +431,8 @@ func initBuiltInSite() {
 		DisplayName: "Built-in Site",
 		ThemeColor:  conf.GetDefaultColorPrimary(),
 		HtmlTitle:   "",
-		FaviconUrl:  "https://cdn.casibase.com/img/casibase.png",
-		LogoUrl:     "https://cdn.casibase.org/img/casibase-logo_1200x256.png",
+		FaviconUrl:  "https://cdn.openagentai.org/img/casibase.png",
+		LogoUrl:     "https://cdn.openagentai.org/img/openagent-logo_1600x276.png",
 		FooterHtml:  "",
 		NavItems:    builtInNavItems,
 	}

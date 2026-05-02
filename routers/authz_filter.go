@@ -17,7 +17,6 @@ package routers
 import (
 	"strings"
 
-	"github.com/beego/beego"
 	"github.com/beego/beego/context"
 	"github.com/the-open-agent/openagent/conf"
 	"github.com/the-open-agent/openagent/controllers"
@@ -58,14 +57,6 @@ func permissionFilter(ctx *context.Context) {
 	controllerName := strings.TrimPrefix(path, "/api/")
 
 	if !strings.HasPrefix(path, "/api/") {
-		return
-	}
-
-	disablePreviewMode, _ := beego.AppConfig.Bool("disablePreviewMode")
-
-	isGetRequest := strings.HasPrefix(controllerName, "get-")
-
-	if !disablePreviewMode && isGetRequest {
 		return
 	}
 

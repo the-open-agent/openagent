@@ -52,7 +52,9 @@ func GetModelProvider(typ string, subType string, clientId string, clientSecret 
 	} else if typ == "Local" {
 		p, err = NewLocalModelProvider(typ, subType, clientSecret, temperature, topP, frequencyPenalty, presencePenalty, providerUrl, compatibleProvider, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "OpenAI" {
-		p, err = NewOpenAiModelProvider(subType, clientSecret, temperature, topP, frequencyPenalty, presencePenalty)
+		p, err = NewOpenAiModelProvider(subType, clientSecret, "", temperature, topP, frequencyPenalty, presencePenalty, 0, 0, "")
+	} else if typ == "OpenAI Compatible" {
+		p, err = NewOpenAiModelProvider(subType, clientSecret, providerUrl, temperature, topP, frequencyPenalty, presencePenalty, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "Gemini" {
 		p, err = NewGeminiModelProvider(subType, clientSecret, temperature, topP, topK)
 	} else if typ == "Azure" {

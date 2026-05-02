@@ -63,6 +63,10 @@ export function getMessageAnswer(owner, name, onMessage, onReason, onTool, onSea
     onReason(e.data);
   });
 
+  eventSource.addEventListener("tool-start", (e) => {
+    onTool(e.data);
+  });
+
   eventSource.addEventListener("tool", (e) => {
     onTool(e.data);
   });

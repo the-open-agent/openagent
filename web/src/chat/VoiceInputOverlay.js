@@ -20,6 +20,7 @@ import * as Setting from "../Setting";
 
 const VoiceInputOverlay = ({onStop}) => {
   const baseUnit = Setting.isMobile() ? "vw" : "vh";
+  const isDark = Setting.getIsDark();
 
   return (
     <div style={{
@@ -45,7 +46,7 @@ const VoiceInputOverlay = ({onStop}) => {
           alignItems: "center",
           width: "50" + baseUnit,
           height: "50" + baseUnit,
-          backgroundColor: "rgba(255, 255, 255, 0.8)",
+          backgroundColor: isDark ? "rgba(40, 40, 50, 0.9)" : "rgba(255, 255, 255, 0.8)",
         }}
         onClick={onStop}
       >

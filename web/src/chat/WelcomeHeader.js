@@ -19,6 +19,7 @@ import i18next from "i18next";
 
 const WelcomeHeader = ({store}) => {
   const avatar = (store === undefined) ? null : store.avatar || Setting.getDefaultAiAvatar();
+  const isDark = Setting.getIsDark();
 
   return (
     <div style={{
@@ -37,7 +38,7 @@ const WelcomeHeader = ({store}) => {
         style={{textAlign: "center"}}
         styles={{
           title: {fontSize: "22px", fontWeight: 600, letterSpacing: "-0.3px"},
-          description: {fontSize: "15px", color: "#888", marginTop: "6px"},
+          description: {fontSize: "15px", color: isDark ? "#6b7280" : "#888", marginTop: "6px"},
         }}
       />
     </div>

@@ -46,7 +46,7 @@ class ServiceTable extends React.Component {
   }
 
   addRow(table) {
-    const row = {no: table.length, name: `New Service - ${table.length}`, path: "C:/github_repos/casibase", port: 10000, processId: -1, expectedStatus: "Stopped", status: "", subStatus: "", message: ""};
+    const row = {no: table.length, name: `New Service - ${table.length}`, path: "C:/github_repos/openagent", port: 10000, processId: -1, expectedStatus: "Stopped", status: "", subStatus: "", message: ""};
     if (table === undefined) {
       table = [];
     }

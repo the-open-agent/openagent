@@ -22,13 +22,12 @@ import {Helmet} from "react-helmet";
 import * as Setting from "./Setting";
 import * as AccountBackend from "./backend/AccountBackend";
 import * as Conf from "./Conf";
-import {shadcnThemeComponents, shadcnThemeToken} from "./shadcnTheme";
+import {getShadcnThemeComponents, getShadcnThemeToken} from "./shadcnTheme";
 import HomePage from "./HomePage";
 import ShortcutsPage from "./basic/ShortcutsPage";
 import * as FormBackend from "./backend/FormBackend";
 import * as SiteBackend from "./backend/SiteBackend";
 import * as FetchFilter from "./backend/FetchFilter";
-import {PreviewInterceptor} from "./PreviewInterceptor";
 import {withTranslation} from "react-i18next";
 import i18next from "i18next";
 import CustomGithubCorner from "./CustomGithubCorner";
@@ -44,6 +43,7 @@ class App extends Component {
     } catch {
       storageThemeAlgorithm = ["default"];
     }
+    document.documentElement.setAttribute("data-theme", storageThemeAlgorithm.includes("dark") ? "dark" : "light");
     this.state = {
       classes: props,
       selectedMenuKey: 0,
@@ -64,9 +64,6 @@ class App extends Component {
 
     FetchFilter.initDemoMode();
     Setting.initCasdoorSdk(Conf.AuthConfig);
-    if (!Conf.DisablePreviewMode) {
-      this.previewInterceptor = new PreviewInterceptor(() => this.state.account, this.props.history);
-    }
   }
 
   UNSAFE_componentWillMount() {
@@ -273,6 +270,7 @@ class App extends Component {
       logo: Setting.getLogo(nextThemeAlgorithm, this.state.site?.logoUrl),
     });
     localStorage.setItem("themeAlgorithm", JSON.stringify(nextThemeAlgorithm));
+    document.documentElement.setAttribute("data-theme", nextThemeAlgorithm.includes("dark") ? "dark" : "light");
   };
 
   renderContent() {
@@ -354,12 +352,12 @@ class App extends Component {
           spin={{indicator: <AiDots />}}
           theme={{
             token: {
-              ...shadcnThemeToken,
+              ...getShadcnThemeToken(this.state.themeAlgorithm.includes("dark")),
               colorPrimary: this.state.themeData.colorPrimary,
               colorInfo: this.state.themeData.colorPrimary,
               borderRadius: this.state.themeData.borderRadius,
             },
-            components: shadcnThemeComponents,
+            components: getShadcnThemeComponents(this.state.themeAlgorithm.includes("dark")),
             algorithm: Setting.getAlgorithm(this.state.themeAlgorithm),
           }}>
           <StyleProvider hashPriority="high" transformers={[legacyLogicalPropertiesTransformer]}>

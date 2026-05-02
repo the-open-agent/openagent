@@ -139,7 +139,7 @@ class ContainerListPage extends BaseListPage {
         },
       },
       {
-        title: i18next.t("machine:Image"),
+        title: i18next.t("general:Image"),
         dataIndex: "image",
         key: "image",
         width: "160px",

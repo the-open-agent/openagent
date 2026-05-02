@@ -28,7 +28,6 @@ class MessageList extends React.Component {
       onCopyMessage,
       onToggleRead,
       onEditMessage,
-      previewMode,
       hideInput,
       disableInput,
       isReading,
@@ -49,8 +48,8 @@ class MessageList extends React.Component {
         className="chat-message-list"
         style={{
           flex: 1,
-          overflow: previewMode ? "hidden" : "auto",
-          position: previewMode ? "relative" : "absolute",
+          overflow: "auto",
+          position: "absolute",
           top: 0,
           left: 0,
           right: 0,

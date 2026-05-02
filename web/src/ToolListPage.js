@@ -14,7 +14,7 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Popconfirm, Table, Tag} from "antd";
+import {Button, Popconfirm, Switch, Table, Tag} from "antd";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
@@ -140,6 +140,18 @@ class ToolListPage extends BaseListPage {
             ))}
           </div>
         ),
+      },
+      {
+        title: i18next.t("provider:Enable proxy"),
+        dataIndex: "enableProxy",
+        key: "enableProxy",
+        width: "130px",
+        render: (text, record) => {
+          if (!["web_search", "web_fetch", "web_browser", "browser_use"].includes(record.type)) {
+            return null;
+          }
+          return <Switch disabled checked={text} />;
+        },
       },
       {
         title: i18next.t("general:State"),

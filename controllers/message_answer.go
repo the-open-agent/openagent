@@ -198,13 +198,8 @@ func (c *ApiController) GetMessageAnswer() {
 	var vectorScores []object.VectorScore
 	embeddingResult := &embedding.EmbeddingResult{}
 
-	if chat.Tool == "" {
-		knowledgeCount := store.KnowledgeCount
-		if knowledgeCount <= 0 {
-			knowledgeCount = 10
-		}
-
-		knowledge, vectorScores, embeddingResult, err = object.GetNearestKnowledge(store.Name, store.VectorStores, store.SearchProvider, embeddingProvider, embeddingProviderObj, modelProvider, store.Owner, question, knowledgeCount, c.GetAcceptLanguage())
+	if chat.Tool == "" && store.KnowledgeCount != 0 {
+		knowledge, vectorScores, embeddingResult, err = object.GetNearestKnowledge(store.Name, store.VectorStores, store.SearchProvider, embeddingProvider, embeddingProviderObj, modelProvider, store.Owner, question, store.KnowledgeCount, c.GetAcceptLanguage())
 		if err != nil && err.Error() != "no knowledge vectors found" {
 			err = fmt.Errorf(c.T("message_answer:object.GetNearestKnowledge() error, %s"), err.Error())
 			c.ResponseErrorStream(message, err.Error())

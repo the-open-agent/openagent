@@ -40,7 +40,7 @@ class VectorListPage extends BaseListPage {
       createdTime: moment().format(),
       displayName: `New Vector - ${randomName}`,
       store: storeName,
-      file: "/aaa/casibase.txt",
+      file: "/aaa/openagent.txt",
       text: "The text of vector",
       data: [0.1, 0.2, 0.3],
     };

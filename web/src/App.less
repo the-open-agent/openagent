@@ -60,7 +60,7 @@ img {
 }
 
 .language-box {
-  background: url("https://cdn.casibase.org/img/muti_language.svg");
+  background: url("https://cdn.openagentai.org/img/muti_language.svg");
   background-size: 25px, 25px;
   background-position: center;
   background-repeat: no-repeat;
@@ -87,11 +87,15 @@ img {
   }
 }
 
+[data-theme="dark"] .select-box:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
 .store-select {
   display: flex;
   align-items: center;
   margin: 0 8px !important;
-  min-width: 160px;
+  min-width: 200px;
   max-width: 360px;
 }
 
@@ -110,6 +114,10 @@ img {
   &:hover {
     background-color: rgba(0, 0, 0, 0.05) !important;
   }
+}
+
+[data-theme="dark"] .rightDropDown:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 .cs-conversation-header__content .cs-conversation-header__user-name {
@@ -166,6 +174,11 @@ img {
   background-color: #f8f3ff;
   height: 100%;
   width: 100%;
+}
+
+[data-theme="dark"] .remote-desktop,
+.dark .remote-desktop {
+  background-color: #1a1225;
 }
 
 .djs-container.djs-parent svg {

@@ -14,41 +14,20 @@
 
 import React, {useEffect, useState} from "react";
 import {Bubble} from "@ant-design/x";
-import {Alert, Avatar, Button, Col, Collapse, Row} from "antd";
+import {Alert, Avatar, Button, Col, Collapse, Row, Space} from "antd";
 import {FileTextOutlined, GlobalOutlined} from "@ant-design/icons";
 import moment from "moment";
 import * as Setting from "../Setting";
 import i18next from "i18next";
 import {AvatarErrorUrl} from "../Conf";
 import {renderText} from "../ChatMessageRender";
-import MessageActions from "./MessageActions";
+import MessageActions, {CopyButton} from "./MessageActions";
 import MessageSuggestions from "./MessageSuggestions";
 import MessageEdit from "./MessageEdit";
 import {MessageCarrier} from "./MessageCarrier";
 import SearchSourcesDrawer from "./SearchSourcesDrawer";
 import KnowledgeSourcesDrawer from "./KnowledgeSourcesDrawer";
-import Editor from "../common/Editor";
-
-function renderJsonContent(raw) {
-  let text = raw;
-  try {
-    text = JSON.stringify(JSON.parse(raw), null, 2);
-  } catch (_) {
-    // not JSON, render as-is
-  }
-  return (
-    <Editor
-      value={text}
-      lang="json"
-      dark
-      readOnly
-      editable={false}
-      fillWidth
-      lineNumbers={false}
-      lineWrapping
-    />
-  );
-}
+import ToolCallSection from "./ToolCallSection";
 
 const {Panel} = Collapse;
 
@@ -76,7 +55,11 @@ const MessageItem = ({
   const [searchDrawerVisible, setSearchDrawerVisible] = useState(false);
   const [knowledgeDrawerVisible, setKnowledgeDrawerVisible] = useState(false);
   const themeColor = Setting.getThemeColor();
-  const toolColor = (message.reasonText && message.toolCalls) ? "#1890ff" : themeColor;
+
+  const isDark = Setting.getIsDark();
+
+  const aiBubbleBg = isDark ? "#2a2d35" : "#f4f6fa";
+  const aiBubbleBorder = isDark ? "1px solid #383d47" : "1px solid #eaedf3";
 
   const renderThinkingAnimation = () => {
     return (
@@ -88,7 +71,7 @@ const MessageItem = ({
       }}>
         <div style={{
           fontWeight: "bold",
-          color: "#1890ff",
+          color: themeColor,
         }}>
           {i18next.t("chat:Thinking")}
         </div>
@@ -100,7 +83,7 @@ const MessageItem = ({
             <div key={i} style={{
               width: "6px",
               height: "6px",
-              backgroundColor: "#1890ff",
+              backgroundColor: themeColor,
               borderRadius: "50%",
               margin: "0 2px",
               animation: "thinkingDot 1.4s infinite ease-in-out both",
@@ -123,6 +106,7 @@ const MessageItem = ({
   };
 
   const {isEditing,
+    isHovering,
     setIsHovering,
     renderEditForm,
     renderEditButton,
@@ -164,7 +148,7 @@ const MessageItem = ({
         >
           {isRegenerating
             ? i18next.t("general:Regenerating...")
-            : i18next.t("general:Regenerate Answer")}
+            : i18next.t("general:Regenerate")}
         </Button>
       );
       return Setting.isMobile() ? (
@@ -186,12 +170,12 @@ const MessageItem = ({
           description={message.errorText}
           type="error"
           showIcon
-          action={regenerateButton}
+          action={<div style={{marginLeft: 16}}>{regenerateButton}</div>}
         />
       );
     }
 
-    if (message.text === "" && message.author === "AI" && !message.reasonText) {
+    if (message.text === "" && message.author === "AI" && !message.reasonText && (!message.toolCalls || message.toolCalls.length === 0)) {
       return null;
     }
 
@@ -230,59 +214,11 @@ const MessageItem = ({
               </Collapse>
             </div>
           )}
-          {message.toolCalls && message.toolCalls.length > 0 && (
-            <div className="message-tools" style={{marginBottom: "15px"}}>
-              <Collapse
-                ghost
-                style={{
-                  borderLeft: `3px solid ${toolColor}`,
-                  borderRadius: "5px",
-                  padding: "10px",
-                }}
-              >
-                <Panel
-                  header={
-                    <span style={{fontWeight: "bold", color: toolColor}}>
-                      {i18next.t("chat:Tool calls")} ({message.toolCalls.length})
-                    </span>
-                  }
-                  key="tools"
-                  className="chat-message-collapse-panel"
-                >
-                  <div>
-                    {message.toolCalls.map((toolCall, idx) => (
-                      <div key={idx} className="tool-call-item" style={{
-                        marginBottom: idx < message.toolCalls.length - 1 ? "10px" : "0",
-                        paddingBottom: "8px",
-                      }}>
-                        <div style={{
-                          fontWeight: "600",
-                          color: "#096dd9",
-                          marginBottom: "4px",
-                        }}>
-                          <a href={`/tools/${toolCall.name}`} target="_blank" rel="noreferrer" style={{color: "#096dd9"}}>
-                            {toolCall.name}
-                          </a>
-                        </div>
-                        {toolCall.arguments && (
-                          <div style={{marginBottom: toolCall.content ? "8px" : "0"}}>
-                            <div style={{fontSize: "12px", fontWeight: "bold", marginBottom: "2px"}}>{i18next.t("chat:Arguments")}:</div>
-                            {renderJsonContent(toolCall.arguments)}
-                          </div>
-                        )}
-                        {toolCall.content && (
-                          <div>
-                            <div style={{fontSize: "12px", fontWeight: "bold", marginBottom: "2px"}}>{i18next.t("general:Result")}:</div>
-                            {renderJsonContent(toolCall.content)}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </Panel>
-              </Collapse>
-            </div>
-          )}
+          <ToolCallSection
+            toolCalls={message.toolCalls}
+            isDark={isDark}
+            themeColor={themeColor}
+          />
 
           <div className="message-answer">
             {message.html || renderText(message.text)}
@@ -344,8 +280,8 @@ const MessageItem = ({
               content: {
                 borderRadius: "4px 18px 18px 18px",
                 padding: "11px 16px",
-                backgroundColor: "#f4f6fa",
-                border: "1px solid #eaedf3",
+                backgroundColor: aiBubbleBg,
+                border: aiBubbleBorder,
               },
             }}
           />
@@ -369,7 +305,12 @@ const MessageItem = ({
         alignItems: "center",
         position: "relative",
       }}>
-        {isUserMessage && renderEditButton()}
+        {isUserMessage && !isEditing && (
+          <Space size="small" style={{opacity: isHovering ? 0.8 : 0, transition: "opacity 0.2s ease-in-out"}}>
+            <CopyButton message={message} onCopy={onCopy} />
+            {renderEditButton()}
+          </Space>
+        )}
 
         <Bubble
           placement={isUserMessage ? "end" : "start"}
@@ -437,7 +378,7 @@ const MessageItem = ({
               )}
             </div>
           }
-          loading={message.text === "" && message.author === "AI" && !message.reasonText && !message.errorText}
+          loading={message.text === "" && message.author === "AI" && !message.reasonText && !message.errorText && (!message.toolCalls || message.toolCalls.length === 0)}
           typing={message.author === "AI" && !message.isReasoningPhase ? {
             step: 2,
             interval: 50,
@@ -453,8 +394,8 @@ const MessageItem = ({
             } : {
               borderRadius: "4px 18px 18px 18px",
               padding: "11px 16px",
-              backgroundColor: "#f4f6fa",
-              border: "1px solid #eaedf3",
+              backgroundColor: aiBubbleBg,
+              border: aiBubbleBorder,
               minWidth: isEditing ? "300px" : "auto",
             },
           }}
@@ -477,7 +418,7 @@ const MessageItem = ({
       >
         <div style={{
           textAlign: message.author === "AI" ? "left" : "right",
-          color: "#c0c4cc",
+          color: isDark ? "#4b5563" : "#c0c4cc",
           fontSize: "11px",
           marginBottom: "6px",
           padding: "0 14px",

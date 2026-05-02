@@ -16,7 +16,11 @@ package object
 
 import (
 	"fmt"
+	"net"
+	"net/url"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/beego/beego/logs"
 	"github.com/robfig/cron/v3"
@@ -302,13 +306,53 @@ func QueryRecordSecond(id string, lang string) (string, error) {
 	return res, nil
 }
 
+func isEndpointReachable(endpoint string) bool {
+	if endpoint == "" {
+		return false
+	}
+	if !strings.HasPrefix(endpoint, "http://") && !strings.HasPrefix(endpoint, "https://") {
+		endpoint = "http://" + endpoint
+	}
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return false
+	}
+	host := u.Hostname()
+	port := u.Port()
+	if port == "" {
+		if u.Scheme == "https" {
+			port = "443"
+		} else {
+			port = "80"
+		}
+	}
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, port), 3*time.Second)
+	if err != nil {
+		return false
+	}
+	conn.Close()
+	return true
+}
+
 // ScanNeedCommitRecords scans the database table for records that
 // need to be committed but have not yet been committed.
 func ScanNeedCommitRecords() {
+	provider, err := GetActiveBlockchainProvider("admin")
+	if err != nil {
+		logs.Error("ScanNeedCommitRecords() failed to get active blockchain provider: %v", err)
+		return
+	}
+	if provider == nil {
+		return
+	}
+	if provider.ProviderUrl != "" && !isEndpointReachable(provider.ProviderUrl) {
+		return
+	}
+
 	scanNeedCommitRecordsMutex.Lock()
 	defer scanNeedCommitRecordsMutex.Unlock()
 	records := []*Record{}
-	err := adapter.engine.Where("need_commit = ? AND block = ?", true, "").Asc("id").Find(&records)
+	err = adapter.engine.Where("need_commit = ? AND block = ?", true, "").Asc("id").Find(&records)
 	if err != nil {
 		logs.Error("ScanNeedCommitRecords() failed to scan records that need to be committed: %v", err)
 	}

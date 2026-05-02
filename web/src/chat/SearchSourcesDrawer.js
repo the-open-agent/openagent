@@ -19,6 +19,7 @@ import * as Setting from "../Setting";
 
 const SearchResultItem = ({result, idx, themeColor}) => {
   const [iconError, setIconError] = useState(false);
+  const isDark = Setting.getIsDark();
 
   return (
     <div
@@ -26,19 +27,19 @@ const SearchResultItem = ({result, idx, themeColor}) => {
       tabIndex={0}
       style={{
         padding: "12px",
-        background: "#fff",
+        background: isDark ? "#1e2028" : "#fff",
         borderRadius: "8px",
-        border: "1px solid #e8e8e8",
+        border: isDark ? "1px solid #383d47" : "1px solid #e8e8e8",
         cursor: "pointer",
         transition: "all 0.2s",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
+        e.currentTarget.style.boxShadow = isDark ? "0 2px 8px rgba(0,0,0,0.4)" : "0 2px 8px rgba(0,0,0,0.1)";
         e.currentTarget.style.borderColor = themeColor;
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.boxShadow = "none";
-        e.currentTarget.style.borderColor = "#e8e8e8";
+        e.currentTarget.style.borderColor = isDark ? "#383d47" : "#e8e8e8";
       }}
       onClick={() => {
         if (result.url) {
@@ -96,7 +97,7 @@ const SearchResultItem = ({result, idx, themeColor}) => {
       </div>
       <div style={{
         fontSize: "14px",
-        color: "#333",
+        color: isDark ? "#e5e7eb" : "#333",
         marginBottom: "6px",
         fontWeight: "500",
         lineHeight: "1.4",
@@ -105,7 +106,7 @@ const SearchResultItem = ({result, idx, themeColor}) => {
       </div>
       <div style={{
         fontSize: "12px",
-        color: "#999",
+        color: isDark ? "#6b7280" : "#999",
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",

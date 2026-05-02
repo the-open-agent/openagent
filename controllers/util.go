@@ -22,7 +22,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/beego/beego"
 	"github.com/beego/beego/context"
 	"github.com/the-open-agent/openagent/auth"
 	"github.com/the-open-agent/openagent/conf"
@@ -118,22 +117,12 @@ func (c *ApiController) CheckSignedIn() (string, bool) {
 }
 
 func (c *ApiController) RequireAdmin() bool {
-	disablePreviewMode, _ := beego.AppConfig.Bool("disablePreviewMode")
-	if !disablePreviewMode {
-		return true
-	}
-
 	if !c.IsAdmin() {
 		c.ResponseError(c.T("auth:this operation requires admin privilege"))
 		return false
 	}
 
 	return true
-}
-
-func (c *ApiController) IsPreviewMode() bool {
-	disablePreviewMode, _ := beego.AppConfig.Bool("disablePreviewMode")
-	return !disablePreviewMode
 }
 
 func (c *ApiController) IsAdmin() bool {

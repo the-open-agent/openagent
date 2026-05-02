@@ -187,15 +187,16 @@ class SystemInfo extends React.Component {
               </Card>
             </Col>
             <Col span={24}>
-              <Card id="about-card" title={i18next.t("system:About Casibase")} bordered={true} style={{textAlign: "center"}}>
-                <div>{i18next.t("system:🚀⚡️Open-Source LangChain-like AI Knowledge Database & Chat Bot with Admin UI and multi-model support (ChatGPT, Claude, Llama 3, DeepSeek R1, HuggingFace, etc.)")}</div>
+              <Card id="about-card" title={i18next.t("system:About OpenAgent")} bordered={true} style={{textAlign: "center"}}>
+                <div>{i18next.t("system:🚀⚡️Next-generation personal AI assistant powered by LLM, RAG and agent loops,\n" +
+                  "supporting computer-use, browser-use and coding agent")}</div>
                 GitHub: <a target="_blank" rel="noreferrer" href="https://github.com/the-open-agent/openagent">OpenAgent</a>
                 <br />
                 {i18next.t("general:Version")}: <a target="_blank" rel="noreferrer" href={link}>{versionText}</a>
                 <br />
-                {i18next.t("system:Official website")}: <a target="_blank" rel="noreferrer" href="https://casibase.org">https://casibase.org</a>
+                {i18next.t("system:Official website")}: <a target="_blank" rel="noreferrer" href="https://openagentai.org">https://openagentai.org</a>
                 <br />
-                {i18next.t("system:Community")}: <a target="_blank" rel="noreferrer" href="https://casibase.org/#:~:text=Casibase%20API-,Community,-GitHub">Get in Touch!</a>
+                {i18next.t("system:Community")}: <a target="_blank" rel="noreferrer" href="https://openagentai.org/#:~:text=OpenAgent%20API-,Community,-GitHub">Get in Touch!</a>
               </Card>
             </Col>
           </Row>
@@ -225,15 +226,15 @@ class SystemInfo extends React.Component {
             </Card>
           </Col>
           <Col span={24}>
-            <Card title={i18next.t("system:About Casibase")} bordered={true} style={{textAlign: "center"}}>
+            <Card title={i18next.t("system:About OpenAgent")} bordered={true} style={{textAlign: "center"}}>
               <div>{i18next.t("system:🚀⚡️Open-Source LangChain-like AI Knowledge Database & Chat Bot with Admin UI and multi-model support (ChatGPT, Claude, Llama 3, DeepSeek R1, HuggingFace, etc.)")}</div>
               GitHub: <a target="_blank" rel="noreferrer" href="https://github.com/the-open-agent/openagent">OpenAgent</a>
               <br />
               {i18next.t("general:Version")}: <a target="_blank" rel="noreferrer" href={link}>{versionText}</a>
               <br />
-              {i18next.t("system:Official website")}: <a target="_blank" rel="noreferrer" href="https://casibase.org">https://casibase.org</a>
+              {i18next.t("system:Official website")}: <a target="_blank" rel="noreferrer" href="https://openagentai.org">https://openagentai.org</a>
               <br />
-              {i18next.t("system:Community")}: <a target="_blank" rel="noreferrer" href="https://casibase.org/#:~:text=Casibase%20API-,Community,-GitHub">Get in Touch!</a>
+              {i18next.t("system:Community")}: <a target="_blank" rel="noreferrer" href="https://openagentai.org/#:~:text=OpenAgent%20API-,Community,-GitHub">Get in Touch!</a>
             </Card>
           </Col>
         </Row>

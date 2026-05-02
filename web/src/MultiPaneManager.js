@@ -492,7 +492,7 @@ const MultiPaneManager = ({
               {paneCount > 1 && renderPaneHeader(index)}
 
               {(pane.messages?.length > 0) && (
-                <div style={{position: "absolute", top: paneCount > 1 ? 40 : -50, left: 0, right: 0, bottom: 0, backgroundImage: `url(${Conf.StaticBaseUrl}/img/casibase-logo_1200x256.png)`, backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundSize: "150px auto", backgroundBlendMode: "luminosity", filter: "grayscale(80%) brightness(140%) contrast(90%)", opacity: 0.3, pointerEvents: "none"}}></div>
+                <div style={{position: "absolute", top: paneCount > 1 ? 40 : -50, left: 0, right: 0, bottom: 0, backgroundImage: `url(${Conf.StaticBaseUrl}/img/openagent-logo_1600x276.png)`, backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundSize: "150px auto", backgroundBlendMode: "luminosity", filter: "grayscale(80%) brightness(140%) contrast(90%)", opacity: 0.3, pointerEvents: "none"}}></div>
               )}
 
               <div style={{flex: 1}}>

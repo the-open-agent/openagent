@@ -54,7 +54,7 @@ class FileListPage extends BaseListPage {
     let storeName;
     if (Setting.isDefaultStoreSelected(this.props.account)) {
       try {
-        const res = await StoreBackend.getStore("admin", "_casibase_default_store_");
+        const res = await StoreBackend.getStore("admin", "_default_store_");
         if (res.status === "ok" && res.data?.name) {
           storeName = res.data.name;
         } else {

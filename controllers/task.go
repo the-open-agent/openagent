@@ -121,7 +121,7 @@ func (c *ApiController) GetTask() {
 	}
 
 	// Check ownership for non-admins
-	if !c.IsAdmin() && !c.IsPreviewMode() {
+	if !c.IsAdmin() {
 		username := c.GetSessionUsername()
 		if task.Owner != username {
 			c.ResponseError(c.T("auth:Unauthorized operation"))
@@ -161,7 +161,7 @@ func (c *ApiController) UpdateTask() {
 	}
 
 	// Check ownership for non-admins
-	if !c.IsAdmin() && !c.IsPreviewMode() {
+	if !c.IsAdmin() {
 		username := c.GetSessionUsername()
 		if existingTask.Owner != username {
 			c.ResponseError(c.T("auth:Unauthorized operation"))
@@ -268,7 +268,7 @@ func (c *ApiController) AnalyzeTask() {
 		return
 	}
 
-	if !c.IsAdmin() && !c.IsPreviewMode() {
+	if !c.IsAdmin() {
 		username := c.GetSessionUsername()
 		if task.Owner != username {
 			logs.Warn("[analyze-task] forbidden id=%s taskOwner=%s user=%s", id, task.Owner, username)

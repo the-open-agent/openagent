@@ -32,23 +32,22 @@ type WebConfig struct {
 		OrganizationName string `json:"organizationName"`
 		RedirectPath     string `json:"redirectPath"`
 	} `json:"authConfig"`
-	EnableExtraPages   bool     `json:"enableExtraPages"`
-	ShortcutPageItems  []string `json:"shortcutPageItems"`
-	UsageEndpoints     []string `json:"usageEndpoints"`
-	IframeUrl          string   `json:"iframeUrl"`
-	ForceLanguage      string   `json:"forceLanguage"`
-	DefaultLanguage    string   `json:"defaultLanguage"`
-	StaticBaseUrl      string   `json:"staticBaseUrl"`
-	HtmlTitle          string   `json:"htmlTitle"`
-	FaviconUrl         string   `json:"faviconUrl"`
-	LogoUrl            string   `json:"logoUrl"`
-	NavbarHtml         string   `json:"navbarHtml"`
-	FooterHtml         string   `json:"footerHtml"`
-	AppUrl             string   `json:"appUrl"`
-	ShowGithubCorner   bool     `json:"showGithubCorner"`
-	IsDemoMode         bool     `json:"isDemoMode"`
-	DisablePreviewMode bool     `json:"disablePreviewMode"`
-	ThemeDefault       struct {
+	EnableExtraPages  bool     `json:"enableExtraPages"`
+	ShortcutPageItems []string `json:"shortcutPageItems"`
+	UsageEndpoints    []string `json:"usageEndpoints"`
+	IframeUrl         string   `json:"iframeUrl"`
+	ForceLanguage     string   `json:"forceLanguage"`
+	DefaultLanguage   string   `json:"defaultLanguage"`
+	StaticBaseUrl     string   `json:"staticBaseUrl"`
+	HtmlTitle         string   `json:"htmlTitle"`
+	FaviconUrl        string   `json:"faviconUrl"`
+	LogoUrl           string   `json:"logoUrl"`
+	NavbarHtml        string   `json:"navbarHtml"`
+	FooterHtml        string   `json:"footerHtml"`
+	AppUrl            string   `json:"appUrl"`
+	ShowGithubCorner  bool     `json:"showGithubCorner"`
+	IsDemoMode        bool     `json:"isDemoMode"`
+	ThemeDefault      struct {
 		ThemeType    string `json:"themeType"`
 		ColorPrimary string `json:"colorPrimary"`
 		BorderRadius int    `json:"borderRadius"`
@@ -98,16 +97,16 @@ func GetConfigString(key string) string {
 	res := beego.AppConfig.String(key)
 	if res == "" {
 		if key == "staticBaseUrl" {
-			res = "https://cdn.casibase.org"
+			res = "https://cdn.openagentai.org"
 		} else if key == "logConfig" {
 			res = "{\"filename\": \"logs/openagent.log\", \"maxdays\":99999, \"perm\":\"0770\"}"
 		} else if key == "avatarErrorUrl" {
-			res = "https://cdn.casibase.org/gravatar/error.png"
+			res = "https://cdn.openagentai.org/gravatar/error.png"
 		}
 	}
 
 	if key == "staticBaseUrl" {
-		if strings.HasSuffix(beego.AppConfig.String("casdoorEndpoint"), ".casdoor.net") && res == "https://cdn.casibase.org" {
+		if strings.HasSuffix(beego.AppConfig.String("casdoorEndpoint"), ".casdoor.net") && res == "https://cdn.openagentai.org" {
 			res = "https://cdn.casibase.com"
 		}
 	}
@@ -220,7 +219,6 @@ func GetWebConfig() *WebConfig {
 	config.AppUrl = GetConfigString("appUrl")
 	config.ShowGithubCorner = GetConfigBool("showGithubCorner")
 	config.IsDemoMode = GetConfigBool("isDemoMode")
-	config.DisablePreviewMode = GetConfigBool("disablePreviewMode")
 
 	config.ThemeDefault.ThemeType = GetConfigString("defaultThemeType")
 	config.ThemeDefault.ColorPrimary = GetDefaultColorPrimary()
