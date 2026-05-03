@@ -29,8 +29,9 @@ import (
 )
 
 type ToolMessages struct {
-	Messages  []*RawMessage
-	ToolCalls any
+	Messages         []*RawMessage
+	ToolCalls        any
+	ReasoningContent string
 }
 
 type ToolSession struct {
@@ -134,9 +135,10 @@ func QueryTextWithTools(p ModelProvider, question string, writer io.Writer, hist
 			serverName, toolName := mcp.GetServerNameAndToolNameFromId(toolCall.Function.Name)
 
 			messages = append(messages, &RawMessage{
-				Text:     "Call result from " + toolCall.Function.Name,
-				Author:   "AI",
-				ToolCall: toolCall,
+				Text:             "Call result from " + toolCall.Function.Name,
+				Author:           "AI",
+				ToolCall:         toolCall,
+				ReasoningContent: toolSession.ToolMessages.ReasoningContent,
 			})
 
 			messages, err = callMcpTool(toolCall, serverName, toolName, toolSession.McpToolSet, messages, writer, lang)

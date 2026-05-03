@@ -262,9 +262,10 @@ func (p *LocalModelProvider) QueryText(question string, writer io.Writer, histor
 
 		isLeadingReturn := true
 		var (
-			answerData   strings.Builder
-			toolCalls    []openai.ToolCall
-			toolCallsMap map[int]int
+			answerData       strings.Builder
+			toolCalls        []openai.ToolCall
+			toolCallsMap     map[int]int
+			reasoningContent strings.Builder
 		)
 
 		for {
@@ -293,6 +294,7 @@ func (p *LocalModelProvider) QueryText(question string, writer io.Writer, histor
 				// Check if we have reasoning content (think_content)
 				if completion.Choices[0].Delta.ReasoningContent != "" {
 					reasoningData := completion.Choices[0].Delta.ReasoningContent
+					reasoningContent.WriteString(reasoningData)
 					err = flushThink(reasoningData, "reason", writer, lang)
 					if err != nil {
 						return nil, err
@@ -341,6 +343,7 @@ func (p *LocalModelProvider) QueryText(question string, writer io.Writer, histor
 
 		if toolSession != nil && toolSession.ToolMessages != nil {
 			toolSession.ToolMessages.ToolCalls = toolCalls
+			toolSession.ToolMessages.ReasoningContent = reasoningContent.String()
 		}
 
 		// https://github.com/sashabaranov/go-openai/pull/223#issuecomment-1494372875

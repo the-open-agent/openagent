@@ -27,11 +27,12 @@ import (
 )
 
 type RawMessage struct {
-	Text           string
-	Author         string
-	TextTokenCount int
-	ToolCall       openai.ToolCall
-	ToolCallID     string
+	Text             string
+	Author           string
+	TextTokenCount   int
+	ToolCall         openai.ToolCall
+	ToolCallID       string
+	ReasoningContent string
 }
 
 type SearchResult struct {

@@ -138,6 +138,7 @@ func OpenaiRawMessagesToMessages(messages []*RawMessage) []openai.ChatCompletion
 		if role == openai.ChatMessageRoleTool {
 			item.ToolCallID = message.ToolCallID
 		} else if role == openai.ChatMessageRoleAssistant {
+			item.ReasoningContent = message.ReasoningContent
 			if message.ToolCall.ID != "" {
 				item.ToolCalls = []openai.ToolCall{message.ToolCall}
 			} else {
