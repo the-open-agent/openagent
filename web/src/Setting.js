@@ -1859,9 +1859,12 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "ChatGLM") {
     return [
-      {id: "glm-3-turbo", name: "glm-3-turbo"},
+      {id: "glm-5.1", name: "glm-5.1"},
+      {id: "glm-5", name: "glm-5"},
+      {id: "glm-5-turbo", name: "glm-5-turbo"},
       {id: "glm-4", name: "glm-4"},
       {id: "glm-4V", name: "glm-4V"},
+      {id: "glm-3-turbo", name: "glm-3-turbo"},
     ];
   } else if (type === "MiniMax") {
     return [

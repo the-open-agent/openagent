@@ -36,26 +36,35 @@ func NewChatGLMModelProvider(subType string, clientSecret string) (*ChatGLMModel
 
 func (c *ChatGLMModelProvider) GetPricing() string {
 	return `URL:
-https://open.bigmodel.cn/pricing
+	https://open.bigmodel.cn/pricing
 
-Generate Model:
-
-| Model        | Context Length | Unit Price (Per 1,000 tokens) |
-|--------------|----------------|-------------------------------|
-| GLM-3-Turbo  | 128K           | 0.005 yuan / K tokens         |
-| GLM-4        | 128K           | 0.1 yuan / K tokens           |
-| GLM-4V       | 2K             | 0.1 yuan / K tokens           |
-`
+	| Model         | Context  | Input Price          | Output Price         |
+	|---------------|----------|----------------------|----------------------|
+	| glm-5.1       | 200K     | 0.006 yuan/K tokens  | 0.024 yuan/K tokens  |
+	| glm-5         | 200K     | 0.004 yuan/K tokens  | 0.018 yuan/K tokens  |
+	| glm-5-turbo   | 200K     | 0.005 yuan/K tokens  | 0.022 yuan/K tokens  |
+	| glm-4         | 128K     | 0.100 yuan/K tokens  | 0.100 yuan/K tokens  |
+	| glm-4V        | 2K       | 0.100 yuan/K tokens  | 0.100 yuan/K tokens  |
+	| glm-3-turbo   | 128K     | 0.005 yuan/K tokens  | 0.005 yuan/K tokens  |
+	`
 }
 
 func (p *ChatGLMModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
 	price := 0.0
-	switch p.subType {
-	case "glm-3-turbo":
-		price = getPrice(modelResult.TotalTokenCount, 0.005)
-	case "glm-4", "glm-4v":
-		price = getPrice(modelResult.TotalTokenCount, 0.1)
-	default:
+	priceTable := map[string][2]float64{
+		"glm-5.1":     {0.006, 0.024},
+		"glm-5":       {0.004, 0.018},
+		"glm-5-turbo": {0.005, 0.022},
+		"glm-4":       {0.010, 0.010},
+		"glm-4v":      {0.010, 0.010},
+		"glm-3-turbo": {0.005, 0.005},
+	}
+
+	if priceItem, ok := priceTable[p.subType]; ok {
+		inputPrice := getPrice(modelResult.PromptTokenCount, priceItem[0])
+		outputPrice := getPrice(modelResult.ResponseTokenCount, priceItem[1])
+		price = inputPrice + outputPrice
+	} else {
 		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), p.subType)
 	}
 

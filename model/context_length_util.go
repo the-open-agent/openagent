@@ -257,7 +257,9 @@ func getContextLength(typ string) int {
 	} else if strings.Contains(typ, "yi") {
 		return 16384
 	} else if strings.Contains(typ, "glm") {
-		if strings.Contains(typ, "3-turbo") {
+		if strings.Contains(typ, "5") {
+			return 200000
+		} else if strings.Contains(typ, "3-turbo") {
 			return 131072
 		} else if strings.Contains(typ, "4V") {
 			return 8192
