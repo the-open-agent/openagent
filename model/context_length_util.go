@@ -122,12 +122,13 @@ func getContextLength(typ string) int {
 			return 1048576
 		}
 	} else if strings.Contains(typ, "claude") {
-		if strings.Contains(typ, "4") {
-			if strings.Contains(typ, "sonnet") {
-				return 64000
-			} else if strings.Contains(typ, "opus") {
-				return 32000
+		if strings.Contains(typ, "4-7") || strings.Contains(typ, "4-6") {
+			return 1000000
+		} else if strings.Contains(typ, "4") {
+			if strings.Contains(typ, "haiku") {
+				return 200000
 			}
+			return 200000
 		} else if strings.Contains(typ, "3-7") {
 			if strings.Contains(typ, "sonnet") {
 				return 64000

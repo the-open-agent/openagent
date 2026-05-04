@@ -44,22 +44,32 @@ https://docs.anthropic.com/en/docs/about-claude/pricing
 
 | Model family        | Context window | Input Pricing         | Output Pricing        |
 |---------------------|----------------|-----------------------|-----------------------|
-| Claude Opus 4.5     | 200,000 tokens | $5.00/million tokens  | $25.00/million tokens |
-| Claude Opus 4.1     | 200,000 tokens | $15.00/million tokens | $75.00/million tokens |
-| Claude Opus 4       | 200,000 tokens | $15.00/million tokens | $75.00/million tokens |
-| Claude Sonnet 4     | 200,000 tokens | $3.00/million tokens  | $15.00/million tokens |
-| Claude Sonnet 3.7   | 200,000 tokens | $3.00/million tokens  | $15.00/million tokens |
-| Claude Sonnet 3.5   | 200,000 tokens | $3.00/million tokens  | $15.00/million tokens |
-| Claude Haiku 3.5    | 200,000 tokens | $0.80/million tokens  | $4.00/million tokens  |
-| Claude Opus 3       | 200,000 tokens | $15.00/million tokens | $75.00/million tokens |
-| Claude Haiku 3      | 200,000 tokens | $0.25/million tokens  | $1.25/million tokens  |
+| Claude Opus 4.7     | 1M tokens      | $5.00/million tokens  | $25.00/million tokens |
+| Claude Opus 4.6     | 1M tokens      | $5.00/million tokens  | $25.00/million tokens |
+| Claude Opus 4.5     | 200K tokens    | $5.00/million tokens  | $25.00/million tokens |
+| Claude Sonnet 4.6   | 1M tokens      | $3.00/million tokens  | $15.00/million tokens |
+| Claude Sonnet 4.5   | 200K tokens    | $3.00/million tokens  | $15.00/million tokens |
+| Claude Haiku 4.5    | 200K tokens    | $1.00/million tokens  | $5.00/million tokens  |
+| Claude Opus 4.1     | 200K tokens    | $15.00/million tokens | $75.00/million tokens |
+| Claude Opus 4       | 200K tokens    | $15.00/million tokens | $75.00/million tokens |
+| Claude Sonnet 4     | 200K tokens    | $3.00/million tokens  | $15.00/million tokens |
+| Claude Sonnet 3.7   | 200K tokens    | $3.00/million tokens  | $15.00/million tokens |
+| Claude Sonnet 3.5   | 200K tokens    | $3.00/million tokens  | $15.00/million tokens |
+| Claude Haiku 3.5    | 200K tokens    | $0.80/million tokens  | $4.00/million tokens  |
+| Claude Opus 3       | 200K tokens    | $15.00/million tokens | $75.00/million tokens |
+| Claude Haiku 3      | 200K tokens    | $0.25/million tokens  | $1.25/million tokens  |
 `
 }
 
 func (p *ClaudeModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
 	var inputPricePerThousandTokens, outputPricePerThousandTokens float64
 	priceTable := map[string][]float64{
+		"claude-opus-4-7":            {0.005, 0.025},
+		"claude-opus-4-6":            {0.005, 0.025},
 		"claude-opus-4-5":            {0.005, 0.025},
+		"claude-sonnet-4-6":          {0.003, 0.015},
+		"claude-sonnet-4-5":          {0.003, 0.015},
+		"claude-haiku-4-5":           {0.001, 0.005},
 		"claude-opus-4-1":            {0.015, 0.075},
 		"claude-opus-4-0":            {0.015, 0.075},
 		"claude-opus-4-20250514":     {0.015, 0.075},

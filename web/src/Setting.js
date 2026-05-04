@@ -1696,7 +1696,12 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "Claude") {
     return [
+      {id: "claude-opus-4-7", name: "claude-opus-4-7"},
+      {id: "claude-opus-4-6", name: "claude-opus-4-6"},
       {id: "claude-opus-4-5", name: "claude-opus-4-5"},
+      {id: "claude-sonnet-4-6", name: "claude-sonnet-4-6"},
+      {id: "claude-sonnet-4-5", name: "claude-sonnet-4-5"},
+      {id: "claude-haiku-4-5", name: "claude-haiku-4-5"},
       {id: "claude-opus-4-1", name: "claude-opus-4-1"},
       {id: "claude-opus-4-0", name: "claude-opus-4-0"},
       {id: "claude-opus-4-20250514", name: "claude-opus-4-20250514"},
