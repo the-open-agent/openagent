@@ -60,10 +60,8 @@ func GetOpenAiMaxTokens(model string) int {
 
 func getOpenAiModelType(model string) string {
 	chatModels := []string{
-		// GPT-5.4 series (latest)
-		"gpt-5.4", "gpt-5.4-pro", "gpt-5.4-mini", "gpt-5.4-nano",
-		// GPT-5.3 series
-		"gpt-5.3-codex", "gpt-5.3-chat",
+		// GPT-5.5 series (latest)
+		"gpt-5.5", "gpt-5.5-pro",
 		// GPT-5.2 series
 		"gpt-5.2", "gpt-5.2-chat", "gpt-5.2-codex",
 		// GPT-5.1 series

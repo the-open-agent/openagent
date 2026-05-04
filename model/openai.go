@@ -135,6 +135,48 @@ func CalculateOpenAIModelPrice(model string, modelResult *ModelResult, lang stri
 		}
 		modelResult.Currency = "USD"
 
+	// gpt 5.5 model (April 2026)
+	case strings.Contains(model, "gpt-5.5"):
+		if strings.Contains(model, "pro") {
+			inputPricePerThousandTokens = 0.030
+			outputPricePerThousandTokens = 0.18
+		} else {
+			inputPricePerThousandTokens = 0.005
+			outputPricePerThousandTokens = 0.030
+		}
+		modelResult.Currency = "USD"
+
+	// gpt 5.4 model (March 2026)
+	case strings.Contains(model, "gpt-5.4"):
+		if strings.Contains(model, "5.4-mini") {
+			inputPricePerThousandTokens = 0.00075
+			outputPricePerThousandTokens = 0.0045
+		} else if strings.Contains(model, "5.4-nano") {
+			inputPricePerThousandTokens = 0.00025
+			outputPricePerThousandTokens = 0.0015
+		} else if strings.Contains(model, "pro") {
+			inputPricePerThousandTokens = 0.005
+			outputPricePerThousandTokens = 0.025
+		} else {
+			inputPricePerThousandTokens = 0.0025
+			outputPricePerThousandTokens = 0.015
+		}
+		modelResult.Currency = "USD"
+
+	// gpt 5.3 model
+	case strings.Contains(model, "gpt-5.3"):
+		if strings.Contains(model, "codex") {
+			inputPricePerThousandTokens = 0.003
+			outputPricePerThousandTokens = 0.012
+		} else if strings.Contains(model, "instant") {
+			inputPricePerThousandTokens = 0.00025
+			outputPricePerThousandTokens = 0.0015
+		} else {
+			inputPricePerThousandTokens = 0.002
+			outputPricePerThousandTokens = 0.010
+		}
+		modelResult.Currency = "USD"
+
 	// gpt 5.2 model (includes gpt-5.2-chat which uses same pricing)
 	case strings.Contains(model, "gpt-5.2"):
 		if strings.Contains(model, "5.2-mini") {
@@ -228,63 +270,63 @@ func CalculateOpenAIModelPrice(model string, modelResult *ModelResult, lang stri
 
 func getOpenAIModelPrice() string {
 	return `URL:
-https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/
+	https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/
 
-Language models:
+	Language models:
 
-| Models                | Context | Input (Per 1,000 tokens) | Output (Per 1,000 tokens) |
-|-----------------------|---------|--------------------------|--------------------------|
-| GPT-3.5-Turbo         | 16K     | $0.0005                  | $0.0015                  |
-| GPT-4                 | 8K      | $0.03                    | $0.06                    |
-| GPT-4                 | 32K     | $0.06                    | $0.12                    |
-| GPT-4-Turbo           | 128K    | $0.01                    | $0.03                    |
-| GPT-4o                | 128K    | $0.0025                  | $0.0075                  |
-| GPT-4o-mini           | 128K    | $0.000075                | $0.0003                  |
-| GPT-4.1               | 100K    | $0.002                   | $0.008                   |
-| GPT-4.1-mini          | 100K    | $0.0004	                 | $0.0016                  |
-| GPT-4.1-nano          | 100K    | $0.0001                  | $0.0004                  |
-| GPT-4.5               | 100K    | $0.002                   | $0.008                   |
-| GPT-4.5-mini          | 100K    | $0.0004                  | $0.0016                  |
-| GPT-4.5-nano          | 100K    | $0.0001                  | $0.0004                  |
-| o1                    | 200K    | $0.015                   | $0.060                   |
-| o1-pro                | 200K    | $0.15                    | $0.6                     |
-| o3                    | 200K    | $0.002                   | $0.008                   |
-| o3-mini               | 200K    | $0.0011                  | $0.0044                  |
-| o4-mini               | 200K    | $0.0011                  | $0.0044                  |
-| GPT-5                 | 400K    | $0.00125                 | $0.01                    |
-| GPT-5-mini            | 400K    | $0.00025                 | $0.002                   |
-| GPT-5-nano            | 400K    | $0.00005                 | $0.0004                  |
-| GPT-5.1               | 400K    | $0.00125                 | $0.01                    |
-| GPT-5.1-mini          | 400K    | $0.00025                 | $0.002                   |
-| GPT-5.1-nano          | 400K    | $0.00005                 | $0.0004                  |
-| GPT-5.2               | 400K    | $0.00125                 | $0.01                    |
-| GPT-5.2-mini          | 400K    | $0.00025                 | $0.002                   |
-| GPT-5.2-nano          | 400K    | $0.00005                 | $0.0004                  |
-| GPT-5.2-chat          | 400K    | $0.00125                 | $0.01                    |
-| GPT-5-chat-latest     | 400K    | $0.00125                 | $0.01                    |
-| Deep-Research         | 200K    | $0.002                   | $0.008                   |
-Image generation models (token-based, per 1M tokens):
+	| Models                | Context | Input (Per 1,000 tokens) | Output (Per 1,000 tokens) |
+	|-----------------------|---------|--------------------------|--------------------------|
+	| GPT-5.5               | 1M      | $0.005                   | $0.030                   |
+	| GPT-5.5-Pro           | 1M      | $0.030                   | $0.18                    |
+	| GPT-5.2               | 400K    | $0.00125                 | $0.01                    |
+	| GPT-5.2-mini          | 400K    | $0.00025                 | $0.002                   |
+	| GPT-5.2-nano          | 400K    | $0.00005                 | $0.0004                  |
+	| GPT-5.2-chat          | 400K    | $0.00125                 | $0.01                    |
+	| GPT-5.1               | 400K    | $0.00125                 | $0.01                    |
+	| GPT-5.1-mini          | 400K    | $0.00025                 | $0.002                   |
+	| GPT-5.1-nano          | 400K    | $0.00005                 | $0.0004                  |
+	| GPT-5                 | 400K    | $0.00125                 | $0.01                    |
+	| GPT-5-mini            | 400K    | $0.00025                 | $0.002                   |
+	| GPT-5-nano            | 400K    | $0.00005                 | $0.0004                  |
+	| GPT-4.5               | 100K    | $0.002                   | $0.008                   |
+	| GPT-4.5-mini          | 100K    | $0.0004                  | $0.0016                  |
+	| GPT-4.5-nano          | 100K    | $0.0001                  | $0.0004                  |
+	| GPT-4.1               | 100K    | $0.002                   | $0.008                   |
+	| GPT-4.1-mini          | 100K    | $0.0004                  | $0.0016                  |
+	| GPT-4.1-nano          | 100K    | $0.0001                  | $0.0004                  |
+	| GPT-4o                | 128K    | $0.0025                  | $0.0075                  |
+	| GPT-4o-mini           | 128K    | $0.000075                | $0.0003                  |
+	| GPT-4-Turbo           | 128K    | $0.01                    | $0.03                    |
+	| GPT-4                 | 8K      | $0.03                    | $0.06                    |
+	| o3                    | 200K    | $0.002                   | $0.008                   |
+	| o3-mini               | 200K    | $0.0011                  | $0.0044                  |
+	| o4-mini               | 200K    | $0.0011                  | $0.0044                  |
+	| o1                    | 200K    | $0.015                   | $0.060                   |
+	| o1-pro                | 200K    | $0.15                    | $0.6                     |
+	| GPT-3.5-Turbo         | 16K     | $0.0005                  | $0.0015                  |
+	| Deep-Research         | 200K    | $0.002                   | $0.008                   |
+	Image generation models (token-based, per 1M tokens):
 
-| Model             | Modality | Input   | Cached Input | Output  |
-|-------------------|----------|---------|--------------|---------|
-| GPT-Image-2       | Image    | $8.00   | $2.00        | $30.00  |
-|                   | Text     | $5.00   | $1.25        | -       |
-| GPT-Image-1.5     | Image    | $8.00   | $2.00        | $32.00  |
-|                   | Text     | $5.00   | $1.25        | $10.00  |
-| GPT-Image-1-Mini  | Image    | $2.50   | $0.25        | $8.00   |
-|                   | Text     | $2.00   | $0.20        | -       |
+	| Model             | Modality | Input   | Cached Input | Output  |
+	|-------------------|----------|---------|--------------|---------|
+	| GPT-Image-2       | Image    | $8.00   | $2.00        | $30.00  |
+	|                   | Text     | $5.00   | $1.25        | -       |
+	| GPT-Image-1.5     | Image    | $8.00   | $2.00        | $32.00  |
+	|                   | Text     | $5.00   | $1.25        | $10.00  |
+	| GPT-Image-1-Mini  | Image    | $2.50   | $0.25        | $8.00   |
+	|                   | Text     | $2.00   | $0.20        | -       |
 
-Legacy image models:
+	Legacy image models:
 
-| Models       | Quality | Resolution               | Price (per image) |
-|--------------|---------|--------------------------|------------------|
-| Dall-E-3     | Standard| 1024 * 1024              | N/A              |
-|              | Standard| 1024 * 1792, 1792 * 1024 | $0.08            |
-| Dall-E-3     | HD      | 1024 * 1024              | N/A              |
-|              | HD      | 1024 * 1792, 1792 * 1024 | N/A              |
-| Dall-E-2     | Standard| 1024 * 1024              | N/A              |
-| GPT-Image-1  | Standard| 1024 * 1024              | $0.08            |
-`
+	| Models       | Quality | Resolution               | Price (per image) |
+	|--------------|---------|--------------------------|------------------|
+	| Dall-E-3     | Standard| 1024 * 1024              | N/A              |
+	|              | Standard| 1024 * 1792, 1792 * 1024 | $0.08            |
+	| Dall-E-3     | HD      | 1024 * 1024              | N/A              |
+	|              | HD      | 1024 * 1792, 1792 * 1024 | N/A              |
+	| Dall-E-2     | Standard| 1024 * 1024              | N/A              |
+	| GPT-Image-1  | Standard| 1024 * 1024              | $0.08            |
+	`
 }
 
 func (p *OpenAiModelProvider) GetPricing() string {

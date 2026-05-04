@@ -1522,7 +1522,10 @@ export function redirectToLogin() {
 }
 
 const openaiModels = [
-  // GPT-5.4 series (latest)
+  // GPT-5.5 series (latest)
+  {id: "gpt-5.5", name: "gpt-5.5"},
+  {id: "gpt-5.5-pro", name: "gpt-5.5-pro"},
+  // GPT-5.4 series
   {id: "gpt-5.4", name: "gpt-5.4"},
   {id: "gpt-5.4-pro", name: "gpt-5.4-pro"},
   {id: "gpt-5.4-mini", name: "gpt-5.4-mini"},
