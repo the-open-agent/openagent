@@ -37,24 +37,32 @@ func NewMiniMaxModelProvider(subType string, groupID string, apiKey string, temp
 
 func (p *MiniMaxModelProvider) GetPricing() string {
 	return `URL:
-https://www.minimax.io/price
+	https://platform.minimax.io/subscribe/overview
 
-| Model              | Input Price         | Output Price         |
-|--------------------|---------------------|----------------------|
-| MiniMax-Text-01    | 1 CNY/1M tokens     | 7 CNY/1M tokens      |
-| abab6.5s-chat      | 0.1 CNY/1M tokens   | 0.1 CNY/1M tokens    |
-| abab6.5g-chat      | 0.5 CNY/1M tokens   | 0.5 CNY/1M tokens    |
-| abab6.5t-chat      | 0.5 CNY/1M tokens   | 0.5 CNY/1M tokens    |
-`
+	| Model                   | Context  | Input Price         | Output Price        |
+	|-------------------------|----------|---------------------|---------------------|
+	| minimax-m2.7            | 205K     | $0.30/1M tokens     | $1.20/1M tokens     |
+	| minimax-m2.5-lightning  | 200K     | $0.30/1M tokens     | $2.40/1M tokens     |
+	| minimax-m2.5-standard   | 200K     | $0.15/1M tokens     | $1.20/1M tokens     |
+	| minimax-m2.1            | 200K     | $0.30/1M tokens     | $1.20/1M tokens     |
+	| MiniMax-Text-01 (legacy)| 16K      | $0.14/1M tokens     | $0.97/1M tokens     |
+	| abab6.5s-chat (legacy)  | 8K       | $0.014/1M tokens    | $0.014/1M tokens    |
+	| abab6.5g-chat (legacy)  | 8K       | $0.07/1M tokens     | $0.07/1M tokens     |
+	| abab6.5t-chat (legacy)  | 8K       | $0.07/1M tokens     | $0.07/1M tokens     |
+	`
 }
 
 func (p *MiniMaxModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
 	price := 0.0
 	priceTable := map[string][2]float64{
-		"MiniMax-Text-01": {0.001, 0.007},
-		"abab6.5s-chat":   {0.0001, 0.0001},
-		"abab6.5g-chat":   {0.0005, 0.0005},
-		"abab6.5t-chat":   {0.0005, 0.0005},
+		"minimax-m2.7":           {0.0003, 0.0012},
+		"minimax-m2.5-lightning": {0.0003, 0.0024},
+		"minimax-m2.5-standard":  {0.00015, 0.0012},
+		"minimax-m2.1":           {0.0003, 0.0012},
+		"MiniMax-Text-01":        {0.00014, 0.00097},
+		"abab6.5s-chat":          {0.000014, 0.000014},
+		"abab6.5g-chat":          {0.00007, 0.00007},
+		"abab6.5t-chat":          {0.00007, 0.00007},
 	}
 
 	if priceItem, ok := priceTable[p.subType]; ok {
@@ -66,14 +74,14 @@ func (p *MiniMaxModelProvider) calculatePrice(modelResult *ModelResult, lang str
 	}
 
 	modelResult.TotalPrice = price
-	modelResult.Currency = "CNY"
+	modelResult.Currency = "USD"
 	return nil
 }
 
 func (p *MiniMaxModelProvider) QueryText(question string, writer io.Writer, history []*RawMessage, prompt string, knowledgeMessages []*RawMessage, toolSession *ToolSession, lang string) (*ModelResult, error) {
 	const BaseUrl = "https://api.minimax.chat/v1"
 
-	localProvider, err := NewLocalModelProvider("Custom", "", p.apiKey, p.temperature, 0, 0, 0, BaseUrl, p.subType, 0, 0, "CNY")
+	localProvider, err := NewLocalModelProvider("Custom", "", p.apiKey, p.temperature, 0, 0, 0, BaseUrl, p.subType, 0, 0, "USD")
 	if err != nil {
 		return nil, err
 	}

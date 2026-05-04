@@ -254,6 +254,10 @@ func getContextLength(typ string) int {
 		} else {
 			return 4096
 		}
+	} else if strings.Contains(typ, "minimax") {
+		if strings.Contains(typ, "m2") {
+			return 200000
+		}
 	} else if strings.Contains(typ, "yi") {
 		return 16384
 	} else if strings.Contains(typ, "glm") {

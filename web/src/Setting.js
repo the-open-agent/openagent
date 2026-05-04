@@ -1865,6 +1865,10 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "MiniMax") {
     return [
+      {id: "minimax-m2.7", name: "minimax-m2.7"},
+      {id: "minimax-m2.5-lightning", name: "minimax-m2.5-lightning"},
+      {id: "minimax-m2.5-standard", name: "minimax-m2.5-standard"},
+      {id: "minimax-m2.1", name: "minimax-m2.1"},
       {id: "MiniMax-Text-01", name: "MiniMax-Text-01"},
       {id: "abab6.5s-chat", name: "abab6.5s-chat"},
       {id: "abab6.5g-chat", name: "abab6.5g-chat"},
