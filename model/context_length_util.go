@@ -206,6 +206,9 @@ func getContextLength(typ string) int {
 	} else if strings.Contains(typ, "dummy") {
 		return 4096
 	} else if strings.Contains(typ, "Moonshot") {
+		if strings.Contains(typ, "k2") || strings.Contains(typ, "kimi-k2") {
+			return 262144
+		}
 		if strings.Contains(typ, "v1") {
 			if strings.Contains(typ, "8k") {
 				return 8192

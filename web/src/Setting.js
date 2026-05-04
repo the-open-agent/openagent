@@ -1896,6 +1896,8 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "Moonshot") {
     return [
+      {id: "kimi-k2.6", name: "kimi-k2.6"},
+      {id: "kimi-k2.5", name: "kimi-k2.5"},
       {id: "moonshot-v1-8k", name: "moonshot-v1-8k"},
       {id: "moonshot-v1-32k", name: "moonshot-v1-32k"},
       {id: "moonshot-v1-128k", name: "moonshot-v1-128k"},

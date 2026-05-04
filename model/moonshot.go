@@ -46,6 +46,8 @@ Model
 
 | Model                  | Unit Of Charge | Input Price | Output Price |
 |------------------------|----------------|-------------|--------------|
+| kimi-k2.6              | 1M tokens      | 6.5 yuan    | 27 yuan      |
+| kimi-k2.5              | 1M tokens      | 4 yuan      | 21 yuan      |
 | moonshot-v1-8k         | 1M tokens      | 2 yuan      | 10 yuan      |
 | moonshot-v1-32k        | 1M tokens      | 5 yuan      | 20 yuan      |
 | moonshot-v1-128k       | 1M tokens      | 10 yuan     | 30 yuan      |
@@ -61,6 +63,9 @@ Model
 func (p *MoonshotModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
 	price := 0.0
 	priceTable := map[string][2]float64{
+		"kimi-k2.6": {0.0065, 0.027},
+		"kimi-k2.5": {0.004, 0.021},
+
 		"moonshot-v1-8k":   {0.002, 0.010},
 		"moonshot-v1-32k":  {0.005, 0.020},
 		"moonshot-v1-128k": {0.010, 0.030},
