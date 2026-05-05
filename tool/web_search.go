@@ -98,6 +98,7 @@ const (
 	webSearchEngineBing       webSearchEngine = "bing"
 	webSearchEngineGoogle     webSearchEngine = "google"
 	webSearchEngineBaidu      webSearchEngine = "baidu"
+	webSearchEngineTavily     webSearchEngine = "tavily"
 )
 
 var (
@@ -106,6 +107,7 @@ var (
 	bingHTMLSearchEndpoint       = "https://www.bing.com/search"
 	googleJSONSearchEndpoint     = "https://www.googleapis.com/customsearch/v1"
 	baiduWebSearchEndpoint       = "https://qianfan.baidubce.com/v2/ai_search/web_search"
+	tavilySearchEndpoint         = "https://api.tavily.com/search"
 )
 
 type webSearchParams struct {
@@ -161,6 +163,22 @@ type baiduWebSearchMessage struct {
 type baiduWebSearchResourceType struct {
 	Type string `json:"type"`
 	TopK int    `json:"top_k"`
+}
+
+type tavilySearchRequest struct {
+	APIKey     string `json:"api_key"`
+	Query      string `json:"query"`
+	MaxResults int    `json:"max_results"`
+}
+
+type tavilySearchResponse struct {
+	Results []struct {
+		Title   string  `json:"title"`
+		URL     string  `json:"url"`
+		Content string  `json:"content"`
+		Score   float64 `json:"score"`
+	} `json:"results"`
+	Error string `json:"error,omitempty"`
 }
 
 type baiduWebSearchResponse struct {
@@ -322,6 +340,12 @@ func (t *webSearchBuiltin) runWebSearch(ctx context.Context, params webSearchPar
 			return nil, "", err
 		}
 		return results, "baidu", nil
+	case webSearchEngineTavily:
+		results, err := runTavilySearch(ctx, params, t.apiKey, t.endpoint, t.httpClient)
+		if err != nil {
+			return nil, "", err
+		}
+		return results, "tavily", nil
 	default:
 		return nil, "", fmt.Errorf("unsupported web search engine: %s", t.engine)
 	}
@@ -337,6 +361,8 @@ func parseWebSearchEngine(value string) (webSearchEngine, error) {
 		return webSearchEngineGoogle, nil
 	case "Baidu":
 		return webSearchEngineBaidu, nil
+	case "Tavily":
+		return webSearchEngineTavily, nil
 	default:
 		return "", fmt.Errorf("unsupported web search engine subtype: %s", value)
 	}
@@ -482,6 +508,63 @@ func runBaiduSearch(ctx context.Context, params webSearchParams, apiKey string, 
 		return nil, fmt.Errorf("Baidu returned no results")
 	}
 	return limitWebSearchResults(results, params.Count), nil
+}
+
+func runTavilySearch(ctx context.Context, params webSearchParams, apiKey string, endpoint string, httpClient *http.Client) ([]webSearchResult, error) {
+	if strings.TrimSpace(apiKey) == "" {
+		return nil, fmt.Errorf("Tavily search requires an API key in clientSecret")
+	}
+
+	requestBody := tavilySearchRequest{
+		APIKey:     apiKey,
+		Query:      params.Query,
+		MaxResults: params.Count,
+	}
+	requestBytes, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, err
+	}
+
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+	body, err := fetchWebSearchAPI(ctx, http.MethodPost, resolveWebSearchEndpoint(endpoint, tavilySearchEndpoint), nil, bytes.NewReader(requestBytes), headers, httpClient)
+	if err != nil {
+		return nil, err
+	}
+
+	var response tavilySearchResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, err
+	}
+	if response.Error != "" {
+		return nil, fmt.Errorf("Tavily returned an error: %s", response.Error)
+	}
+
+	results := parseTavilySearchResponse(response)
+	if len(results) == 0 {
+		return nil, fmt.Errorf("Tavily returned no results")
+	}
+	return limitWebSearchResults(results, params.Count), nil
+}
+
+func parseTavilySearchResponse(response tavilySearchResponse) []webSearchResult {
+	results := make([]webSearchResult, 0, len(response.Results))
+	for _, item := range response.Results {
+		title := cleanWebSearchText(item.Title)
+		resultURL := strings.TrimSpace(item.URL)
+		if title == "" || resultURL == "" {
+			continue
+		}
+
+		results = append(results, webSearchResult{
+			Title:    title,
+			URL:      resultURL,
+			Snippet:  cleanWebSearchText(item.Content),
+			SiteName: resolveWebSearchSiteName(resultURL),
+		})
+	}
+	return results
 }
 
 func fetchWebSearchAPI(ctx context.Context, method string, endpoint string, query url.Values, body io.Reader, headers map[string]string, httpClient *http.Client) ([]byte, error) {

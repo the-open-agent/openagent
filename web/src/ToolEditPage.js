@@ -63,7 +63,7 @@ class ToolEditPage extends React.Component {
   }
 
   shouldShowClientSecretInput(tool) {
-    return tool.type === "web_search" && ["Google", "Baidu"].includes(tool.subType);
+    return tool.type === "web_search" && ["Google", "Baidu", "Tavily"].includes(tool.subType);
   }
 
   getClientIdLabel(tool) {

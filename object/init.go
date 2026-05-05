@@ -328,6 +328,20 @@ func initBuiltInTools() {
 		},
 		{
 			Owner:       "admin",
+			Name:        "web_search_tavily",
+			Type:        "web_search",
+			SubType:     "Tavily",
+			TestContent: `{"tool":"web_search","arguments":{"query":"hello world"}}`,
+			State:       "Inactive",
+			PromptExamples: []string{
+				"Search for the latest news about artificial intelligence.",
+				"Find the best restaurants in New York City.",
+				"What are the top programming languages in 2025?",
+				"Search for tutorials on how to use OpenAgent.",
+			},
+		},
+		{
+			Owner:       "admin",
 			Name:        "shell",
 			Type:        "shell",
 			SubType:     "Default",

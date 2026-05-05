@@ -679,6 +679,8 @@
     "Provider test - Tooltip": "提供商效果测试",
     "Search engine ID (cx)": "搜索引擎ID（cx）",
     "Search engine ID (cx) - Tooltip": "Google可编程搜索引擎的cx参数，用于限定自定义搜索范围",
+    "Tavily API Key": "Tavily API密钥",
+    "Tavily API Key - Tooltip": "Tavily网络搜索的API密钥，可在 https://app.tavily.com 获取。",
     "Select model provider": "选择模型提供商",
     "Set Webhook": "设置Webhook",
     "Speech recognition completed": "语音识别完成",

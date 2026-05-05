@@ -679,6 +679,8 @@
     "Provider test - Tooltip": "Test text for TTS preview",
     "Search engine ID (cx)": "Search engine ID (cx)",
     "Search engine ID (cx) - Tooltip": "Google Programmable Search Engine cx value that scopes custom web search.",
+    "Tavily API Key": "Tavily API Key",
+    "Tavily API Key - Tooltip": "API key for Tavily web search. Obtain one at https://app.tavily.com.",
     "Select model provider": "Select model provider",
     "Set Webhook": "Set Webhook",
     "Speech recognition completed": "Speech recognition completed",
