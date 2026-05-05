@@ -100,6 +100,7 @@ require (
 	github.com/consensys/gnark-crypto v0.18.0 // indirect
 	github.com/crate-crypto/go-eth-kzg v1.3.0 // indirect
 	github.com/crate-crypto/go-ipa v0.0.0-20240724233137-53bbb0ceb27a // indirect
+	github.com/creack/pty v1.1.18 // indirect
 	github.com/deckarep/golang-set/v2 v2.6.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.1-0.20230921164230-9754217aff8e // indirect
 	github.com/ethereum/c-kzg-4844/v2 v2.1.0 // indirect
