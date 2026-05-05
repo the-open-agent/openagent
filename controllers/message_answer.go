@@ -110,6 +110,14 @@ func (c *ApiController) GetMessageAnswer() {
 
 	if len(store.Tools) > 0 {
 		store.Prompt += "\nYou are a helpful AI assistant with access to tools. When the user asks you to perform a task, you MUST use the available tools to complete it directly. Do not refuse or explain why you cannot — just use the tools and fulfill the request."
+		store.Prompt += "\n## Execution Bias\n" +
+			"- Actionable request: act in this turn.\n" +
+			"- Continue until done or genuinely blocked; do not finish with a plan/promise when tools can move it forward.\n" +
+			"- Weak/empty tool result: vary query, path, or source before concluding.\n" +
+			"- Final answer needs evidence: cite all sources with their title and URL. When web_search returns results, " +
+			"reference all relevant entries by their title and url in your answer in APA format, the whole line is a markdown link, so the user can verify.\n" +
+			"- Mutable facts need live checks: use tools rather than memory.\n" +
+			"- Longer work: brief progress update, then keep going."
 	}
 
 	if len(store.Skills) > 0 {
