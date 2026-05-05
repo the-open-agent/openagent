@@ -14,7 +14,8 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Table, Tag} from "antd";
+import {Button, Popconfirm, Table, Tag, Tooltip} from "antd";
+import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
 import moment from "moment";
 import * as Setting from "./Setting";
 import * as ScanBackend from "./backend/ScanBackend";
@@ -22,7 +23,6 @@ import * as AssetBackend from "./backend/AssetBackend";
 import * as ProviderBackend from "./backend/ProviderBackend";
 import i18next from "i18next";
 import BaseListPage from "./BaseListPage";
-import PopconfirmModal from "./modal/PopconfirmModal";
 import {ScanResultPopover} from "./common/ScanResultPopover";
 
 class ScanListPage extends BaseListPage {
@@ -367,19 +367,26 @@ class ScanListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "",
         key: "op",
-        width: "200px",
+        width: "130px",
         fixed: (Setting.isMobile()) ? "false" : "right",
         render: (text, record, index) => {
           return (
-            <div>
-              <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} type="primary" onClick={() => this.props.history.push(`/scans/${record.name}`)}>{i18next.t("general:Edit")}</Button>
-              <PopconfirmModal
+            <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+              <Tooltip title={i18next.t("general:Edit")}>
+                <Button type="text" size="small" icon={<EditOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} onClick={() => this.props.history.push(`/scans/${record.name}`)} />
+              </Tooltip>
+              <Popconfirm
                 title={i18next.t("general:Sure to delete") + `: ${record.name} ?`}
                 onConfirm={() => this.deleteItem(index).then(() => {
                   this.fetch({pagination: this.state.pagination});
                 })}
+                okText={i18next.t("general:OK")}
+                cancelText={i18next.t("general:Cancel")}
               >
-              </PopconfirmModal>
+                <Tooltip title={i18next.t("general:Delete")}>
+                  <Button type="text" size="small" danger icon={<DeleteOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} />
+                </Tooltip>
+              </Popconfirm>
             </div>
           );
         },

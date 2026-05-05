@@ -16,12 +16,11 @@ import * as ConnectionBackend from "./backend/ConnectionBackend";
 import * as Setting from "./Setting";
 import {Button, Popconfirm, Radio, Table} from "antd";
 import i18next from "i18next";
-import PopconfirmModal from "./modal/PopconfirmModal";
 import BaseListPage from "./BaseListPage";
 import moment from "moment";
 import React from "react";
 import {Link} from "react-router-dom";
-import {DeleteOutlined} from "@ant-design/icons";
+import {DeleteOutlined, PauseCircleOutlined} from "@ant-design/icons";
 
 export const Connected = "connected";
 const Disconnected = "disconnected";
@@ -210,26 +209,46 @@ class ConnectionListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "action",
         key: "action",
-        width: "120px",
+        width: "150px",
         fixed: (Setting.isMobile()) ? "false" : "right",
         render: (text, record, index) => {
-          return this.state.status === Connected ?
-            (
-              <div>
-                <PopconfirmModal
-                  style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}}
-                  text={i18next.t("general:Stop")}
+          if (this.state.status === Connected) {
+            return (
+              <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+                <Popconfirm
                   title={`${i18next.t("general:Sure to disconnect from")}: ${record.name} ?`}
                   onConfirm={() => this.stopConnection(index)}
-                />
+                  okText={i18next.t("general:OK")}
+                  cancelText={i18next.t("general:Cancel")}
+                >
+                  <Button
+                    style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                    type="primary"
+                    danger
+                    icon={<PauseCircleOutlined />}
+                    title={i18next.t("general:Stop")}
+                  />
+                </Popconfirm>
               </div>
-            ) : (
-              <PopconfirmModal
-                style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}}
+            );
+          }
+          return (
+            <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+              <Popconfirm
                 title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
                 onConfirm={() => this.deleteConnection(index)}
-              />
-            );
+                okText={i18next.t("general:OK")}
+                cancelText={i18next.t("general:Cancel")}
+              >
+                <Button
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                  type="primary"
+                  danger
+                  icon={<DeleteOutlined />}
+                />
+              </Popconfirm>
+            </div>
+          );
         },
       },
     ];

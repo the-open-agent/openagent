@@ -21,7 +21,7 @@ import * as Setting from "./Setting";
 import * as ProviderBackend from "./backend/ProviderBackend";
 import i18next from "i18next";
 import * as Provider from "./Provider";
-import {DeleteOutlined} from "@ant-design/icons";
+import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 
 class ProviderListPage extends BaseListPage {
@@ -297,18 +297,19 @@ class ProviderListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "action",
         key: "action",
-        width: "180px",
+        width: "150px",
         fixed: "right",
         render: (text, record, index) => {
+          const editLabel = record.isRemote ? i18next.t("general:View") : i18next.t("general:Edit");
           return (
-            <div>
+            <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
               <Button
-                style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}}
-                type={record.isRemote ? "default" : "primary"}
+                style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                type="default"
+                icon={<EditOutlined />}
                 onClick={() => this.props.history.push(`/providers/${record.name}`)}
-              >
-                {record.isRemote ? i18next.t("general:View") : i18next.t("general:Edit")}
-              </Button>
+                title={editLabel}
+              />
               <Popconfirm
                 title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
                 onConfirm={() => this.deleteProvider(record)}
@@ -317,13 +318,12 @@ class ProviderListPage extends BaseListPage {
                 disabled={record.isRemote}
               >
                 <Button
-                  style={{marginBottom: "10px"}}
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
                   type="primary"
                   danger
                   disabled={record.isRemote}
-                >
-                  {i18next.t("general:Delete")}
-                </Button>
+                  icon={<DeleteOutlined />}
+                />
               </Popconfirm>
             </div>
           );

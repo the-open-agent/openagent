@@ -14,15 +14,14 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Popconfirm, Table} from "antd";
+import {Button, Dropdown, Popconfirm, Table} from "antd";
 import BaseListPage from "./BaseListPage";
 import moment from "moment";
 import * as Setting from "./Setting";
 import * as ImageBackend from "./backend/ImageBackend";
 import i18next from "i18next";
-import PopconfirmModal from "./modal/PopconfirmModal";
 import * as MachineBackend from "./backend/MachineBackend";
-import {DeleteOutlined} from "@ant-design/icons";
+import {DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined} from "@ant-design/icons";
 
 class ImageListPage extends BaseListPage {
   constructor(props) {
@@ -246,20 +245,53 @@ class ImageListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "action",
         key: "action",
-        width: "130px",
+        width: "150px",
         fixed: (Setting.isMobile()) ? "false" : "right",
         render: (text, image, index) => {
           return (
-            <div>
-              <Button style={{marginTop: "10px", marginRight: "10px"}} onClick={() => this.props.history.push(`/images/${image.owner}/${image.name}`)}>
-                {i18next.t("general:Edit")}
-              </Button>
-              <Button type="primary" style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} onClick={() => this.createMachine(image)}>
-                {i18next.t("image:Create machine")}
-              </Button>
-              <PopconfirmModal disabled={image.owner !== this.props.account.owner} style={{marginBottom: "10px"}}
-                title={i18next.t("general:Sure to delete") + `: ${image.name} ?`} onConfirm={() => this.deleteImage(index)}>
-              </PopconfirmModal>
+            <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+              <Button
+                style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                type="default"
+                icon={<EditOutlined />}
+                onClick={() => this.props.history.push(`/images/${image.owner}/${image.name}`)}
+                title={i18next.t("general:Edit")}
+              />
+              <Popconfirm
+                title={i18next.t("general:Sure to delete") + `: ${image.name} ?`}
+                onConfirm={() => this.deleteImage(index)}
+                disabled={image.owner !== this.props.account.owner}
+                okText={i18next.t("general:OK")}
+                cancelText={i18next.t("general:Cancel")}
+              >
+                <Button
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                  type="primary"
+                  danger
+                  disabled={image.owner !== this.props.account.owner}
+                  icon={<DeleteOutlined />}
+                />
+              </Popconfirm>
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: "create-machine",
+                      icon: <PlusOutlined />,
+                      label: i18next.t("image:Create machine"),
+                    },
+                  ],
+                  onClick: ({key}) => {
+                    if (key === "create-machine") {this.createMachine(image);}
+                  },
+                }}
+                trigger={["click"]}
+              >
+                <Button
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                  icon={<MoreOutlined />}
+                />
+              </Dropdown>
             </div>
           );
         },

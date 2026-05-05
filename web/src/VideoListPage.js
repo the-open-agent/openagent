@@ -14,8 +14,8 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, List, Popconfirm, Table, Tooltip, Upload} from "antd";
-import {DeleteOutlined, DownloadOutlined, UploadOutlined} from "@ant-design/icons";
+import {Button, Dropdown, List, Popconfirm, Table, Tooltip, Upload} from "antd";
+import {DeleteOutlined, DownloadOutlined, EditOutlined, ExportOutlined, MoreOutlined, UploadOutlined} from "@ant-design/icons";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
@@ -487,15 +487,16 @@ class VideoListPage extends BaseListPage {
         width: "150px",
         fixed: "right",
         render: (text, record, index) => {
+          const editLabel = (this.requireUserOrAdmin(record)) ? i18next.t("general:View") : i18next.t("general:Edit");
           return (
-            <div>
-              <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} onClick={() => Setting.openLink(`/videos/${record.owner}/${record.name}`)}>{i18next.t("general:Open")}</Button>
-              <Button style={{marginBottom: "10px", marginRight: "10px"}} type="primary" onClick={() => this.props.history.push(`/videos/${record.owner}/${record.name}`)}>
-                {
-                  (this.requireUserOrAdmin(record)) ? i18next.t("general:View") :
-                    i18next.t("general:Edit")
-                }
-              </Button>
+            <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+              <Button
+                style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                type="default"
+                icon={<EditOutlined />}
+                onClick={() => this.props.history.push(`/videos/${record.owner}/${record.name}`)}
+                title={editLabel}
+              />
               <Popconfirm
                 disabled={this.requireUserOrAdmin(record)}
                 title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
@@ -503,8 +504,36 @@ class VideoListPage extends BaseListPage {
                 okText={i18next.t("general:OK")}
                 cancelText={i18next.t("general:Cancel")}
               >
-                <Button disabled={this.requireUserOrAdmin(record)} style={{marginBottom: "10px"}} type="primary" danger>{i18next.t("general:Delete")}</Button>
+                <Button
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                  type="primary"
+                  danger
+                  disabled={this.requireUserOrAdmin(record)}
+                  icon={<DeleteOutlined />}
+                />
               </Popconfirm>
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: "open",
+                      icon: <ExportOutlined />,
+                      label: i18next.t("general:Open"),
+                    },
+                  ],
+                  onClick: ({key}) => {
+                    if (key === "open") {
+                      Setting.openLink(`/videos/${record.owner}/${record.name}`);
+                    }
+                  },
+                }}
+                trigger={["click"]}
+              >
+                <Button
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                  icon={<MoreOutlined />}
+                />
+              </Dropdown>
             </div>
           );
         },

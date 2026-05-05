@@ -21,7 +21,7 @@ import * as Setting from "./Setting";
 import * as WorkflowBackend from "./backend/WorkflowBackend";
 import i18next from "i18next";
 import BpmnComponent from "./BpmnComponent";
-import {DeleteOutlined} from "@ant-design/icons";
+import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
 import Editor from "./common/Editor";
 
 class WorkflowListPage extends BaseListPage {
@@ -268,12 +268,14 @@ class WorkflowListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "action",
         key: "action",
-        width: "180px",
+        width: "130px",
         fixed: (Setting.isMobile()) ? "false" : "right",
         render: (text, record, index) => {
           return (
-            <div>
-              <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} type="primary" onClick={() => this.props.history.push(`/workflows/${record.name}`)}>{i18next.t("general:Edit")}</Button>
+            <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+              <Tooltip title={i18next.t("general:Edit")}>
+                <Button type="text" size="small" icon={<EditOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} onClick={() => this.props.history.push(`/workflows/${record.name}`)} />
+              </Tooltip>
               <Popconfirm
                 placement="topLeft"
                 title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
@@ -281,7 +283,9 @@ class WorkflowListPage extends BaseListPage {
                 okText={i18next.t("general:OK")}
                 cancelText={i18next.t("general:Cancel")}
               >
-                <Button style={{marginBottom: "10px"}} type="primary" danger>{i18next.t("general:Delete")}</Button>
+                <Tooltip title={i18next.t("general:Delete")}>
+                  <Button type="text" size="small" danger icon={<DeleteOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} />
+                </Tooltip>
               </Popconfirm>
             </div>
           );

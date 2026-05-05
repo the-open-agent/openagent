@@ -14,14 +14,14 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Popconfirm, Table} from "antd";
+import {Button, Dropdown, Popconfirm, Table} from "antd";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
 import * as FileBackend from "./backend/FileBackend";
 import * as StoreBackend from "./backend/StoreBackend";
 import i18next from "i18next";
-import {DeleteOutlined} from "@ant-design/icons";
+import {DeleteOutlined, EditOutlined, MoreOutlined, ReloadOutlined} from "@ant-design/icons";
 
 class FileListPage extends BaseListPage {
   constructor(props) {
@@ -230,25 +230,56 @@ class FileListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "action",
         key: "action",
-        width: "260px",
+        width: "150px",
         fixed: "right",
         render: (text, record, index) => {
           return (
-            <div>
-              {
-                !Setting.isLocalAdminUser(this.props.account) ? null : (
-                  <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} loading={this.state.refreshing[index]} onClick={() => this.refreshFileVectors(index)}>{i18next.t("general:Refresh Vectors")}</Button>
-                )
-              }
-              <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} type="primary" onClick={() => this.props.history.push(`/files/${encodeURIComponent(record.name)}`)}>{i18next.t("general:View")}</Button>
+            <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+              <Button
+                style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                type="default"
+                icon={<EditOutlined />}
+                onClick={() => this.props.history.push(`/files/${encodeURIComponent(record.name)}`)}
+                title={i18next.t("general:View")}
+              />
               <Popconfirm
                 title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
                 onConfirm={() => this.deleteFile(record)}
                 okText={i18next.t("general:OK")}
                 cancelText={i18next.t("general:Cancel")}
               >
-                <Button style={{marginBottom: "10px"}} type="primary" danger>{i18next.t("general:Delete")}</Button>
+                <Button
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                  type="primary"
+                  danger
+                  icon={<DeleteOutlined />}
+                />
               </Popconfirm>
+              {
+                !Setting.isLocalAdminUser(this.props.account) ? null : (
+                  <Dropdown
+                    menu={{
+                      items: [
+                        {
+                          key: "refresh-vectors",
+                          icon: <ReloadOutlined />,
+                          label: i18next.t("general:Refresh Vectors"),
+                          disabled: this.state.refreshing[index],
+                        },
+                      ],
+                      onClick: ({key}) => {
+                        if (key === "refresh-vectors") {this.refreshFileVectors(index);}
+                      },
+                    }}
+                    trigger={["click"]}
+                  >
+                    <Button
+                      style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                      icon={<MoreOutlined />}
+                    />
+                  </Dropdown>
+                )
+              }
             </div>
           );
         },

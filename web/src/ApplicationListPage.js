@@ -14,8 +14,8 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Alert, Button, Popconfirm, Table, Tag, Tooltip} from "antd";
-import {DeleteOutlined, LinkOutlined} from "@ant-design/icons";
+import {Alert, Button, Dropdown, Modal, Popconfirm, Table, Tag, Tooltip} from "antd";
+import {CloudUploadOutlined, DeleteOutlined, EditOutlined, EyeOutlined, LinkOutlined, MoreOutlined} from "@ant-design/icons";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
@@ -340,40 +340,75 @@ class ApplicationListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "action",
         key: "action",
-        width: "280px",
+        width: "150px",
         fixed: (Setting.isMobile()) ? "false" : "right",
         render: (text, record, index) => {
+          const moreMenuItems = [];
+          if (record.status === "Not Deployed") {
+            moreMenuItems.push({
+              key: "deploy",
+              icon: <CloudUploadOutlined />,
+              label: i18next.t("application:Deploy"),
+              disabled: this.state.deploying[index],
+            });
+          } else {
+            moreMenuItems.push({
+              key: "view",
+              icon: <EyeOutlined />,
+              label: i18next.t("general:View"),
+            });
+            moreMenuItems.push({
+              key: "undeploy",
+              label: i18next.t("application:Undeploy"),
+              danger: true,
+              disabled: this.state.deploying[index],
+            });
+          }
           return (
-            <div>
-              <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} type="primary" onClick={() => this.props.history.push(`/applications/${record.name}`)}>{i18next.t("general:Edit")}</Button>
-              {
-                record.status === "Not Deployed" ? (
-                  <Button style={{marginBottom: "10px", marginRight: "10px"}} loading={this.state.deploying[index]} onClick={() => this.deployApplication(record, index)}>
-                    {i18next.t("application:Deploy")}
-                  </Button>
-                ) : (
-                  <Popconfirm title={`${i18next.t("general:Sure to undeploy")}: ${record.name} ?`} onConfirm={() => this.undeployApplication(record, index)} okText={i18next.t("general:OK")} cancelText={i18next.t("general:Cancel")}>
-                    <Button style={{marginBottom: "10px", marginRight: "10px"}} loading={this.state.deploying[index]} danger>
-                      {i18next.t("application:Undeploy")}
-                    </Button>
-                  </Popconfirm>
-                )
-              }
-              {
-                record.status !== "Not Deployed" && (
-                  <Button style={{marginBottom: "10px", marginRight: "10px"}} onClick={() => this.props.history.push(`/applications/${record.name}/view`, {application: record})}>
-                    {i18next.t("general:View")}
-                  </Button>
-                )
-              }
+            <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+              <Button
+                style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                type="default"
+                icon={<EditOutlined />}
+                onClick={() => this.props.history.push(`/applications/${record.name}`)}
+                title={i18next.t("general:Edit")}
+              />
               <Popconfirm
                 title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
                 onConfirm={() => this.deleteApplication(record)}
                 okText={i18next.t("general:OK")}
                 cancelText={i18next.t("general:Cancel")}
               >
-                <Button style={{marginBottom: "10px"}} type="primary" danger>{i18next.t("general:Delete")}</Button>
+                <Button
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                  type="primary"
+                  danger
+                  icon={<DeleteOutlined />}
+                />
               </Popconfirm>
+              <Dropdown
+                menu={{
+                  items: moreMenuItems,
+                  onClick: ({key}) => {
+                    if (key === "deploy") {this.deployApplication(record, index);}
+                    if (key === "undeploy") {
+                      Modal.confirm({
+                        title: `${i18next.t("general:Sure to undeploy")}: ${record.name} ?`,
+                        okText: i18next.t("general:OK"),
+                        cancelText: i18next.t("general:Cancel"),
+                        onOk: () => this.undeployApplication(record, index),
+                      });
+                    }
+                    if (key === "view") {this.props.history.push(`/applications/${record.name}/view`, {application: record});}
+                  },
+                }}
+                trigger={["click"]}
+              >
+                <Button
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                  icon={<MoreOutlined />}
+                />
+              </Dropdown>
             </div>
           );
         },

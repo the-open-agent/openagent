@@ -14,7 +14,8 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Popconfirm, Table} from "antd";
+import {Button, Popconfirm, Table, Tooltip} from "antd";
+import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
@@ -123,17 +124,13 @@ class SiteListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "action",
         key: "action",
-        width: "180px",
+        width: "130px",
         fixed: "right",
         render: (text, record) => (
-          <div>
-            <Button
-              style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}}
-              type="primary"
-              onClick={() => this.props.history.push(`/sites/${record.name}`)}
-            >
-              {i18next.t("general:Edit")}
-            </Button>
+          <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+            <Tooltip title={i18next.t("general:Edit")}>
+              <Button type="text" size="small" icon={<EditOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} onClick={() => this.props.history.push(`/sites/${record.name}`)} />
+            </Tooltip>
             <Popconfirm
               title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
               onConfirm={() => this.deleteSite(record)}
@@ -141,14 +138,9 @@ class SiteListPage extends BaseListPage {
               cancelText={i18next.t("general:Cancel")}
               disabled={record.name === "site-built-in"}
             >
-              <Button
-                style={{marginBottom: "10px"}}
-                type="primary"
-                danger
-                disabled={record.name === "site-built-in"}
-              >
-                {i18next.t("general:Delete")}
-              </Button>
+              <Tooltip title={i18next.t("general:Delete")}>
+                <Button type="text" size="small" danger icon={<DeleteOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} disabled={record.name === "site-built-in"} />
+              </Tooltip>
             </Popconfirm>
           </div>
         ),

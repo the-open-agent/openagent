@@ -14,8 +14,8 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Select, Table, Tooltip} from "antd";
-import {ReloadOutlined} from "@ant-design/icons";
+import {Button, Popconfirm, Select, Table, Tooltip} from "antd";
+import {DeleteOutlined, EditOutlined, ReloadOutlined} from "@ant-design/icons";
 import moment from "moment";
 import * as Setting from "./Setting";
 import * as AssetBackend from "./backend/AssetBackend";
@@ -23,7 +23,6 @@ import * as ProviderBackend from "./backend/ProviderBackend";
 import * as ScanBackend from "./backend/ScanBackend";
 import i18next from "i18next";
 import BaseListPage from "./BaseListPage";
-import PopconfirmModal from "./modal/PopconfirmModal";
 import {JsonCodeMirrorPopover} from "./common/JsonCodeMirrorWidget";
 import {ScanDetailPopover} from "./common/ScanDetailPopover";
 
@@ -382,18 +381,25 @@ class AssetListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "",
         key: "op",
-        width: "170px",
+        width: "130px",
         fixed: (Setting.isMobile()) ? "false" : "right",
         render: (text, record, index) => {
           return (
-            <div>
-              <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} type="primary" onClick={() => this.props.history.push(`/assets/${record.name}`)}>{i18next.t("general:Edit")}</Button>
-              <PopconfirmModal
+            <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+              <Tooltip title={i18next.t("general:Edit")}>
+                <Button type="text" size="small" icon={<EditOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} onClick={() => this.props.history.push(`/assets/${record.name}`)} />
+              </Tooltip>
+              <Popconfirm
                 title={i18next.t("general:Sure to delete") + `: ${record.name} ?`}
                 onConfirm={() => this.deleteAsset(index)}
                 disabled={!Setting.isAdminUser(this.props.account)}
+                okText={i18next.t("general:OK")}
+                cancelText={i18next.t("general:Cancel")}
               >
-              </PopconfirmModal>
+                <Tooltip title={i18next.t("general:Delete")}>
+                  <Button type="text" size="small" danger icon={<DeleteOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} />
+                </Tooltip>
+              </Popconfirm>
             </div>
           );
         },

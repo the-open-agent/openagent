@@ -14,7 +14,7 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Avatar, Button, Popconfirm, Switch, Table} from "antd";
+import {Avatar, Button, Dropdown, Popconfirm, Switch, Table, Tooltip} from "antd";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
@@ -24,7 +24,7 @@ import * as Conf from "./Conf";
 import * as StorageProviderBackend from "./backend/StorageProviderBackend";
 import * as ProviderBackend from "./backend/ProviderBackend";
 import StoreShareModal from "./StoreShareModal";
-import {CopyOutlined, DeleteOutlined, ShareAltOutlined} from "@ant-design/icons";
+import {CopyOutlined, DeleteOutlined, EditOutlined, ExportOutlined, FileOutlined, MoreOutlined, ReloadOutlined, ShareAltOutlined} from "@ant-design/icons";
 import copy from "copy-to-clipboard";
 
 const defaultPrompt = "You are an expert in your field and you specialize in using your knowledge to answer or solve people's problems.";
@@ -492,60 +492,116 @@ class StoreListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "action",
         key: "action",
-        width: "430px",
+        width: "150px",
         fixed: "right",
         render: (text, record, index) => {
+          const moreItems = [];
           if (this.state.hideChat) {
-            return (
-              <div>
-                <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}/view`)}>{i18next.t("general:Files")}</Button>
-                {
-                  !Setting.isLocalAdminUser(this.props.account) ? null : (
-                    <React.Fragment>
-                      <Button style={{marginBottom: "10px", marginRight: "10px"}} icon={<ShareAltOutlined />} onClick={() => this.openShareModal(record)}>{i18next.t("store:Share")}</Button>
-                      <Button style={{marginBottom: "10px", marginRight: "10px"}} type="primary" onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}`)}>{i18next.t("general:Edit")}</Button>
-                      <Popconfirm
-                        title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
-                        onConfirm={() => this.deleteStore(record)}
-                        okText={i18next.t("general:OK")}
-                        cancelText={i18next.t("general:Cancel")}
-                        disabled={record.isDefault || Setting.isUserBoundToStore(this.props.account)}
-                      >
-                        <Button style={{marginBottom: "10px"}} type="primary" danger disabled={record.isDefault || Setting.isUserBoundToStore(this.props.account)}>{i18next.t("general:Delete")}</Button>
-                      </Popconfirm>
-                    </React.Fragment>
-                  )
-                }
-              </div>
+            moreItems.push({
+              key: "files",
+              icon: <FileOutlined />,
+              label: i18next.t("general:Files"),
+              onClick: () => this.props.history.push(`/stores/${record.owner}/${record.name}/view`),
+            });
+            if (Setting.isLocalAdminUser(this.props.account)) {
+              moreItems.push({
+                key: "share",
+                icon: <ShareAltOutlined />,
+                label: i18next.t("store:Share"),
+                onClick: () => this.openShareModal(record),
+              });
+            }
+          } else {
+            moreItems.push(
+              {
+                key: "files",
+                icon: <FileOutlined />,
+                label: i18next.t("general:Files"),
+                onClick: () => this.props.history.push(`/stores/${record.owner}/${record.name}/view`),
+              },
+              {
+                key: "copy-link",
+                icon: <CopyOutlined />,
+                label: i18next.t("general:Copy Link"),
+                onClick: () => {
+                  copy(`${window.location.origin}/${record.owner}/${record.name}/chat`);
+                  Setting.showMessage("success", i18next.t("general:Successfully copied"));
+                },
+              },
+              {
+                key: "open-chat",
+                icon: <ExportOutlined />,
+                label: i18next.t("store:Open Chat"),
+                onClick: () => {
+                  Setting.setStore(record.name);
+                  window.open(`${window.location.origin}/${record.owner}/${record.name}/chat`, "_blank");
+                },
+              }
             );
+            if (Setting.isLocalAdminUser(this.props.account)) {
+              moreItems.push(
+                {
+                  key: "share",
+                  icon: <ShareAltOutlined />,
+                  label: i18next.t("store:Share"),
+                  onClick: () => this.openShareModal(record),
+                },
+                {
+                  key: "refresh-vectors",
+                  icon: <ReloadOutlined />,
+                  label: i18next.t("general:Refresh Vectors"),
+                  disabled: this.state.generating[index],
+                  onClick: () => this.refreshStoreVectors(index),
+                }
+              );
+            }
           }
 
           return (
-            <div>
-              <Button style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}} onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}/view`)}>{i18next.t("general:Files")}</Button>
-              <Button style={{marginBottom: "10px", marginRight: "10px"}} icon={<CopyOutlined />} onClick={() => {copy(`${window.location.origin}/${record.owner}/${record.name}/chat`);Setting.showMessage("success", i18next.t("general:Successfully copied"));}}>{i18next.t("general:Copy Link")}</Button>
-              <Button style={{marginBottom: "10px", marginRight: "10px"}} onClick={() => {
-                Setting.setStore(record.name);
-                window.open(`${window.location.origin}/${record.owner}/${record.name}/chat`, "_blank");
-              }}>{i18next.t("store:Open Chat")}</Button>
-              {
-                !Setting.isLocalAdminUser(this.props.account) ? null : (
-                  <React.Fragment>
-                    <Button style={{marginBottom: "10px", marginRight: "10px"}} icon={<ShareAltOutlined />} onClick={() => this.openShareModal(record)}>{i18next.t("store:Share")}</Button>
-                    <Button style={{marginBottom: "10px", marginRight: "10px"}} loading={this.state.generating[index]} onClick={() => this.refreshStoreVectors(index)}>{i18next.t("general:Refresh Vectors")}</Button>
-                    <Button style={{marginBottom: "10px", marginRight: "10px"}} type="primary" onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}`)}>{i18next.t("general:Edit")}</Button>
-                    <Popconfirm
-                      title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
-                      onConfirm={() => this.deleteStore(record)}
-                      okText={i18next.t("general:OK")}
-                      cancelText={i18next.t("general:Cancel")}
-                      disabled={record.isDefault || Setting.isUserBoundToStore(this.props.account)}
-                    >
-                      <Button style={{marginBottom: "10px"}} type="primary" danger disabled={record.isDefault || Setting.isUserBoundToStore(this.props.account)}>{i18next.t("general:Delete")}</Button>
-                    </Popconfirm>
-                  </React.Fragment>
-                )
-              }
+            <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+              {Setting.isLocalAdminUser(this.props.account) && (
+                <>
+                  <Tooltip title={i18next.t("general:Edit")}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<EditOutlined />}
+                      onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}`)}
+                      style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                    />
+                  </Tooltip>
+                  <Popconfirm
+                    title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
+                    onConfirm={() => this.deleteStore(record)}
+                    okText={i18next.t("general:OK")}
+                    cancelText={i18next.t("general:Cancel")}
+                    disabled={record.isDefault || Setting.isUserBoundToStore(this.props.account)}
+                  >
+                    <Tooltip title={i18next.t("general:Delete")}>
+                      <Button
+                        type="text"
+                        size="small"
+                        danger
+                        icon={<DeleteOutlined />}
+                        disabled={record.isDefault || Setting.isUserBoundToStore(this.props.account)}
+                        style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                      />
+                    </Tooltip>
+                  </Popconfirm>
+                </>
+              )}
+              {moreItems.length > 0 && (
+                <Dropdown menu={{items: moreItems}} trigger={["click"]} placement="bottomRight">
+                  <Tooltip title={i18next.t("general:More")}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<MoreOutlined />}
+                      style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                    />
+                  </Tooltip>
+                </Dropdown>
+              )}
             </div>
           );
         },

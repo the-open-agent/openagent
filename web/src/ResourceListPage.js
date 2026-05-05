@@ -14,7 +14,7 @@
 
 import React from "react";
 import {Button, Image, Popconfirm, Table, Tag, Upload} from "antd";
-import {UploadOutlined} from "@ant-design/icons";
+import {DeleteOutlined, UploadOutlined} from "@ant-design/icons";
 import copy from "copy-to-clipboard";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
@@ -197,19 +197,24 @@ class ResourceListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "",
         key: "op",
-        width: "80px",
+        width: "150px",
         fixed: Setting.isMobile() ? "false" : "right",
         render: (_, record, index) => (
-          <Popconfirm
-            title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
-            onConfirm={() => this.deleteResource(index)}
-            okText={i18next.t("general:OK")}
-            cancelText={i18next.t("general:Cancel")}
-          >
-            <Button type="primary" danger size="small">
-              {i18next.t("general:Delete")}
-            </Button>
-          </Popconfirm>
+          <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
+            <Popconfirm
+              title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
+              onConfirm={() => this.deleteResource(index)}
+              okText={i18next.t("general:OK")}
+              cancelText={i18next.t("general:Cancel")}
+            >
+              <Button
+                style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                type="primary"
+                danger
+                icon={<DeleteOutlined />}
+              />
+            </Popconfirm>
+          </div>
         ),
       },
     ];

@@ -14,15 +14,13 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Popconfirm, Switch, Table} from "antd";
+import {Button, Dropdown, Popconfirm, Switch, Table} from "antd";
 import BaseListPage from "./BaseListPage";
 import moment from "moment";
 import * as Setting from "./Setting";
 import * as NodeBackend from "./backend/NodeBackend";
 import i18next from "i18next";
-import PopconfirmModal from "./modal/PopconfirmModal";
-import ConnectModal from "./modal/ConnectModal";
-import {DeleteOutlined} from "@ant-design/icons";
+import {DeleteOutlined, EditOutlined, LinkOutlined, MoreOutlined} from "@ant-design/icons";
 
 class NodeListPage extends BaseListPage {
   constructor(props) {
@@ -239,29 +237,57 @@ class NodeListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "action",
         key: "action",
-        width: "260px",
+        width: "150px",
         fixed: (Setting.isMobile()) ? "false" : "right",
         render: (text, node, index) => {
+          const connectUrl = `access/${node.owner}/${node.name}`;
           return (
-            <div>
-              <ConnectModal
-                disabled={node.owner !== this.props.account.owner}
-                owner={node.owner}
-                name={node.name}
-                category={"Node"}
-                node={node}
-              />
+            <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
               <Button
-                style={{marginTop: "10px", marginBottom: "10px", marginRight: "10px"}}
+                style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                type="default"
+                icon={<EditOutlined />}
                 onClick={() => this.props.history.push(`/nodes/${node.name}`)}
-              >{i18next.t("general:Edit")}
-              </Button>
-              <PopconfirmModal
-                disabled={node.owner !== this.props.account.owner}
+                title={i18next.t("general:Edit")}
+              />
+              <Popconfirm
                 title={i18next.t("general:Sure to delete") + `: ${node.name} ?`}
                 onConfirm={() => this.deleteNode(index)}
+                disabled={node.owner !== this.props.account.owner}
+                okText={i18next.t("general:OK")}
+                cancelText={i18next.t("general:Cancel")}
               >
-              </PopconfirmModal>
+                <Button
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                  type="primary"
+                  danger
+                  disabled={node.owner !== this.props.account.owner}
+                  icon={<DeleteOutlined />}
+                />
+              </Popconfirm>
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: "connect",
+                      icon: <LinkOutlined />,
+                      label: i18next.t("node:Connect"),
+                      disabled: node.owner !== this.props.account.owner,
+                    },
+                  ],
+                  onClick: ({key}) => {
+                    if (key === "connect") {
+                      Setting.openLink(connectUrl);
+                    }
+                  },
+                }}
+                trigger={["click"]}
+              >
+                <Button
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                  icon={<MoreOutlined />}
+                />
+              </Dropdown>
             </div>
           );
         },
