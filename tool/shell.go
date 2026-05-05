@@ -28,11 +28,10 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"time"
 
 	"github.com/ThinkInAIXYZ/go-mcp/protocol"
-	"github.com/creack/pty"
+	gopty "github.com/aymanbagabas/go-pty"
 )
 
 const (
@@ -60,8 +59,9 @@ type shellSession struct {
 	workdir      string
 	usePTY       bool
 	cmd          *exec.Cmd
+	ptyCmd       *gopty.Cmd
 	stdin        io.WriteCloser
-	ptyFile      *os.File
+	pty          gopty.Pty
 	output       *shellRingBuffer
 	done         chan struct{}
 	cancel       context.CancelFunc
@@ -174,7 +174,10 @@ func (s *shellBuiltin) GetInputSchema() interface{} {
 }
 
 func (s *shellBuiltin) Execute(ctx context.Context, arguments map[string]interface{}) (*protocol.CallToolResult, error) {
-	if shellBoolArg(arguments, "background") || shellHasAction(arguments) {
+	if _, ok := arguments["action"]; ok {
+		return shellExecuteBackground(ctx, arguments)
+	}
+	if shellBoolArg(arguments, "background") {
 		return shellExecuteBackground(ctx, arguments)
 	}
 
@@ -197,15 +200,7 @@ func (s *shellBuiltin) Execute(ctx context.Context, arguments map[string]interfa
 	execCtx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSecs)*time.Second)
 	defer cancel()
 
-	cmd, err := shellBuildCommand(execCtx, command)
-	if err != nil {
-		return shellError(err.Error()), nil
-	}
-	if workdir != "" {
-		cmd.Dir = workdir
-	}
-
-	result, runErr := shellRunForeground(execCtx, cmd, usePTY)
+	result, runErr := shellRunForeground(execCtx, command, workdir, usePTY)
 	if execCtx.Err() == context.DeadlineExceeded {
 		return shellError(fmt.Sprintf("Error: command timed out after %.0f seconds", timeoutSecs)), nil
 	}
@@ -246,14 +241,21 @@ func shellStartBackground(ctx context.Context, arguments map[string]interface{})
 	workdir := shellStringArg(arguments, "workdir", "")
 	usePTY := shellBoolArg(arguments, "pty")
 
-	sessionCtx, cancel := context.WithCancel(ctx)
+	sessionCtx := ctx
+	cancel := func() {}
+	if t, ok := arguments["timeout"].(float64); ok && t > 0 {
+		timeoutSecs := t
+		if timeoutSecs > shellMaxTimeoutSeconds {
+			timeoutSecs = shellMaxTimeoutSeconds
+		}
+		sessionCtx, cancel = context.WithTimeout(ctx, time.Duration(timeoutSecs)*time.Second)
+	} else {
+		sessionCtx, cancel = context.WithCancel(ctx)
+	}
 	cmd, err := shellBuildCommand(sessionCtx, command)
 	if err != nil {
 		cancel()
 		return shellError(err.Error()), nil
-	}
-	if workdir != "" {
-		cmd.Dir = workdir
 	}
 
 	session := &shellSession{
@@ -269,26 +271,14 @@ func shellStartBackground(ctx context.Context, arguments map[string]interface{})
 	}
 
 	if usePTY {
-		if runtime.GOOS == "windows" {
+		if err = shellStartPTYBackground(sessionCtx, session, arguments); err != nil {
 			cancel()
-			return shellError("pty mode is not supported on Windows in the current shell implementation"), nil
+			return shellError(err.Error()), nil
 		}
-
-		cmd.Env = shellCommandEnv(true)
-		ptmx, startErr := pty.Start(cmd)
-		if startErr != nil {
-			cancel()
-			return shellError(startErr.Error()), nil
-		}
-		if sizeErr := shellSetPTYSize(ptmx, shellPTYCols(arguments), shellPTYRows(arguments)); sizeErr != nil {
-			_ = ptmx.Close()
-			cancel()
-			return shellError(sizeErr.Error()), nil
-		}
-		session.stdin = ptmx
-		session.ptyFile = ptmx
-		go session.capture(ptmx)
 	} else {
+		if workdir != "" {
+			cmd.Dir = workdir
+		}
 		stdin, pipeErr := cmd.StdinPipe()
 		if pipeErr != nil {
 			cancel()
@@ -397,7 +387,7 @@ func shellWriteBackground(arguments map[string]interface{}) (*protocol.CallToolR
 		return shellError("Missing required parameter: input"), nil
 	}
 
-	n, err := io.WriteString(session.stdin, input)
+	n, err := session.writeString(input)
 	if err != nil {
 		return shellError(err.Error()), nil
 	}
@@ -450,7 +440,7 @@ func shellSendKeysBackground(arguments map[string]interface{}) (*protocol.CallTo
 		seq.WriteString(part)
 	}
 
-	n, err := io.WriteString(session.stdin, seq.String())
+	n, err := session.writeString(seq.String())
 	if err != nil {
 		return shellError(err.Error()), nil
 	}
@@ -471,13 +461,13 @@ func shellResizeBackground(arguments map[string]interface{}) (*protocol.CallTool
 	if session == nil {
 		return shellError(fmt.Sprintf("shell session not found: %s", sessionID)), nil
 	}
-	if !session.usePTY || session.ptyFile == nil {
+	if !session.usePTY || session.pty == nil {
 		return shellError("shell session is not running in pty mode"), nil
 	}
 
 	cols := shellPTYCols(arguments)
 	rows := shellPTYRows(arguments)
-	if err := shellSetPTYSize(session.ptyFile, cols, rows); err != nil {
+	if err := shellResizePTY(session, cols, rows); err != nil {
 		return shellError(err.Error()), nil
 	}
 
@@ -512,16 +502,32 @@ func shellStopBackground(arguments map[string]interface{}) (*protocol.CallToolRe
 }
 
 func shellBuildCommand(ctx context.Context, command string) (*exec.Cmd, error) {
-	if runtime.GOOS == "windows" {
-		return exec.CommandContext(ctx, "cmd", "/C", command), nil
-	}
-	cmd := exec.CommandContext(ctx, "sh", "-c", command)
+	cmd := exec.CommandContext(ctx, shellPlatformShell(), shellPlatformShellArg(), command)
 	cmd.Env = shellCommandEnv(false)
 	return cmd, nil
 }
 
-func shellRunForeground(ctx context.Context, cmd *exec.Cmd, usePTY bool) (string, error) {
+func shellBuildPtyCommand(ctx context.Context, command string) (gopty.Pty, *gopty.Cmd, error) {
+	ptmx, err := gopty.New()
+	if err != nil {
+		return nil, nil, err
+	}
+	cmd := ptmx.CommandContext(ctx, shellPlatformShell(), shellPlatformShellArg(), command)
+	cmd.Env = shellCommandEnv(true)
+	return ptmx, cmd, nil
+}
+
+func shellRunForeground(ctx context.Context, command string, workdir string, usePTY bool) (string, error) {
+	cmd, err := shellBuildCommand(ctx, command)
+	if err != nil {
+		return fmt.Sprintf("Error: %s", err.Error()), err
+	}
+
 	if !usePTY {
+		if workdir != "" {
+			cmd.Dir = workdir
+		}
+
 		var stdout, stderr bytes.Buffer
 		cmd.Stdout = &stdout
 		cmd.Stderr = &stderr
@@ -556,33 +562,34 @@ func shellRunForeground(ctx context.Context, cmd *exec.Cmd, usePTY bool) (string
 		return result, nil
 	}
 
-	if runtime.GOOS == "windows" {
-		err := fmt.Errorf("pty mode is not supported on Windows in the current shell implementation")
-		return err.Error(), err
-	}
-
-	cmd.Env = shellCommandEnv(true)
-	ptmx, err := pty.Start(cmd)
+	ptmx, ptyCmd, err := shellBuildPtyCommand(ctx, command)
 	if err != nil {
 		return fmt.Sprintf("Error: %s", err.Error()), err
 	}
-	if sizeErr := shellSetPTYSize(ptmx, shellDefaultPTYCols, shellDefaultPTYRows); sizeErr != nil {
+	if workdir != "" {
+		ptyCmd.Dir = workdir
+	}
+	if sizeErr := shellResizePtyRaw(ptmx, int(shellDefaultPTYCols), int(shellDefaultPTYRows)); sizeErr != nil {
 		_ = ptmx.Close()
 		return fmt.Sprintf("Error: %s", sizeErr.Error()), sizeErr
+	}
+	if err = ptyCmd.Start(); err != nil {
+		_ = ptmx.Close()
+		return fmt.Sprintf("Error: %s", err.Error()), err
 	}
 
 	var output bytes.Buffer
 	copyDone := make(chan error, 1)
 	go func() {
 		_, copyErr := io.Copy(&output, ptmx)
-		if copyErr != nil && !errors.Is(copyErr, os.ErrClosed) {
+		if copyErr != nil && !errors.Is(copyErr, io.EOF) {
 			copyDone <- copyErr
 			return
 		}
 		copyDone <- nil
 	}()
 
-	runErr := cmd.Wait()
+	runErr := ptyCmd.Wait()
 	_ = ptmx.Close()
 	copyErr := <-copyDone
 
@@ -692,6 +699,20 @@ func shellPTYCols(arguments map[string]interface{}) uint16 {
 	return uint16(cols)
 }
 
+func shellPlatformShell() string {
+	if runtime.GOOS == "windows" {
+		return "cmd.exe"
+	}
+	return "sh"
+}
+
+func shellPlatformShellArg() string {
+	if runtime.GOOS == "windows" {
+		return "/C"
+	}
+	return "-c"
+}
+
 func shellCommandEnv(usePTY bool) []string {
 	env := os.Environ()
 	if usePTY {
@@ -718,16 +739,6 @@ func shellEnsureEnv(env []string, key string, value string) []string {
 		}
 	}
 	return append(env, prefix+value)
-}
-
-func shellSetPTYSize(file *os.File, cols uint16, rows uint16) error {
-	if file == nil {
-		return fmt.Errorf("pty is not available for this shell session")
-	}
-	return pty.Setsize(file, &pty.Winsize{
-		Cols: cols,
-		Rows: rows,
-	})
 }
 
 func shellKeySequence(key string) (string, error) {
@@ -759,6 +770,41 @@ func shellKeySequence(key string) (string, error) {
 	default:
 		return "", fmt.Errorf("unsupported key sequence: %s", key)
 	}
+}
+
+func shellStartPTYBackground(ctx context.Context, session *shellSession, arguments map[string]interface{}) error {
+	ptmx, ptyCmd, err := shellBuildPtyCommand(ctx, session.command)
+	if err != nil {
+		return err
+	}
+	if session.workdir != "" {
+		ptyCmd.Dir = session.workdir
+	}
+	if sizeErr := shellResizePtyRaw(ptmx, int(shellPTYCols(arguments)), int(shellPTYRows(arguments))); sizeErr != nil {
+		_ = ptmx.Close()
+		return sizeErr
+	}
+	if err = ptyCmd.Start(); err != nil {
+		_ = ptmx.Close()
+		return err
+	}
+
+	session.pty = ptmx
+	session.ptyCmd = ptyCmd
+	session.stdin = ptmx
+	go session.capture(ptmx)
+	return nil
+}
+
+func shellResizePTY(session *shellSession, cols uint16, rows uint16) error {
+	if session.pty == nil {
+		return fmt.Errorf("pty is not available for this shell session")
+	}
+	return shellResizePtyRaw(session.pty, int(cols), int(rows))
+}
+
+func shellResizePtyRaw(ptmx interface{ Resize(int, int) error }, cols int, rows int) error {
+	return ptmx.Resize(cols, rows)
 }
 
 func shellText(text string) *protocol.CallToolResult {
@@ -851,6 +897,16 @@ func (s *shellSession) capture(r io.Reader) {
 
 func (s *shellSession) wait() {
 	defer close(s.done)
+	if s.usePTY && s.ptyCmd != nil {
+		s.exitErr = s.ptyCmd.Wait()
+		if s.ptyCmd.ProcessState != nil {
+			code := s.ptyCmd.ProcessState.ExitCode()
+			s.exitCode = &code
+		}
+		s.closeInput()
+		return
+	}
+
 	s.exitErr = s.cmd.Wait()
 	if s.cmd.ProcessState != nil {
 		code := s.cmd.ProcessState.ExitCode()
@@ -869,6 +925,9 @@ func (s *shellSession) isRunning() bool {
 }
 
 func (s *shellSession) processID() int {
+	if s.usePTY && s.ptyCmd != nil && s.ptyCmd.Process != nil {
+		return s.ptyCmd.Process.Pid
+	}
 	if s.cmd == nil || s.cmd.Process == nil {
 		return 0
 	}
@@ -896,29 +955,32 @@ func (s *shellSession) stop() {
 		return
 	}
 	s.closed = true
+
 	if s.cancel != nil {
 		s.cancel()
 	}
 	s.closeInputLocked()
 	done := s.done
 	var process *os.Process
-	if s.cmd != nil {
+	if s.usePTY && s.ptyCmd != nil {
+		process = s.ptyCmd.Process
+	} else if s.cmd != nil {
 		process = s.cmd.Process
 	}
 	s.mu.Unlock()
 
 	// Wait outside the lock so wait() can acquire it to call closeInput().
-	if process != nil {
-		if runtime.GOOS == "windows" {
-			_ = process.Kill()
-		} else {
-			_ = process.Signal(syscall.SIGTERM)
-			select {
-			case <-done:
-			case <-time.After(2 * time.Second):
-				_ = process.Kill()
-			}
-		}
+	if process == nil {
+		return
+	}
+	if err := process.Signal(os.Interrupt); err != nil {
+		_ = process.Kill()
+		return
+	}
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		_ = process.Kill()
 	}
 }
 
@@ -929,16 +991,26 @@ func (s *shellSession) closeInput() {
 }
 
 func (s *shellSession) closeInputLocked() {
-	if s.ptyFile != nil {
-		_ = s.ptyFile.Close()
-		s.ptyFile = nil
-		s.stdin = nil // stdin is the same *os.File as ptyFile in PTY mode
+	if s.pty != nil {
+		_ = s.pty.Close()
+		s.pty = nil
+		s.stdin = nil // stdin is the same PTY handle in PTY mode.
 		return
 	}
 	if s.stdin != nil {
 		_ = s.stdin.Close()
 		s.stdin = nil
 	}
+}
+
+func (s *shellSession) writeString(input string) (int, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.closed || s.stdin == nil {
+		return 0, fmt.Errorf("shell session is no longer running")
+	}
+	return io.WriteString(s.stdin, input)
 }
 
 func (m *shellSessionManager) nextSessionID() string {
@@ -957,11 +1029,11 @@ func (m *shellSessionManager) put(session *shellSession) {
 func (m *shellSessionManager) get(id string) *shellSession {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	s := m.sessions[id]
-	if s != nil {
-		s.lastActivity = time.Now()
+	session := m.sessions[id]
+	if session != nil {
+		session.lastActivity = time.Now()
 	}
-	return s
+	return session
 }
 
 func (m *shellSessionManager) delete(id string) {
@@ -987,17 +1059,17 @@ func (m *shellSessionManager) cleanupLoop() {
 func (m *shellSessionManager) evictIdle() {
 	m.mu.Lock()
 	var expired []*shellSession
-	for _, s := range m.sessions {
-		if time.Since(s.lastActivity) > shellSessionIdleTimeout {
-			expired = append(expired, s)
+	for _, session := range m.sessions {
+		if time.Since(session.lastActivity) > shellSessionIdleTimeout {
+			expired = append(expired, session)
 		}
 	}
-	for _, s := range expired {
-		delete(m.sessions, s.id)
+	for _, session := range expired {
+		delete(m.sessions, session.id)
 	}
 	m.mu.Unlock()
 
-	for _, s := range expired {
-		s.stop()
+	for _, session := range expired {
+		session.stop()
 	}
 }
