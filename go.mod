@@ -33,7 +33,6 @@ require (
 	github.com/casibase/go-openrouter v1.0.0
 	github.com/casibase/pdf v1.2.0
 	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/chromedp/cdproto v0.0.0-20240202021202-6d0b6a386732
 	github.com/chromedp/chromedp v0.9.5
 	github.com/cohere-ai/cohere-go/v2 v2.5.2
 	github.com/denisenkom/go-mssqldb v0.10.0
@@ -96,6 +95,7 @@ require (
 	github.com/bits-and-blooms/bitset v1.20.0 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/carapace-sh/carapace-shlex v1.0.1 // indirect
+	github.com/chromedp/cdproto v0.0.0-20240202021202-6d0b6a386732 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/clbanning/mxj/v2 v2.7.0 // indirect
 	github.com/consensys/gnark-crypto v0.18.0 // indirect
@@ -274,7 +274,7 @@ require (
 	golang.org/x/crypto v0.49.0
 	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90 // indirect
 	golang.org/x/mod v0.34.0 // indirect
-	golang.org/x/oauth2 v0.27.0
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.42.0
 	golang.org/x/term v0.41.0 // indirect

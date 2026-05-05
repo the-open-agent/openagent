@@ -174,10 +174,7 @@ func (s *shellBuiltin) GetInputSchema() interface{} {
 }
 
 func (s *shellBuiltin) Execute(ctx context.Context, arguments map[string]interface{}) (*protocol.CallToolResult, error) {
-	if _, ok := arguments["action"]; ok {
-		return shellExecuteBackground(ctx, arguments)
-	}
-	if shellBoolArg(arguments, "background") {
+	if shellBoolArg(arguments, "background") || shellHasAction(arguments) {
 		return shellExecuteBackground(ctx, arguments)
 	}
 
@@ -803,7 +800,7 @@ func shellResizePTY(session *shellSession, cols uint16, rows uint16) error {
 	return shellResizePtyRaw(session.pty, int(cols), int(rows))
 }
 
-func shellResizePtyRaw(ptmx interface{ Resize(int, int) error }, cols int, rows int) error {
+func shellResizePtyRaw(ptmx gopty.Pty, cols int, rows int) error {
 	return ptmx.Resize(cols, rows)
 }
 
