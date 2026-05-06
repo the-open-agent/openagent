@@ -17,20 +17,23 @@ package object
 import (
 	"github.com/the-open-agent/openagent/mcp"
 	"github.com/the-open-agent/openagent/tool"
-	"github.com/the-open-agent/openagent/util"
+	"github.com/the-open-agent/openagent/tool/builtin_tool"
 )
 
-func buildMergedBuiltinRegistry(store *Store, lang string) *tool.ToolRegistry {
-	reg := tool.NewToolRegistry()
+func buildMergedBuiltinRegistry(store *Store, lang string) *builtin_tool.ToolRegistry {
+	return buildMergedBuiltinRegistryWithLoader(store, lang, GetToolByOwnerAndName)
+}
+
+func buildMergedBuiltinRegistryWithLoader(store *Store, lang string, loadTool func(owner string, name string) (*Tool, error)) *builtin_tool.ToolRegistry {
+	reg := builtin_tool.NewToolRegistry()
 
 	if store == nil {
 		return reg
 	}
 
-	for _, tname := range store.Tools {
-		id := util.GetIdFromOwnerAndName(store.Owner, tname)
-		t, err := GetTool(id)
-		if err != nil || t == nil {
+	for _, toolName := range store.Tools {
+		t, err := loadTool(store.Owner, toolName)
+		if err != nil || t == nil || t.State != "Active" {
 			continue
 		}
 		tp, err := tool.New(getToolConfig(t), lang)

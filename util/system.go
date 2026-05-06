@@ -35,14 +35,25 @@ import (
 )
 
 type SystemInfo struct {
-	CpuUsage     []float64 `json:"cpuUsage"`
-	MemoryUsed   uint64    `json:"memoryUsed"`
-	MemoryTotal  uint64    `json:"memoryTotal"`
-	DiskUsed     uint64    `json:"diskUsed"`
-	DiskTotal    uint64    `json:"diskTotal"`
-	NetworkSent  uint64    `json:"networkSent"`
-	NetworkRecv  uint64    `json:"networkRecv"`
-	NetworkTotal uint64    `json:"networkTotal"`
+	CpuUsage     []float64       `json:"cpuUsage"`
+	MemoryUsed   uint64          `json:"memoryUsed"`
+	MemoryTotal  uint64          `json:"memoryTotal"`
+	DiskUsed     uint64          `json:"diskUsed"`
+	DiskTotal    uint64          `json:"diskTotal"`
+	DiskUsages   []DiskUsageInfo `json:"diskUsages"`
+	NetworkSent  uint64          `json:"networkSent"`
+	NetworkRecv  uint64          `json:"networkRecv"`
+	NetworkTotal uint64          `json:"networkTotal"`
+}
+
+type DiskUsageInfo struct {
+	Device      string  `json:"device"`
+	Mountpoint  string  `json:"mountpoint"`
+	Fstype      string  `json:"fstype"`
+	Total       uint64  `json:"total"`
+	Used        uint64  `json:"used"`
+	Free        uint64  `json:"free"`
+	UsedPercent float64 `json:"usedPercent"`
 }
 
 type VersionInfo struct {
@@ -116,6 +127,61 @@ func getDiskUsage() (uint64, uint64, error) {
 	return size, diskStat.Total, nil
 }
 
+func GetDiskUsages() ([]DiskUsageInfo, error) {
+	partitions, err := disk.Partitions(false)
+	if err != nil {
+		return nil, err
+	}
+
+	res := []DiskUsageInfo{}
+	seen := map[string]bool{}
+	for _, partition := range partitions {
+		mountpoint := strings.TrimSpace(partition.Mountpoint)
+		if mountpoint == "" || seen[mountpoint] {
+			continue
+		}
+		seen[mountpoint] = true
+
+		usage, err := disk.Usage(mountpoint)
+		if err != nil {
+			continue
+		}
+
+		fstype := partition.Fstype
+		if fstype == "" {
+			fstype = usage.Fstype
+		}
+		res = append(res, DiskUsageInfo{
+			Device:      partition.Device,
+			Mountpoint:  mountpoint,
+			Fstype:      fstype,
+			Total:       usage.Total,
+			Used:        usage.Used,
+			Free:        usage.Free,
+			UsedPercent: usage.UsedPercent,
+		})
+	}
+
+	if len(res) > 0 {
+		return res, nil
+	}
+
+	fallbackPath := os.TempDir()
+	usage, err := disk.Usage(fallbackPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return []DiskUsageInfo{{
+		Mountpoint:  usage.Path,
+		Fstype:      usage.Fstype,
+		Total:       usage.Total,
+		Used:        usage.Used,
+		Free:        usage.Free,
+		UsedPercent: usage.UsedPercent,
+	}}, nil
+}
+
 // getNetworkUsage gets OpenAgent process's own network I/O usage
 func getNetworkUsage() (uint64, uint64, uint64, error) {
 	proc, err := process.NewProcess(int32(os.Getpid()))
@@ -165,6 +231,8 @@ func GetSystemInfo() (*SystemInfo, error) {
 		return nil, err
 	}
 
+	diskUsages, _ := GetDiskUsages()
+
 	networkSent, networkRecv, networkTotal, err := getNetworkUsage()
 	if err != nil {
 		return nil, err
@@ -176,6 +244,7 @@ func GetSystemInfo() (*SystemInfo, error) {
 		MemoryTotal:  memoryTotal,
 		DiskUsed:     diskUsed,
 		DiskTotal:    diskTotal,
+		DiskUsages:   diskUsages,
 		NetworkSent:  networkSent,
 		NetworkRecv:  networkRecv,
 		NetworkTotal: networkTotal,

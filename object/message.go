@@ -387,6 +387,7 @@ func GetRecentRawMessages(chat string, createdTime string, memoryLimit int) ([]*
 
 type MyWriter struct {
 	bytes.Buffer
+	toolBuf []byte
 }
 
 func (w *MyWriter) Flush() {}
@@ -395,11 +396,23 @@ func (w *MyWriter) Write(p []byte) (n int, err error) {
 	s := string(p)
 	if strings.HasPrefix(s, "event: message\ndata: ") && strings.HasSuffix(s, "\n\n") {
 		data := strings.TrimSuffix(strings.TrimPrefix(s, "event: message\ndata: "), "\n\n")
-		return w.Buffer.WriteString(data)
+		_, err = w.Buffer.WriteString(data)
+		return len(p), err
 	} else if strings.HasPrefix(s, "event: reason\ndata: ") && strings.HasSuffix(s, "\n\n") {
-		return w.Buffer.WriteString("")
+		return len(p), nil
+	} else if strings.HasPrefix(s, "event: tool\ndata: ") && strings.HasSuffix(s, "\n\n") {
+		data := strings.TrimSuffix(strings.TrimPrefix(s, "event: tool\ndata: "), "\n\n")
+		if len(w.toolBuf) > 0 {
+			w.toolBuf = append(w.toolBuf, '\n')
+		}
+		w.toolBuf = append(w.toolBuf, []byte(data)...)
+		return len(p), nil
 	}
 	return w.Buffer.Write(p)
+}
+
+func (w *MyWriter) ToolString() string {
+	return string(w.toolBuf)
 }
 
 func GetAnswer(provider string, question string, lang string) (string, *model.ModelResult, error) {

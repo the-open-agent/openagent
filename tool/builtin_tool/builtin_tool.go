@@ -30,6 +30,7 @@ type BuiltinTool interface {
 
 type ToolRegistry struct {
 	tools map[string]BuiltinTool
+	order []string
 }
 
 func NewToolRegistry() *ToolRegistry {
@@ -39,7 +40,11 @@ func NewToolRegistry() *ToolRegistry {
 }
 
 func (r *ToolRegistry) RegisterTool(tool BuiltinTool) {
-	r.tools[tool.GetName()] = tool
+	name := tool.GetName()
+	if _, exists := r.tools[name]; !exists {
+		r.order = append(r.order, name)
+	}
+	r.tools[name] = tool
 }
 
 func (r *ToolRegistry) GetTool(name string) (BuiltinTool, bool) {
@@ -53,7 +58,12 @@ func (r *ToolRegistry) GetAllTools() map[string]BuiltinTool {
 
 func (r *ToolRegistry) GetToolsAsProtocolTools() []*protocol.Tool {
 	var tools []*protocol.Tool
-	for _, tool := range r.tools {
+	for _, name := range r.order {
+		tool, ok := r.tools[name]
+		if !ok {
+			continue
+		}
+		// InputSchema to protocol.InputSchema
 		schemaInterface := tool.GetInputSchema()
 		schemaBytes, err := json.Marshal(schemaInterface)
 		if err != nil {

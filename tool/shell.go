@@ -53,6 +53,24 @@ func (p *ShellTool) BuiltinTools() []BuiltinTool {
 
 type shellBuiltin struct{}
 
+type shellCommandOptions struct {
+	Command        string
+	Args           []string
+	UseShell       bool
+	Timeout        time.Duration
+	Workdir        string
+	MaxOutputBytes int
+}
+
+type shellCommandResult struct {
+	Stdout   string
+	Stderr   string
+	Err      error
+	TimedOut bool
+	ExitCode int
+	Shell    string
+}
+
 type shellSession struct {
 	id           string
 	command      string
@@ -98,19 +116,20 @@ func (s *shellBuiltin) GetName() string {
 }
 
 func (s *shellBuiltin) GetDescription() string {
-	return `Execute a shell command or manage a running shell process session.
-- command (required): the shell command to run (e.g. "ls -la", "echo hello").
+	return `Execute a shell command, run structured local system actions, or manage a running shell process session.
+- command: the shell command to run (e.g. "ls -la", "echo hello").
 - timeout: execution timeout in seconds (default 30, max 300).
 - workdir: working directory for the command (default: current directory).
 - background: when true, start a long-running shell session and return a session_id immediately.
 - pty: when true, run the command in a pseudo-terminal for interactive CLI programs.
-- action: session lifecycle action. One of "start", "poll", "write", "submit", "send_keys", "resize", or "stop".
+- action: session lifecycle action ("start", "poll", "write", "submit", "send_keys", "resize", "stop") or structured action ("disk_usage", "list_dir", "tree", "dir_size", "read_file", "version", "port_usage", "processes", "env", "system_info", "network_info", "docker", "mysql", "raw_command").
 - session_id: required for process actions after start.
 - input: text to write to the running terminal for "write" or "submit".
 - keys: key sequence names for "send_keys", for example ["enter"], ["ctrl+c"], ["tab"].
 - rows: terminal row count for PTY resize or PTY start.
 - cols: terminal column count for PTY resize or PTY start.
-- bytes: max bytes to return for "poll" (default 12000, max 100000).`
+- bytes: max bytes to return for "poll" (default 12000, max 100000).
+- path, target, port, limit, max_depth: parameters for structured system actions.`
 }
 
 func (s *shellBuiltin) GetInputSchema() interface{} {
@@ -119,7 +138,7 @@ func (s *shellBuiltin) GetInputSchema() interface{} {
 		"properties": map[string]interface{}{
 			"command": map[string]interface{}{
 				"type":        "string",
-				"description": "The shell command to execute.",
+				"description": "The shell command to execute directly or through action=raw_command.",
 			},
 			"timeout": map[string]interface{}{
 				"type":        "number",
@@ -139,8 +158,8 @@ func (s *shellBuiltin) GetInputSchema() interface{} {
 			},
 			"action": map[string]interface{}{
 				"type":        "string",
-				"enum":        []string{"start", "poll", "write", "submit", "send_keys", "resize", "stop"},
-				"description": "Action for background shell process sessions. Defaults to start.",
+				"enum":        []string{"start", "poll", "write", "submit", "send_keys", "resize", "stop", "disk_usage", "list_dir", "tree", "dir_size", "read_file", "version", "port_usage", "processes", "env", "system_info", "network_info", "docker", "mysql", "raw_command"},
+				"description": "Action for background shell sessions or structured local system queries.",
 			},
 			"session_id": map[string]interface{}{
 				"type":        "string",
@@ -169,18 +188,45 @@ func (s *shellBuiltin) GetInputSchema() interface{} {
 				"type":        "number",
 				"description": "PTY columns for start or resize.",
 			},
+			"path": map[string]interface{}{
+				"type":        "string",
+				"description": "Path for list_dir, tree, dir_size, or read_file.",
+			},
+			"target": map[string]interface{}{
+				"type":        "string",
+				"description": "Target for version/docker/mysql/env queries.",
+			},
+			"port": map[string]interface{}{
+				"type":        "number",
+				"description": "Port number for port_usage.",
+			},
+			"limit": map[string]interface{}{
+				"type":        "number",
+				"description": "Maximum rows or lines to return for structured actions.",
+			},
+			"max_depth": map[string]interface{}{
+				"type":        "number",
+				"description": "Maximum directory depth for tree.",
+			},
 		},
 	}
 }
 
 func (s *shellBuiltin) Execute(ctx context.Context, arguments map[string]interface{}) (*protocol.CallToolResult, error) {
-	if shellBoolArg(arguments, "background") || shellHasAction(arguments) {
+	action := strings.ToLower(shellStringArg(arguments, "action", ""))
+	if shellHasAction(arguments) {
+		return shellExecuteBackground(ctx, arguments)
+	}
+	if action != "" {
+		return shellExecuteStructuredAction(ctx, action, arguments)
+	}
+	if shellBoolArg(arguments, "background") {
 		return shellExecuteBackground(ctx, arguments)
 	}
 
 	command, ok := arguments["command"].(string)
 	if !ok || strings.TrimSpace(command) == "" {
-		return shellError("Missing required parameter: command"), nil
+		return shellError("Missing required parameter: command or action"), nil
 	}
 
 	timeoutSecs := shellDefaultTimeoutSeconds
@@ -207,8 +253,63 @@ func (s *shellBuiltin) Execute(ctx context.Context, arguments map[string]interfa
 	return shellText(result), nil
 }
 
+func runShellCommand(ctx context.Context, options shellCommandOptions) shellCommandResult {
+	timeout := options.Timeout
+	if timeout <= 0 {
+		timeout = 30 * time.Second
+	}
+	maxOutputBytes := options.MaxOutputBytes
+	if maxOutputBytes <= 0 {
+		maxOutputBytes = 16 * 1024
+	}
+
+	execCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	var cmd *exec.Cmd
+	shellName := options.Command
+	if options.UseShell {
+		if runtime.GOOS == "windows" {
+			cmd = exec.CommandContext(execCtx, "cmd", "/C", options.Command)
+			shellName = "cmd"
+		} else {
+			cmd = exec.CommandContext(execCtx, "sh", "-c", options.Command)
+			shellName = "sh"
+		}
+	} else {
+		cmd = exec.CommandContext(execCtx, options.Command, options.Args...)
+	}
+	if options.Workdir != "" {
+		cmd.Dir = options.Workdir
+	}
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+	exitCode := 0
+	if cmd.ProcessState != nil {
+		exitCode = cmd.ProcessState.ExitCode()
+	} else if err != nil {
+		exitCode = -1
+	}
+	timedOut := execCtx.Err() == context.DeadlineExceeded
+	if timedOut && exitCode == 0 {
+		exitCode = -1
+	}
+	return shellCommandResult{
+		Stdout:   truncateShellOutput(stdout.String(), maxOutputBytes),
+		Stderr:   truncateShellOutput(stderr.String(), maxOutputBytes),
+		Err:      err,
+		TimedOut: timedOut,
+		ExitCode: exitCode,
+		Shell:    shellName,
+	}
+}
+
 func shellExecuteBackground(ctx context.Context, arguments map[string]interface{}) (*protocol.CallToolResult, error) {
-	action := shellStringArg(arguments, "action", "start")
+	action := strings.ToLower(shellStringArg(arguments, "action", "start"))
 	switch action {
 	case "start":
 		return shellStartBackground(ctx, arguments)
@@ -646,7 +747,7 @@ func shellHasAction(arguments map[string]interface{}) bool {
 	if !ok {
 		return false
 	}
-	switch strings.TrimSpace(action) {
+	switch strings.ToLower(strings.TrimSpace(action)) {
 	case "start", "poll", "write", "submit", "send_keys", "resize", "stop":
 		return true
 	default:
@@ -833,6 +934,14 @@ func shellJSON(v interface{}) *protocol.CallToolResult {
 			&protocol.TextContent{Type: "text", Text: string(bs)},
 		},
 	}
+}
+
+func truncateShellOutput(text string, maxBytes int) string {
+	if maxBytes <= 0 || len(text) <= maxBytes {
+		return text
+	}
+	prefix := fmt.Sprintf("[output truncated to last %d bytes]\n", maxBytes)
+	return prefix + text[len(text)-maxBytes:]
 }
 
 func newShellRingBuffer(maxBytes int) *shellRingBuffer {

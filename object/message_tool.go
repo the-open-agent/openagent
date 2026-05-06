@@ -23,6 +23,18 @@ import (
 	"github.com/the-open-agent/openagent/util"
 )
 
+const shellToolPrompt = `
+You have access to tools. Use them when they are needed to answer with live or local data, but do not call tools unnecessarily.
+
+For local machine/server/system/file/directory/network/port/process/dependency version/build/test/log/config/Git/Docker/database client questions, including 本机, 当前系统, 系统, 文件, 目录, 网络, 端口, 进程, 版本, 依赖, 构建, 测试, 日志, 配置, Git, Docker, 数据库客户端, you must call shell when it is available before answering. If the question can be solved with a shell command, call shell with action=raw_command and write the command in the command argument. Generate commands for the current platform; on Windows prefer cmd or PowerShell-compatible commands. Do not answer these local-data questions with generic instructions or example commands unless the relevant tool call fails. If shell/raw_command fails, inspect stdout, stderr, exitCode, and timedOut, then rewrite and retry the command up to 2 times. If it still fails, explain the attempted commands, failure reason, and next step.`
+
+func AppendToolUsagePrompt(prompt string) string {
+	if strings.Contains(prompt, "action=raw_command") {
+		return prompt
+	}
+	return prompt + "\n" + shellToolPrompt
+}
+
 func buildToolSetForBuiltinTool(toolName string, lang string) (*mcp.ToolSet, error) {
 	if toolName == "" {
 		return nil, nil
@@ -69,7 +81,7 @@ func GetAnswerWithTool(modelProviderName, toolName, question, lang string) (stri
 		return "", nil, err
 	}
 
-	prompt := "You are an expert in your field and you specialize in using your knowledge to answer or solve people's problems."
+	prompt := AppendToolUsagePrompt("You are an expert in your field and you specialize in using your knowledge to answer or solve people's problems.")
 	history := []*model.RawMessage{}
 	knowledge := []*model.RawMessage{}
 
@@ -91,6 +103,9 @@ func GetAnswerWithTool(modelProviderName, toolName, question, lang string) (stri
 	}
 	if err != nil {
 		return "", nil, err
+	}
+	if modelResult != nil {
+		modelResult.ToolCalls = model.GetToolCallsFromWriter(writer.ToolString())
 	}
 
 	res := writer.String()
