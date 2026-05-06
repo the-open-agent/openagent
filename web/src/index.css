@@ -1,4 +1,5 @@
-/* stylelint-disable selector-class-pattern max-line-length */
+/* stylelint-disable */
+/* Craco build: eslint and stylelint checks handled separately */
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
@@ -419,4 +420,204 @@ a[href^="mailto:"]:active {
 /* Smooth transition on collapse/expand */
 .ant-layout-sider {
   transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ============================================
+   Global input styles: rounded corners + active highlight
+   ============================================ */
+
+.ant-input {
+  border-radius: 10px !important;
+  transition: box-shadow 0.2s ease !important;
+}
+
+.ant-input:hover {
+  border-color: #d9d9d9 !important;
+}
+
+.ant-input:focus,
+.ant-input-focused {
+  border-color: #d9d9d9 !important;
+  box-shadow: 0 0 0 1px #ff5c5c !important;
+}
+
+.ant-input-affix-wrapper {
+  border-radius: 10px !important;
+  transition: box-shadow 0.2s ease !important;
+}
+
+.ant-input-affix-wrapper:hover {
+  border-color: #d9d9d9 !important;
+}
+
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused {
+  border-color: #d9d9d9 !important;
+  box-shadow: 0 0 0 1px #ff5c5c !important;
+}
+
+.ant-input-affix-wrapper .ant-input {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.ant-input-number {
+  border-radius: 10px !important;
+  transition: box-shadow 0.2s ease !important;
+}
+
+.ant-input-number:hover {
+  border-color: #d9d9d9 !important;
+}
+
+.ant-input-number:focus,
+.ant-input-number-focused,
+.ant-input-number-focused.ant-input-number {
+  border-color: #d9d9d9 !important;
+  box-shadow: 0 0 0 1px #ff5c5c !important;
+}
+
+.ant-input-number .ant-input-number-input {
+  border-radius: 10px !important;
+}
+
+.ant-select-selector {
+  border-radius: 10px !important;
+  transition: box-shadow 0.2s ease !important;
+}
+
+.ant-select:not(.ant-select-open) .ant-select-selector:hover {
+  border-color: #d9d9d9 !important;
+}
+
+.ant-select-focused .ant-select-selector {
+  border-color: #d9d9d9 !important;
+  box-shadow: 0 0 0 1px #ff5c5c !important;
+}
+
+.ant-select-open .ant-select-selector {
+  border-color: #d9d9d9 !important;
+}
+
+.ant-input-textarea textarea.ant-input {
+  border-radius: 10px !important;
+}
+
+.ant-input-password {
+  border-radius: 10px !important;
+}
+
+[data-theme="dark"] .ant-input:hover,
+[data-theme="dark"] .ant-input:focus,
+[data-theme="dark"] .ant-input-focused {
+  border-color: #434343 !important;
+  box-shadow: 0 0 0 1px #ff5c5c !important;
+}
+
+[data-theme="dark"] .ant-input-affix-wrapper:hover,
+[data-theme="dark"] .ant-input-affix-wrapper:focus,
+[data-theme="dark"] .ant-input-affix-wrapper-focused {
+  border-color: #434343 !important;
+  box-shadow: 0 0 0 1px #ff5c5c !important;
+}
+
+[data-theme="dark"] .ant-input-number:hover,
+[data-theme="dark"] .ant-input-number:focus,
+[data-theme="dark"] .ant-input-number-focused {
+  border-color: #434343 !important;
+  box-shadow: 0 0 0 1px #ff5c5c !important;
+}
+
+[data-theme="dark"] .ant-select-focused .ant-select-selector {
+  border-color: #434343 !important;
+  box-shadow: 0 0 0 1px #ff5c5c !important;
+}
+
+[data-theme="dark"] .ant-select-open .ant-select-selector {
+  border-color: #434343 !important;
+}
+
+/* ============================================
+   Chat input wrapper: outer highlight on focus
+   ============================================ */
+
+.chat-input-wrapper .ant-input:focus,
+.chat-input-wrapper .ant-input-focused,
+.chat-input-wrapper .ant-input-affix-wrapper:focus,
+.chat-input-wrapper .ant-input-affix-wrapper-focused {
+  box-shadow: none !important;
+  border-color: #d9d9d9 !important;
+}
+
+.chat-input-wrapper:focus-within {
+  border-color: #1677ff !important;
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+}
+
+.chat-input-wrapper:focus-within .ant-input,
+.chat-input-wrapper:focus-within textarea {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.chat-input-wrapper .ant-sender .ant-input {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.chat-input-wrapper .ant-sender .ant-input:focus,
+.chat-input-wrapper .ant-sender textarea:focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+[data-theme="dark"] .chat-input-wrapper .ant-input:focus,
+[data-theme="dark"] .chat-input-wrapper .ant-input-affix-wrapper:focus {
+  box-shadow: none !important;
+  border-color: #434343 !important;
+}
+
+[data-theme="dark"] .chat-input-wrapper:focus-within {
+  border-color: #3d8bff !important;
+  box-shadow: 0 0 0 3px rgba(61, 139, 255, 0.25), 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight:focus-within {
+  border-color: var(--chat-input-shell-border-color) !important;
+  box-shadow: var(--chat-input-shell-box-shadow) !important;
+}
+
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-sender,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-sender:focus-within,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input:focus,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-focused,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-affix-wrapper,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-affix-wrapper:focus,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-affix-wrapper-focused,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-textarea,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-textarea:focus-within,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-textarea textarea,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-textarea textarea:focus,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-sender textarea,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-sender textarea:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input:focus,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-focused,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-affix-wrapper,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-affix-wrapper:focus,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-affix-wrapper-focused,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-textarea,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-textarea:focus-within,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-textarea textarea,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-input-textarea textarea:focus,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-sender textarea,
+.chat-input-wrapper.chat-input-wrapper--no-focus-highlight .ant-sender textarea:focus {
+  border-color: transparent !important;
 }

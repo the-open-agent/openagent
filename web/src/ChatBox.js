@@ -424,6 +424,7 @@ class ChatBox extends React.Component {
               onSend={this.handleSend}
               loading={this.props.loading}
               disableInput={this.props.disableInput}
+              disableFocusHighlight={this.props.disableFocusHighlight}
               messageError={this.props.messageError}
               onCancelMessage={this.props.onCancelMessage}
               onVoiceInputStart={this.startVoiceInput}

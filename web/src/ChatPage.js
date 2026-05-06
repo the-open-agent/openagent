@@ -837,6 +837,7 @@ class ChatPage extends BaseListPage {
               <ChatBox
                 ref={this.chatBox}
                 disableInput={this.state.disableInput}
+                disableFocusHighlight={true}
                 loading={this.state.messageLoading}
                 messages={this.state.messages}
                 messageError={this.state.messageError}

@@ -32,6 +32,7 @@ const ChatInput = React.forwardRef(({
   onSend,
   loading,
   disableInput,
+  disableFocusHighlight,
   messageError,
   onCancelMessage,
   onVoiceInputStart,
@@ -113,6 +114,9 @@ const ChatInput = React.forwardRef(({
   const isSpeechDisabled = false;
 
   const isDark = Setting.getIsDark();
+  const inputShellClassName = disableFocusHighlight ? "chat-input-wrapper chat-input-wrapper--no-focus-highlight" : undefined;
+  const inputShellBorderColor = isDark ? "#333" : "#e8eaed";
+  const inputShellBoxShadow = isDark ? "0 4px 24px rgba(0,0,0,0.4)" : "0 4px 24px rgba(0,0,0,0.08)";
 
   return (
     <div style={{position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 24px 16px", zIndex: 1}}>
@@ -170,11 +174,13 @@ const ChatInput = React.forwardRef(({
             </div>
           </div>
         )}
-        <div style={{
+        <div className={inputShellClassName} style={{
+          "--chat-input-shell-border-color": inputShellBorderColor,
+          "--chat-input-shell-box-shadow": inputShellBoxShadow,
           borderRadius: "16px",
-          boxShadow: isDark ? "0 4px 24px rgba(0,0,0,0.4)" : "0 4px 24px rgba(0,0,0,0.08)",
+          boxShadow: inputShellBoxShadow,
           overflow: "hidden",
-          border: isDark ? "1px solid #333" : "1px solid #e8eaed",
+          border: `1px solid ${inputShellBorderColor}`,
         }}>
           <Sender
             ref={senderRef}

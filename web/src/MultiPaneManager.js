@@ -496,7 +496,7 @@ const MultiPaneManager = ({
               )}
 
               <div style={{flex: 1}}>
-                <ChatBox autoFocusInput={paneCount <= 1} disableInput={false} loading={messageLoading} messages={pane.messages || []} messageError={messageError} sendMessage={(text, fileName, regenerate = false) => sendMessage(index, text, fileName, false, regenerate)} onMessageEdit={() => getMessages(index, pane.chat)} onCancelMessage={onCancelMessage} account={account} name={pane.chat?.name} displayName={pane.chat?.displayName} store={pane.store || defaultStore} />
+                <ChatBox autoFocusInput={paneCount <= 1} disableInput={false} disableFocusHighlight={true} loading={messageLoading} messages={pane.messages || []} messageError={messageError} sendMessage={(text, fileName, regenerate = false) => sendMessage(index, text, fileName, false, regenerate)} onMessageEdit={() => getMessages(index, pane.chat)} onCancelMessage={onCancelMessage} account={account} name={pane.chat?.name} displayName={pane.chat?.displayName} store={pane.store || defaultStore} />
               </div>
             </div>
           );
