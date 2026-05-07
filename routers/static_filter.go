@@ -16,6 +16,7 @@ package routers
 
 import (
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -24,13 +25,99 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/beego/beego/context"
 	"github.com/the-open-agent/openagent/conf"
+	"github.com/the-open-agent/openagent/internal/cli"
 	"github.com/the-open-agent/openagent/util"
 )
 
 var frontendBaseDir = conf.GetConfigString("frontendBaseDir")
+
+type frontendManifest struct {
+	Entrypoints []string `json:"entrypoints"`
+}
+
+type frontendManifestCache struct {
+	mutex      sync.Mutex
+	expireTime time.Time
+	manifest   frontendManifest
+}
+
+var cdnFrontendManifestCache frontendManifestCache
+
+func getCdnFrontendBase() string {
+	base := strings.TrimRight(cli.FrontendCdnRepoBase, "/")
+	version := cli.Version
+	if version == "" || version == "dev" {
+		return base
+	}
+	if strings.Contains(base, "@") {
+		return base
+	}
+	return fmt.Sprintf("%s@%s", base, version)
+}
+
+func getCdnFrontendManifest() (frontendManifest, error) {
+	cdnFrontendManifestCache.mutex.Lock()
+	defer cdnFrontendManifestCache.mutex.Unlock()
+
+	now := time.Now()
+	if len(cdnFrontendManifestCache.manifest.Entrypoints) > 0 && now.Before(cdnFrontendManifestCache.expireTime) {
+		return cdnFrontendManifestCache.manifest, nil
+	}
+
+	manifestURL := getCdnFrontendBase() + "/asset-manifest.json"
+	resp, err := http.Get(manifestURL)
+	if err != nil {
+		return frontendManifest{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return frontendManifest{}, fmt.Errorf("failed to fetch frontend manifest: %s", resp.Status)
+	}
+
+	var manifest frontendManifest
+	if err := json.NewDecoder(resp.Body).Decode(&manifest); err != nil {
+		return frontendManifest{}, err
+	}
+	if len(manifest.Entrypoints) == 0 {
+		return frontendManifest{}, fmt.Errorf("frontend manifest has no entrypoints")
+	}
+
+	cdnFrontendManifestCache.manifest = manifest
+	cdnFrontendManifestCache.expireTime = now.Add(10 * time.Minute)
+	return manifest, nil
+}
+
+func getCdnFrontendIndexHtml() (string, error) {
+	manifest, err := getCdnFrontendManifest()
+	if err != nil {
+		return "", err
+	}
+
+	cdnBase := getCdnFrontendBase()
+	var cssTags []string
+	var scriptTags []string
+	for _, entrypoint := range manifest.Entrypoints {
+		entrypoint = "/" + strings.TrimLeft(entrypoint, "/")
+		switch {
+		case strings.HasSuffix(entrypoint, ".css"):
+			cssTags = append(cssTags, fmt.Sprintf(`<link href="%s%s" rel="stylesheet">`, cdnBase, entrypoint))
+		case strings.HasSuffix(entrypoint, ".js"):
+			scriptTags = append(scriptTags, fmt.Sprintf(`<script defer="defer" src="%s%s"></script>`, cdnBase, entrypoint))
+		}
+	}
+
+	if len(scriptTags) == 0 {
+		return "", fmt.Errorf("frontend manifest has no javascript entrypoint")
+	}
+
+	return fmt.Sprintf(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="Web site created using create-react-app"/><link rel="apple-touch-icon" href="https://cdn.openagentai.org/img/openagent.png"/><link rel="manifest" href="https://cdn.openagentai.org/site/openagent/manifest.json"/><title>OpenAgent</title>%s%s</head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>`, strings.Join(cssTags, ""), strings.Join(scriptTags, "")), nil
+}
 
 func getWebBuildFolder() string {
 	path := "web/build"
@@ -126,9 +213,15 @@ func StaticFilter(ctx *context.Context) {
 			}
 			makeGzipResponse(ctx.ResponseWriter, ctx.Request, fallback)
 		} else {
+			html, err := getCdnFrontendIndexHtml()
+			if err != nil {
+				ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
+				_, _ = fmt.Fprintf(ctx.ResponseWriter, "Failed to load frontend manifest from CDN: %v", err)
+				return
+			}
 			ctx.ResponseWriter.Header().Set("Content-Type", "text/html; charset=utf-8")
-			ctx.ResponseWriter.WriteHeader(http.StatusNotFound)
-			_, _ = fmt.Fprint(ctx.ResponseWriter, `<!DOCTYPE html><html><head><title>Frontend Not Built</title></head><body><h2>Frontend not built</h2><p>Please run <code>cd web &amp;&amp; yarn install &amp;&amp; yarn build</code> to build the frontend.</p></body></html>`)
+			ctx.ResponseWriter.WriteHeader(http.StatusOK)
+			_, _ = fmt.Fprint(ctx.ResponseWriter, html)
 		}
 	}
 }

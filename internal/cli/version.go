@@ -16,7 +16,8 @@ package cli
 
 // Build metadata (override via -ldflags at release time).
 var (
-	Version   = "dev"
-	Commit    = "unknown"
-	BuildDate = "unknown"
+	Version             = "dev"
+	Commit              = "unknown"
+	BuildDate           = "unknown"
+	FrontendCdnRepoBase = "https://cdn.jsdelivr.net/gh/the-open-agent/openagent-dist"
 )

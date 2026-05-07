@@ -41,8 +41,6 @@ archives:
       - goos: windows
         format: zip
     files:
-      - src: 'web/build'
-        dst: './web/build'
       - src: 'conf/app.conf'
         dst: './conf/app.conf'
       - src: 'data'
