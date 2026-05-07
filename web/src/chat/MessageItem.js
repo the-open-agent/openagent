@@ -74,8 +74,12 @@ const MessageItem = ({
 
           let title = "";
           if (tc.content) {
-            const titleMatch = tc.content.match(/^Title:\s*(.+)$/m);
-            title = titleMatch ? titleMatch[1].trim() : "";
+            try {
+              const content = JSON.parse(tc.content);
+              const lines = content[0]["text"].split("\n");
+              const titleLine = lines.find(line => line.includes("Title:"));
+              title = titleLine ? titleLine.replace("Title:", "").trim() : "";
+            } catch (e) {title = "";}
           }
           if (!title) {title = url;}
 
