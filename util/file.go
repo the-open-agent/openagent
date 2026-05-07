@@ -23,10 +23,86 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/beego/beego"
 	"github.com/beego/beego/logs"
 	"github.com/the-open-agent/openagent/conf"
 	"github.com/the-open-agent/openagent/proxy"
 )
+
+func getRuntimeDataDir() string {
+	frontendBaseDir := conf.GetConfigString("frontendBaseDir")
+	if frontendBaseDir == "" {
+		return "data"
+	}
+	return filepath.Join(frontendBaseDir, "data")
+}
+
+func ensureDataFile(filename string, urls ...string) error {
+	targetPath := filepath.Join(getRuntimeDataDir(), filename)
+	if FileExist(targetPath) {
+		return nil
+	}
+
+	EnsureFileFolderExists(targetPath)
+
+	var lastErr error
+	for _, fileURL := range urls {
+		buffer, err := DownloadFile(fileURL)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+
+		err = os.WriteFile(targetPath, buffer.Bytes(), 0o644)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+
+		return nil
+	}
+
+	if lastErr != nil {
+		return fmt.Errorf("failed to initialize %s: %w", targetPath, lastErr)
+	}
+
+	return fmt.Errorf("failed to initialize %s: no download URLs configured", targetPath)
+}
+
+func EnsureRuntimeDataFiles() error {
+	err := ensureDataFile("regexes.yaml",
+		"https://cdn.jsdelivr.net/gh/the-open-agent/openagent@master/data/regexes.yaml",
+	)
+	if err != nil {
+		return err
+	}
+
+	if beego.AppConfig.DefaultBool("isLocalIpDb", false) {
+		err = ensureDataFile("17monipdb.dat",
+			"https://cdn.jsdelivr.net/gh/the-open-agent/openagent@master/data/17monipdb.dat",
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	templateFiles := []string{
+		"code-server.yaml",
+		"kuboard.yaml",
+		"pdf2zh.yaml",
+	}
+
+	for _, templateFile := range templateFiles {
+		err = ensureDataFile(filepath.Join("template", templateFile),
+			fmt.Sprintf("https://cdn.jsdelivr.net/gh/the-open-agent/openagent@master/data/template/%s", templateFile),
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 func parseJsonToFloats(s string) []float64 {
 	s = strings.TrimLeft(s, "[")

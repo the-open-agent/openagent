@@ -45,8 +45,6 @@ archives:
         dst: './web/build'
       - src: 'conf/app.conf'
         dst: './conf/app.conf'
-      - src: 'data'
-        dst: './data'
       - src: 'skills'
         dst: './skills'
 

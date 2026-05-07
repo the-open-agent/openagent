@@ -43,6 +43,10 @@ func main() {
 
 	object.InitDb()
 	proxy.InitHttpClient()
+	err := util.EnsureRuntimeDataFiles()
+	if err != nil {
+		panic(err)
+	}
 	util.InitMaxmindFiles()
 	util.InitIpDb()
 	util.InitParser()
@@ -81,7 +85,7 @@ func main() {
 
 	var logAdapter string
 	logConfigMap := make(map[string]interface{})
-	err := json.Unmarshal([]byte(conf.GetConfigString("logConfig")), &logConfigMap)
+	err = json.Unmarshal([]byte(conf.GetConfigString("logConfig")), &logConfigMap)
 	if err != nil {
 		panic(err)
 	}
