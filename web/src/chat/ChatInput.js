@@ -174,17 +174,14 @@ const ChatInput = React.forwardRef(({
             </div>
           </div>
         )}
-        <div
-          className={inputShellClassName || "chat-input-wrapper"}
-          style={{
-            "--chat-input-shell-border-color": inputShellBorderColor,
-            "--chat-input-shell-box-shadow": inputShellBoxShadow,
-            borderRadius: "24px",
-            boxShadow: inputShellBoxShadow,
-            overflow: "hidden",
-            border: `1px solid ${inputShellBorderColor}`,
-            transition: "border-color 0.25s ease, box-shadow 0.25s ease",
-          }}>
+        <div className={inputShellClassName} style={{
+          "--chat-input-shell-border-color": inputShellBorderColor,
+          "--chat-input-shell-box-shadow": inputShellBoxShadow,
+          borderRadius: "16px",
+          boxShadow: inputShellBoxShadow,
+          overflow: "hidden",
+          border: `1px solid ${inputShellBorderColor}`,
+        }}>
           <Sender
             ref={senderRef}
             prefix={
@@ -200,7 +197,7 @@ const ChatInput = React.forwardRef(({
             }
             loading={loading}
             disabled={disableInput}
-            style={{flex: 1, borderRadius: "24px", background: isDark ? "#1a1a1a" : "#fff", border: "none", boxShadow: "none"}}
+            style={{flex: 1, borderRadius: "16px", background: isDark ? "#1a1a1a" : "#fff", border: "none", boxShadow: "none"}}
             placeholder={messageError ? "" : i18next.t("chat:Type message here")}
             value={(files.length > 0 && value === "") ? " " + value : value}
             onChange={onChange}
