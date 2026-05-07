@@ -317,32 +317,47 @@ class ProviderEditPage extends React.Component {
 
     const sectionCardStyle = {
       marginBottom: "16px",
-      borderRadius: "12px",
+      borderRadius: "14px",
       boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+      padding: "18px",
+    };
+
+    const cardHeadStyle = {background: "transparent", borderBottom: "none", fontWeight: 600, fontSize: "15px"};
+
+    const btnStyle = {
+      backgroundColor: "#F8F9FA",
+      borderColor: "rgb(229, 229, 234)",
+      border: "1px solid #E5E5EA",
+      borderRadius: "10px",
+      padding: "6px 10px",
     };
 
     return (
-      <div style={{marginLeft: "5px"}}>
-        <div style={{marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px"}}>
-          <span style={{fontSize: "16px", fontWeight: 600}}>
+      <div>
+        <div style={{marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between"}}>
+          <span style={{fontSize: "22px", fontWeight: 600}}>
             {isRemote ? i18next.t("general:View") : i18next.t("provider:Edit Provider")}
           </span>
-          {!isRemote && <Button onClick={() => this.submitProviderEdit(false)}>{i18next.t("general:Save")}</Button>}
-          {!isRemote && <Button type="primary" onClick={() => this.submitProviderEdit(true)}>{i18next.t("general:Save & Exit")}</Button>}
-          {!isRemote && this.state.isNewProvider && <Button onClick={() => this.cancelProviderEdit()}>{i18next.t("general:Cancel")}</Button>}
+          {!isRemote && (
+            <div style={{display: "flex", gap: "8px", marginRight: "4px"}}>
+              <Button style={btnStyle} onClick={() => this.submitProviderEdit(false)}>{i18next.t("general:Save")}</Button>
+              <Button style={btnStyle} onClick={() => this.submitProviderEdit(true)}>{i18next.t("general:Save & Exit")}</Button>
+              {this.state.isNewProvider && <Button style={btnStyle} onClick={() => this.cancelProviderEdit()}>{i18next.t("general:Cancel")}</Button>}
+            </div>
+          )}
         </div>
 
         {/* Card 1: General Settings */}
-        <Card size="small" title={i18next.t("provider:General Settings")} style={sectionCardStyle} type="inner">
+        <Card size="small" title={i18next.t("provider:General Settings")} style={sectionCardStyle} headStyle={cardHeadStyle}>
           <Row style={{marginTop: "10px"}} gutter={16}>
             <Col style={{marginTop: "5px"}} span={Setting.isMobile() ? 22 : 11}>
-              <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:ID"), i18next.t("general:Name - Tooltip"))} :</div>
+              <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:ID"), i18next.t("general:Name - Tooltip"))}</div>
               <Input disabled={isRemote} value={provider.name} onChange={e => {
                 this.updateProviderField("name", e.target.value);
               }} />
             </Col>
             <Col style={{marginTop: "5px"}} span={Setting.isMobile() ? 22 : 11}>
-              <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:Display name"), i18next.t("general:Display name - Tooltip"))} :</div>
+              <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:Display name"), i18next.t("general:Display name - Tooltip"))}</div>
               <Input disabled={isRemote} value={provider.displayName} onChange={e => {
                 this.updateProviderField("displayName", e.target.value);
               }} />
@@ -351,7 +366,7 @@ class ProviderEditPage extends React.Component {
           {this.shouldShowProviderDisplayName2Field() ? (
             <Row style={{marginTop: "20px"}} gutter={16}>
               <Col span={colSpan}>
-                <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:Display name 2"), i18next.t("general:Display name 2 - Tooltip"))} :</div>
+                <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:Display name 2"), i18next.t("general:Display name 2 - Tooltip"))}</div>
                 <Input disabled={isRemote} value={provider.displayName2 ?? ""} onChange={e => {
                   this.updateProviderField("displayName2", e.target.value);
                 }} />
@@ -360,7 +375,7 @@ class ProviderEditPage extends React.Component {
           ) : null}
           <Row style={{marginTop: "20px"}} gutter={16}>
             <Col style={{marginTop: "5px"}} span={Setting.isMobile() ? 22 : 7}>
-              <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:Category"), i18next.t("provider:Category - Tooltip"))} :</div>
+              <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:Category"), i18next.t("provider:Category - Tooltip"))}</div>
               <Select virtual={false} disabled={isRemote} style={{width: "100%"}} value={provider.category} onChange={(value => {
                 this.updateProviderField("category", value);
                 if (value === "Storage") {
@@ -410,7 +425,7 @@ class ProviderEditPage extends React.Component {
               </Select>
             </Col>
             <Col style={{marginTop: "5px"}} span={Setting.isMobile() ? 22 : 8}>
-              <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:Type"), i18next.t("general:Type - Tooltip"))} :</div>
+              <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:Type"), i18next.t("general:Type - Tooltip"))}</div>
               <Select virtual={false} disabled={isRemote} style={{width: "100%"}} value={provider.type} onChange={(value => {
                 this.updateProviderField("type", value);
                 if (provider.category === "Model") {
@@ -518,7 +533,7 @@ class ProviderEditPage extends React.Component {
             {
               !["Model", "Embedding", "Text-to-Speech", "Speech-to-Text", "Bot"].includes(provider.category) ? null : (
                 <Col style={{marginTop: "5px"}} span={Setting.isMobile() ? 22 : 7}>
-                  <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("provider:Sub type"), i18next.t("provider:Sub type - Tooltip"))} :</div>
+                  <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("provider:Sub type"), i18next.t("provider:Sub type - Tooltip"))}</div>
                   {provider.type === "Ollama" ? (
                     <AutoComplete
                       style={{width: "100%"}}
@@ -559,7 +574,7 @@ class ProviderEditPage extends React.Component {
             (this.state.provider.category === "Model" && this.state.provider.type === "OpenAI Compatible") ? (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {this.getProviderUrlLabel(this.state.provider)} :
+                  {this.getProviderUrlLabel(this.state.provider)}
                 </Col>
                 <Col span={22} >
                   <Input prefix={<LinkOutlined />} value={this.state.provider.providerUrl} onChange={e => {
@@ -573,7 +588,7 @@ class ProviderEditPage extends React.Component {
             (this.state.provider.type === "Cohere" && this.state.provider.category === "Embedding") && (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {Setting.getLabel(i18next.t("provider:Input type"), i18next.t("provider:Input type - Tooltip"))} :
+                  {Setting.getLabel(i18next.t("provider:Input type"), i18next.t("provider:Input type - Tooltip"))}
                 </Col>
                 <Col span={22} >
                   <Select virtual={false} disabled={isRemote} style={{width: "100%"}} value={this.state.provider.clientId} onChange={(value => {this.updateProviderField("clientId", value);})}>
@@ -590,7 +605,7 @@ class ProviderEditPage extends React.Component {
             this.shouldShowClientIdInput(this.state.provider) ? (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {this.getClientIdLabel(this.state.provider)} :
+                  {this.getClientIdLabel(this.state.provider)}
                 </Col>
                 <Col span={22} >
                   <Input disabled={isRemote} value={this.state.provider.clientId} onChange={e => {
@@ -604,7 +619,7 @@ class ProviderEditPage extends React.Component {
             this.state.provider.category === "Chat" ? (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {this.getClientIdLabel(this.state.provider)} :
+                  {this.getClientIdLabel(this.state.provider)}
                 </Col>
                 <Col span={22} >
                   <Select virtual={false} disabled={isRemote} style={{width: "100%"}} value={this.state.provider.clientId}
@@ -626,7 +641,7 @@ class ProviderEditPage extends React.Component {
               <>
                 <Row style={{marginTop: "20px"}}>
                   <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                    {Setting.getLabel(i18next.t("provider:Compatible provider"), i18next.t("provider:Compatible provider - Tooltip"))} :
+                    {Setting.getLabel(i18next.t("provider:Compatible provider"), i18next.t("provider:Compatible provider - Tooltip"))}
                   </Col>
                   <Col span={22} >
                     <AutoComplete
@@ -649,7 +664,7 @@ class ProviderEditPage extends React.Component {
               <>
                 <Row style={{marginTop: "20px"}} >
                   <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                    {Setting.getLabel(i18next.t("provider:Input price / 1k tokens"), i18next.t("provider:Input price / 1k tokens - Tooltip"))} :
+                    {Setting.getLabel(i18next.t("provider:Input price / 1k tokens"), i18next.t("provider:Input price / 1k tokens - Tooltip"))}
                   </Col>
                   <Col span={22} >
                     <InputNumber min={0} value={this.state.provider.inputPricePerThousandTokens} onChange={value => {
@@ -659,7 +674,7 @@ class ProviderEditPage extends React.Component {
                 </Row>
                 <Row style={{marginTop: "20px"}} >
                   <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                    {Setting.getLabel(i18next.t("provider:Output price / 1k tokens"), i18next.t("provider:Output price / 1k tokens - Tooltip"))} :
+                    {Setting.getLabel(i18next.t("provider:Output price / 1k tokens"), i18next.t("provider:Output price / 1k tokens - Tooltip"))}
                   </Col>
                   <Col span={22} >
                     <InputNumber min={0} value={this.state.provider.outputPricePerThousandTokens} onChange={value => {
@@ -675,7 +690,7 @@ class ProviderEditPage extends React.Component {
               <>
                 <Row style={{marginTop: "20px"}} >
                   <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                    {Setting.getLabel(i18next.t("provider:Input price / 1k tokens"), i18next.t("provider:Input price / 1k tokens - Tooltip"))} :
+                    {Setting.getLabel(i18next.t("provider:Input price / 1k tokens"), i18next.t("provider:Input price / 1k tokens - Tooltip"))}
                   </Col>
                   <Col span={22} >
                     <InputNumber min={0} value={this.state.provider.inputPricePerThousandTokens} onChange={value => {
@@ -691,7 +706,7 @@ class ProviderEditPage extends React.Component {
               <>
                 <Row style={{marginTop: "20px"}} >
                   <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                    {Setting.getLabel(i18next.t("provider:Currency"), i18next.t("provider:Currency - Tooltip"))} :
+                    {Setting.getLabel(i18next.t("provider:Currency"), i18next.t("provider:Currency - Tooltip"))}
                   </Col>
                   <Col span={22} >
                     <Select virtual={false} disabled={isRemote} style={{width: "100%"}} value={this.state.provider.currency} onChange={(value => {
@@ -722,7 +737,7 @@ class ProviderEditPage extends React.Component {
               <>
                 <Row style={{marginTop: "20px"}}>
                   <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                    {Setting.getLabel(i18next.t("provider:Flavor"), i18next.t("provider:Flavor - Tooltip"))} :
+                    {Setting.getLabel(i18next.t("provider:Flavor"), i18next.t("provider:Flavor - Tooltip"))}
                   </Col>
                   <Col span={22} >
                     <Select virtual={false} disabled={isRemote} style={{width: "100%"}} value={this.state.provider.flavor} onChange={(value => {
@@ -742,7 +757,7 @@ class ProviderEditPage extends React.Component {
             this.shouldShowClientSecretInput(this.state.provider) ? (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {this.getClientSecretLabel(this.state.provider)} :
+                  {this.getClientSecretLabel(this.state.provider)}
                 </Col>
                 <Col span={22} >
                   <Input.Password disabled={isRemote} value={this.state.provider.clientSecret} onChange={e => {
@@ -757,7 +772,7 @@ class ProviderEditPage extends React.Component {
               <>
                 <Row style={{marginTop: "20px"}} >
                   <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                    {Setting.getLabel(i18next.t("provider:Enable thinking"), i18next.t("provider:Enable thinking - Tooltip"))} :
+                    {Setting.getLabel(i18next.t("provider:Enable thinking"), i18next.t("provider:Enable thinking - Tooltip"))}
                   </Col>
                   <Col span={22} >
                     <Switch disabled={isRemote} checked={this.state.provider.enableThinking} onChange={checked => {
@@ -769,7 +784,7 @@ class ProviderEditPage extends React.Component {
                   this.state.provider.enableThinking && (
                     <Row style={{marginTop: "20px"}} >
                       <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                        {Setting.getLabel(i18next.t("provider:Thinking tokens"), i18next.t("provider:Thinking tokens - Tooltip"))} :
+                        {Setting.getLabel(i18next.t("provider:Thinking tokens"), i18next.t("provider:Thinking tokens - Tooltip"))}
                       </Col>
                       <Col span={22} >
                         <InputNumber min={1024} max={Setting.getThinkingModelMaxTokens(this.state.provider.subType) - 1} value={this.state.provider.topK || 1024} onChange={value => {
@@ -786,7 +801,7 @@ class ProviderEditPage extends React.Component {
             ["Storage", "Model", "Embedding", "Text-to-Speech", "Speech-to-Text", "Scan"].includes(this.state.provider.category) || (this.state.provider.category === "Blockchain" && this.state.provider.type === "Ethereum") || (this.state.provider.category === "Private Cloud" && this.state.provider.type === "Kubernetes") ? null : (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {this.getRegionLabel(this.state.provider)} :
+                  {this.getRegionLabel(this.state.provider)}
                 </Col>
                 <Col span={22} >
                   <Input disabled={isRemote} value={this.state.provider.region} onChange={e => {
@@ -803,7 +818,7 @@ class ProviderEditPage extends React.Component {
                   <>
                     <Row style={{marginTop: "20px"}}>
                       <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                        {Setting.getLabel(i18next.t("provider:Chain"), i18next.t("provider:Chain - Tooltip"))} :
+                        {Setting.getLabel(i18next.t("provider:Chain"), i18next.t("provider:Chain - Tooltip"))}
                       </Col>
                       <Col span={22}>
                         <Input disabled={isRemote} value={this.state.provider.chain} onChange={e => {
@@ -813,7 +828,7 @@ class ProviderEditPage extends React.Component {
                     </Row>
                     <Row style={{marginTop: "20px"}}>
                       <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                        {this.getNetworkLabel(this.state.provider)} :
+                        {this.getNetworkLabel(this.state.provider)}
                       </Col>
                       <Col span={22}>
                         <Input disabled={isRemote} value={this.state.provider.network} onChange={e => {
@@ -827,7 +842,7 @@ class ProviderEditPage extends React.Component {
                   <>
                     <Row style={{marginTop: "20px"}}>
                       <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                        {Setting.getLabel(i18next.t("provider:Auth type"), i18next.t("provider:Auth type - Tooltip"))} :
+                        {Setting.getLabel(i18next.t("provider:Auth type"), i18next.t("provider:Auth type - Tooltip"))}
                       </Col>
                       <Col span={22}>
                         <Select
@@ -846,7 +861,7 @@ class ProviderEditPage extends React.Component {
                     </Row>
                     <Row style={{marginTop: "20px"}} >
                       <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                        {Setting.getLabel(i18next.t("cert:User cert"), i18next.t("cert:User cert - Tooltip"))} :
+                        {Setting.getLabel(i18next.t("cert:User cert"), i18next.t("cert:User cert - Tooltip"))}
                       </Col>
                       <Col span={editorWidth} >
                         <Button style={{marginRight: "10px", marginBottom: "10px"}} disabled={this.state.provider.userCert === ""} onClick={() => {
@@ -869,7 +884,7 @@ class ProviderEditPage extends React.Component {
                       </Col>
                       <Col span={1} />
                       <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                        {Setting.getLabel(i18next.t("cert:User key"), i18next.t("cert:User key - Tooltip"))} :
+                        {Setting.getLabel(i18next.t("cert:User key"), i18next.t("cert:User key - Tooltip"))}
                       </Col>
                       <Col span={editorWidth} >
                         <Button style={{marginRight: "10px", marginBottom: "10px"}} disabled={this.state.provider.userKey === ""} onClick={() => {
@@ -893,7 +908,7 @@ class ProviderEditPage extends React.Component {
                     </Row>
                     <Row style={{marginTop: "20px"}} >
                       <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                        {Setting.getLabel(i18next.t("cert:Sign cert"), i18next.t("cert:Sign cert - Tooltip"))} :
+                        {Setting.getLabel(i18next.t("cert:Sign cert"), i18next.t("cert:Sign cert - Tooltip"))}
                       </Col>
                       <Col span={editorWidth} >
                         <Button style={{marginRight: "10px", marginBottom: "10px"}} disabled={this.state.provider.signCert === ""} onClick={() => {
@@ -916,7 +931,7 @@ class ProviderEditPage extends React.Component {
                       </Col>
                       <Col span={1} />
                       <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                        {Setting.getLabel(i18next.t("cert:Sign key"), i18next.t("cert:Sign key - Tooltip"))} :
+                        {Setting.getLabel(i18next.t("cert:Sign key"), i18next.t("cert:Sign key - Tooltip"))}
                       </Col>
                       <Col span={editorWidth} >
                         <Button style={{marginRight: "10px", marginBottom: "10px"}} disabled={this.state.provider.signKey === ""} onClick={() => {
@@ -944,7 +959,7 @@ class ProviderEditPage extends React.Component {
                   <>
                     <Row style={{marginTop: "20px"}}>
                       <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                        {this.getContractNameLabel(this.state.provider)} :
+                        {this.getContractNameLabel(this.state.provider)}
                       </Col>
                       <Col span={22}>
                         <Input disabled={isRemote} value={this.state.provider.contractName} onChange={e => {
@@ -954,7 +969,7 @@ class ProviderEditPage extends React.Component {
                     </Row>
                     <Row style={{marginTop: "20px"}}>
                       <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                        {Setting.getLabel(i18next.t("provider:Invoke method"), i18next.t("provider:Invoke method - Tooltip"))} :
+                        {Setting.getLabel(i18next.t("provider:Invoke method"), i18next.t("provider:Invoke method - Tooltip"))}
                       </Col>
                       <Col span={22}>
                         <Input disabled={isRemote} value={this.state.provider.contractMethod} onChange={e => {
@@ -966,7 +981,7 @@ class ProviderEditPage extends React.Component {
                 ) : null}
                 <Row style={{marginTop: "20px"}}>
                   <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                    {Setting.getLabel(i18next.t("provider:Browser URL"), i18next.t("provider:Browser URL - Tooltip"))} :
+                    {Setting.getLabel(i18next.t("provider:Browser URL"), i18next.t("provider:Browser URL - Tooltip"))}
                   </Col>
                   <Col span={22}>
                     <Input prefix={<LinkOutlined />} value={this.state.provider.browserUrl}
@@ -981,7 +996,7 @@ class ProviderEditPage extends React.Component {
           }
           <Row style={{marginTop: "20px"}} >
             <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-              {Setting.getLabel(i18next.t("store:Is default"), i18next.t("store:Is default - Tooltip"))} :
+              {Setting.getLabel(i18next.t("store:Is default"), i18next.t("store:Is default - Tooltip"))}
             </Col>
             <Col span={1}>
               <Switch disabled={isRemote} checked={this.state.provider.isDefault} onChange={checked => {
@@ -991,7 +1006,7 @@ class ProviderEditPage extends React.Component {
           </Row>
           <Row style={{marginTop: "20px"}} >
             <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-              {Setting.getLabel(i18next.t("provider:Is remote"), i18next.t("provider:Is remote - Tooltip"))} :
+              {Setting.getLabel(i18next.t("provider:Is remote"), i18next.t("provider:Is remote - Tooltip"))}
             </Col>
             <Col span={1}>
               <Switch disabled checked={this.state.provider.isRemote} />
@@ -999,7 +1014,7 @@ class ProviderEditPage extends React.Component {
           </Row>
           <Row style={{marginTop: "20px"}}>
             <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-              {Setting.getLabel(i18next.t("general:State"), i18next.t("general:State - Tooltip"))} :
+              {Setting.getLabel(i18next.t("general:State"), i18next.t("general:State - Tooltip"))}
             </Col>
             <Col span={22}>
               <Select virtual={false} disabled={isRemote} style={{width: "100%"}} value={this.state.provider.state} onChange={value => {
@@ -1015,7 +1030,7 @@ class ProviderEditPage extends React.Component {
             this.state.provider.category === "Model" ? (
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {Setting.getLabel(i18next.t("provider:Provider key"), i18next.t("provider:Provider key - Tooltip"))} :
+                  {Setting.getLabel(i18next.t("provider:Provider key"), i18next.t("provider:Provider key - Tooltip"))}
                 </Col>
                 <Col span={22} >
                   <Input.Password
@@ -1033,7 +1048,7 @@ class ProviderEditPage extends React.Component {
 
         {/* Card 2: Advanced Model Parameters */}
         {isModelProvider && (this.isTemperatureEnabled(provider) || this.isTopPEnabled(provider) || (provider.type === "Gemini")) && (
-          <Card size="small" title={i18next.t("provider:Advanced Model Parameters")} style={sectionCardStyle} type="inner">
+          <Card size="small" title={i18next.t("provider:Advanced Model Parameters")} style={sectionCardStyle} headStyle={cardHeadStyle}>
             {this.isTemperatureEnabled(provider) ? (
               <Row style={{marginTop: "10px"}} gutter={16}>
                 <Col span={Setting.isMobile() ? 22 : 14}>
@@ -1178,7 +1193,7 @@ class ProviderEditPage extends React.Component {
             <>
               <Row style={{marginTop: "20px"}}>
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {Setting.getLabel(i18next.t("provider:API version"), i18next.t("provider:API version - Tooltip"))} :
+                  {Setting.getLabel(i18next.t("provider:API version"), i18next.t("provider:API version - Tooltip"))}
                 </Col>
                 <Col span={22} >
                   <AutoComplete disabled={isRemote} style={{width: "100%"}} value={this.state.provider.apiVersion}
@@ -1191,7 +1206,7 @@ class ProviderEditPage extends React.Component {
           ) : null
         }
         {/* Card 3: Provider Test */}
-        <Card size="small" title={i18next.t("provider:Provider Test")} style={sectionCardStyle} type="inner">
+        <Card size="small" title={i18next.t("provider:Provider Test")} style={sectionCardStyle} headStyle={cardHeadStyle}>
           <ModelTestWidget
             provider={this.state.provider}
             originalProvider={this.state.originalProvider}
@@ -1225,7 +1240,7 @@ class ProviderEditPage extends React.Component {
           this.state.provider.category === "Chat" ? (
             <Row style={{marginTop: "20px"}} >
               <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                {Setting.getLabel(i18next.t("provider:Domain"), i18next.t("provider:Domain - Tooltip"))} :
+                {Setting.getLabel(i18next.t("provider:Domain"), i18next.t("provider:Domain - Tooltip"))}
               </Col>
               <Col span={22} >
                 <Input prefix={<LinkOutlined />} disabled={isRemote} value={this.state.provider.domain} onChange={e => {
@@ -1239,7 +1254,7 @@ class ProviderEditPage extends React.Component {
           (this.state.provider.category === "Chat" && this.state.provider.type === "Telegram") ? (
             <Row style={{marginTop: "20px"}} >
               <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                {Setting.getLabel(i18next.t("provider:Webhook"), i18next.t("provider:Webhook - Tooltip"))} :
+                {Setting.getLabel(i18next.t("provider:Webhook"), i18next.t("provider:Webhook - Tooltip"))}
               </Col>
               <Col span={22} >
                 <Button disabled={isRemote} type="primary" onClick={() => this.setTelegramWebhook()}>
@@ -1253,7 +1268,7 @@ class ProviderEditPage extends React.Component {
           this.state.provider.category === "Private Cloud" && this.state.provider.type === "Kubernetes" ? (
             <Row style={{marginTop: "20px"}} >
               <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                {Setting.getLabel(i18next.t("provider:Config text"), i18next.t("provider:Config text - Tooltip"))} :
+                {Setting.getLabel(i18next.t("provider:Config text"), i18next.t("provider:Config text - Tooltip"))}
               </Col>
               <Col span={22} >
                 <Editor
@@ -1275,7 +1290,7 @@ class ProviderEditPage extends React.Component {
             <>
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {Setting.getLabel(i18next.t("scan:Result summary"), i18next.t("scan:Result summary - Tooltip"))} :
+                  {Setting.getLabel(i18next.t("scan:Result summary"), i18next.t("scan:Result summary - Tooltip"))}
                 </Col>
                 <Col span={22} >
                   <Input value={this.state.provider.resultSummary} disabled />
@@ -1283,7 +1298,7 @@ class ProviderEditPage extends React.Component {
               </Row>
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {Setting.getLabel(i18next.t("scan:Runner"), i18next.t("scan:Runner - Tooltip"))} :
+                  {Setting.getLabel(i18next.t("scan:Runner"), i18next.t("scan:Runner - Tooltip"))}
                 </Col>
                 <Col span={22} >
                   <Input value={this.state.provider.runner} disabled />
@@ -1291,7 +1306,7 @@ class ProviderEditPage extends React.Component {
               </Row>
               <Row style={{marginTop: "20px"}} >
                 <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {Setting.getLabel(i18next.t("general:Error"), i18next.t("scan:Error - Tooltip"))} :
+                  {Setting.getLabel(i18next.t("general:Error"), i18next.t("scan:Error - Tooltip"))}
                 </Col>
                 <Col span={22} >
                   <Input.TextArea value={this.state.provider.errorText} disabled rows={4} />
@@ -1304,7 +1319,7 @@ class ProviderEditPage extends React.Component {
           (this.state.provider.category !== "Model" || this.modelCategoryShowsProviderUrlInput(this.state.provider.type)) ? (
             <Row style={{marginTop: "20px"}} >
               <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                {this.getProviderUrlLabel(this.state.provider)} :
+                {this.getProviderUrlLabel(this.state.provider)}
               </Col>
               <Col span={22} >
                 <Input prefix={<LinkOutlined />} value={this.state.provider.providerUrl} onChange={e => {
@@ -1383,19 +1398,11 @@ class ProviderEditPage extends React.Component {
   }
 
   render() {
-    const isRemote = this.state.provider?.isRemote;
     return (
-      <div>
+      <div style={{background: "#F1F3F5", padding: "16px 20px 32px", minHeight: "100vh"}}>
         {
           this.state.provider !== null ? this.renderProvider() : <Loading type="page" tip={i18next.t("general:Loading")} />
         }
-        {!isRemote && (
-          <div style={{marginTop: "20px", marginLeft: "40px"}}>
-            <Button size="large" onClick={() => this.submitProviderEdit(false)}>{i18next.t("general:Save")}</Button>
-            <Button style={{marginLeft: "20px"}} type="primary" size="large" onClick={() => this.submitProviderEdit(true)}>{i18next.t("general:Save & Exit")}</Button>
-            {this.state.isNewProvider && <Button style={{marginLeft: "20px"}} size="large" onClick={() => this.cancelProviderEdit()}>{i18next.t("general:Cancel")}</Button>}
-          </div>
-        )}
       </div>
     );
   }
