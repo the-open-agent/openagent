@@ -3028,7 +3028,7 @@ export function getToolFunctions(tool) {
     return [{
       name: "web_fetch",
       description: "Fetch and extract content from a web URL",
-      testContent: JSON.stringify({tool: "web_fetch", arguments: {url: "https://openagentai.org", max_length: 3000}}, null, 2),
+      testContent: JSON.stringify({tool: "web_fetch", arguments: {url: "https://openagentai.org", purpose: "get_list", max_length: 3000}}, null, 2),
     }];
   }
   if (type === "web_browser") {

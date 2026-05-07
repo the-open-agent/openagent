@@ -62,12 +62,15 @@ const MessageItem = ({
       message.toolCalls
         .filter(tc => tc.name === "web_fetch" && tc.content)
         .forEach(tc => {
+          let purpose = "";
           let url = "";
           try {
             const args = JSON.parse(tc.arguments);
             url = args.url || "";
+            purpose = args.purpose || "";
           } catch (e) {url = "";}
           if (!url) {return;}
+          if (purpose === "get_list") {return;}
 
           let title = "";
           if (tc.content) {

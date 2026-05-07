@@ -553,7 +553,7 @@ class ChatWidget extends React.Component {
         }
 
         const lastMessage2 = Setting.deepCopy(lastMessage);
-        lastMessage2.toolCalls = toolCalls;
+        lastMessage2.toolCalls = [...toolCalls];
 
         const updatedMessages = [...messages];
         updatedMessages[updatedMessages.length - 1] = lastMessage2;

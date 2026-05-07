@@ -162,7 +162,7 @@ const MultiPaneManager = ({
           lastMessage2.reasonText = reasonText;
         }
         if (toolCalls.length > 0) {
-          lastMessage2.toolCalls = toolCalls;
+          lastMessage2.toolCalls = [...toolCalls];
         }
         messages[messages.length - 1] = lastMessage2;
         messages.forEach(msg => msg.html = renderText(msg.text));
@@ -196,7 +196,7 @@ const MultiPaneManager = ({
         });
 
         const lastMessage2 = Setting.deepCopy(lastMessage);
-        lastMessage2.toolCalls = toolCalls;
+        lastMessage2.toolCalls = [...toolCalls];
 
         messages[messages.length - 1] = lastMessage2;
         setPanes(prev => prev.map((pane, i) =>
@@ -247,7 +247,7 @@ const MultiPaneManager = ({
         }
 
         if (toolCalls.length > 0) {
-          finalMessage.toolCalls = toolCalls;
+          finalMessage.toolCalls = [...toolCalls];
         }
 
         if (messages[messages.length - 1].searchResults) {

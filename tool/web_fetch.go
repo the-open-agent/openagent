@@ -66,7 +66,7 @@ func (b *webFetchBuiltin) GetName() string {
 }
 
 func (b *webFetchBuiltin) GetDescription() string {
-	return `Fetch the content of a web page by URL and return its main text content. Useful for reading articles, documentation, or any publicly accessible page. Returns cleaned plain text extracted from the HTML, with scripts and styles removed.`
+	return `Fetch the content of a web page by URL. Supports two modes via the "purpose" parameter: "read_content" returns the main text content of the page (useful for reading articles, documentation, etc.), "get_list" extracts a list of links found on the page (useful for discovering URLs, sitemap-like browsing, or finding specific resources). Returns cleaned plain text extracted from the HTML, with scripts and styles removed.`
 }
 
 func (b *webFetchBuiltin) GetInputSchema() interface{} {
@@ -91,6 +91,12 @@ func (b *webFetchBuiltin) GetInputSchema() interface{} {
 				"default":     webFetchDefaultMaxLength,
 				"minimum":     100,
 				"maximum":     webFetchMaxAllowedLength,
+			},
+			"purpose": map[string]interface{}{
+				"type":        "string",
+				"description": "The purpose of the fetch. \"read_content\" returns the main text of the page. \"get_list\" extracts links found on the page.",
+				"enum":        []string{"read_content", "get_list"},
+				"default":     "read_content",
 			},
 		},
 		"required": []string{"url"},

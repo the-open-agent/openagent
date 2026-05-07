@@ -433,7 +433,7 @@ class ChatPage extends BaseListPage {
               }
 
               const lastMessage2 = Setting.deepCopy(currentMessage);
-              lastMessage2.toolCalls = toolCalls;
+              lastMessage2.toolCalls = [...toolCalls];
               res.data[res.data.length - 1] = lastMessage2;
 
               this.setState({
