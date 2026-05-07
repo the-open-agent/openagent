@@ -14,7 +14,7 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Popconfirm, Switch, Table} from "antd";
+import {Button, Popconfirm, Switch, Table, Tooltip} from "antd";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
@@ -303,13 +303,15 @@ class ProviderListPage extends BaseListPage {
           const editLabel = record.isRemote ? i18next.t("general:View") : i18next.t("general:Edit");
           return (
             <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
-              <Button
-                style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
-                type="default"
-                icon={<EditOutlined />}
-                onClick={() => this.props.history.push(`/providers/${record.name}`)}
-                title={editLabel}
-              />
+              <Tooltip title={editLabel}>
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => this.props.history.push(`/providers/${record.name}`)}
+                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                />
+              </Tooltip>
               <Popconfirm
                 title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
                 onConfirm={() => this.deleteProvider(record)}
@@ -317,13 +319,16 @@ class ProviderListPage extends BaseListPage {
                 cancelText={i18next.t("general:Cancel")}
                 disabled={record.isRemote}
               >
-                <Button
-                  style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
-                  type="primary"
-                  danger
-                  disabled={record.isRemote}
-                  icon={<DeleteOutlined />}
-                />
+                <Tooltip title={i18next.t("general:Delete")}>
+                  <Button
+                    type="text"
+                    size="small"
+                    danger
+                    disabled={record.isRemote}
+                    icon={<DeleteOutlined />}
+                    style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
+                  />
+                </Tooltip>
               </Popconfirm>
             </div>
           );

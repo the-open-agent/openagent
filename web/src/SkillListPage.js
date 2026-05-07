@@ -169,7 +169,7 @@ class SkillListPage extends BaseListPage {
         dataIndex: "action",
         key: "action",
         width: "220px",
-        fixed: (Setting.isMobile()) ? "right" : false,
+        fixed: "right",
         render: (text, record) => (
           <div>
             <Button

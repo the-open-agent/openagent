@@ -165,7 +165,7 @@ class ToolListPage extends BaseListPage {
         dataIndex: "action",
         key: "action",
         width: "130px",
-        fixed: (Setting.isMobile()) ? "right" : false,
+        fixed: "right",
         render: (text, record) => (
           <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
             <Tooltip title={i18next.t("general:Edit")}>

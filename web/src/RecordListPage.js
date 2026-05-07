@@ -21,8 +21,7 @@ import * as RecordBackend from "./backend/RecordBackend";
 import * as ProviderBackend from "./backend/ProviderBackend";
 import i18next from "i18next";
 import BaseListPage from "./BaseListPage";
-import PopconfirmModal from "./modal/PopconfirmModal";
-import {CloseCircleFilled, DeleteOutlined} from "@ant-design/icons";
+import {CloseCircleFilled, DeleteOutlined, EditOutlined, SearchOutlined, UploadOutlined} from "@ant-design/icons";
 import Editor from "./common/Editor";
 import CommitResultWidget from "./component/record/CommitResultWidget";
 
@@ -196,6 +195,14 @@ class RecordListPage extends BaseListPage {
   };
 
   renderTable(records) {
+    const actionIconButtonStyle = {
+      minWidth: "28px",
+      width: "28px",
+      height: "28px",
+      padding: 0,
+      borderRadius: "6px",
+    };
+
     const columns = [
       {
         title: i18next.t("general:Organization"),
@@ -518,7 +525,7 @@ class RecordListPage extends BaseListPage {
         width: "150px",
         sorter: true,
         ...this.getColumnSearchProps("action"),
-        fixed: (Setting.isMobile()) ? "false" : "right",
+        fixed: "right",
         render: (text, record, index) => {
           return text;
         },
@@ -529,7 +536,7 @@ class RecordListPage extends BaseListPage {
         key: "block",
         width: "110px",
         sorter: true,
-        fixed: (Setting.isMobile()) ? "false" : "right",
+        fixed: "right",
         ...this.getColumnSearchProps("block"),
         render: (text, record, index) => {
           return Setting.getBlockBrowserUrl(this.state.providerMap, record, text, true);
@@ -541,7 +548,7 @@ class RecordListPage extends BaseListPage {
         key: "block2",
         width: "110px",
         sorter: true,
-        fixed: (Setting.isMobile()) ? "false" : "right",
+        fixed: "right",
         ...this.getColumnSearchProps("block2"),
         render: (text, record, index) => {
           return Setting.getBlockBrowserUrl(this.state.providerMap, record, text, false);
@@ -554,27 +561,30 @@ class RecordListPage extends BaseListPage {
         title: i18next.t("general:Action"),
         dataIndex: "recordAction",
         key: "recordAction",
-        width: this.state.enableCrossChain ? "370px" : "270px",
-        fixed: (Setting.isMobile()) ? "false" : "right",
+        width: this.state.enableCrossChain ? "180px" : "140px",
+        fixed: "right",
         render: (text, record, index) => {
           return (
             <div style={{
               display: "flex",
-              flexWrap: "wrap",
-              gap: "10px",
+              flexWrap: "nowrap",
+              gap: "2px",
               alignItems: "center",
-              marginTop: "10px",
-              marginBottom: "10px",
             }}>
               {
                 <>
                   {(record.block === "") ? (
-                    <Button
-                      disabled={record.block !== ""}
-                      type="primary" danger
-                      onClick={() => this.commitRecord(index, true)}
-                    >{i18next.t("record:Commit")}
-                    </Button>
+                    <Tooltip title={i18next.t("record:Commit")}>
+                      <Button
+                        disabled={record.block !== ""}
+                        type="text"
+                        danger
+                        size="small"
+                        icon={<UploadOutlined />}
+                        onClick={() => this.commitRecord(index, true)}
+                        style={actionIconButtonStyle}
+                      />
+                    </Tooltip>
                   ) : (
                     <Popover
                       placement="left"
@@ -595,14 +605,18 @@ class RecordListPage extends BaseListPage {
                       }
                       trigger="click"
                     >
-                      <Button
-                        disabled={record.block === ""}
-                        type="primary"
-                        onClick={() => {
-                          this.queryRecord(record, true);
-                        }}
-                      >{i18next.t("general:Query")}
-                      </Button>
+                      <Tooltip title={i18next.t("general:Query")}>
+                        <Button
+                          disabled={record.block === ""}
+                          type="text"
+                          size="small"
+                          icon={<SearchOutlined />}
+                          onClick={() => {
+                            this.queryRecord(record, true);
+                          }}
+                          style={actionIconButtonStyle}
+                        />
+                      </Tooltip>
                     </Popover>
                   )}
                   {this.state.enableCrossChain && (
@@ -610,10 +624,13 @@ class RecordListPage extends BaseListPage {
                       <Tooltip title={record.provider2 === "" ? i18next.t("general:Error") : ""}>
                         <Button
                           disabled={record.provider2 === ""}
-                          type="primary" danger
+                          type="text"
+                          danger
+                          size="small"
+                          icon={<UploadOutlined />}
                           onClick={() => this.commitRecord(index, false)}
-                        >{i18next.t("record:Commit") + " 2"}
-                        </Button>
+                          style={actionIconButtonStyle}
+                        />
                       </Tooltip>
                     ) : (
                       <Popover
@@ -635,31 +652,42 @@ class RecordListPage extends BaseListPage {
                         }
                         trigger="click"
                       >
-                        <Button
-                          disabled={record.block2 === ""}
-                          type="primary"
-                          onClick={() => {
-                            this.queryRecord(record, false);
-                          }}
-                        >{i18next.t("general:Query") + " 2"}
-                        </Button>
+                        <Tooltip title={i18next.t("general:Query") + " 2"}>
+                          <Button
+                            disabled={record.block2 === ""}
+                            type="text"
+                            size="small"
+                            icon={<SearchOutlined />}
+                            onClick={() => {
+                              this.queryRecord(record, false);
+                            }}
+                            style={actionIconButtonStyle}
+                          />
+                        </Tooltip>
                       </Popover>
                     )
                   )}
                 </>
               }
-              <Button
-                // disabled={record.owner !== this.props.account.owner}
-                onClick={() => this.props.history.push(`/records/${record.owner}/${record.id}`)}
-              >{i18next.t("general:View")}
-              </Button>
-              <PopconfirmModal
-                // disabled={record.owner !== this.props.account.owner}
-                fakeDisabled={true}
-                title={i18next.t("general:Sure to delete") + `: ${record.name} ?`}
-                onConfirm={() => this.deleteRecord(index)}
-              >
-              </PopconfirmModal>
+              <Tooltip title={i18next.t("general:View")}>
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => this.props.history.push(`/records/${record.owner}/${record.id}`)}
+                  style={actionIconButtonStyle}
+                />
+              </Tooltip>
+              <Tooltip title={i18next.t("general:Delete")}>
+                <Button
+                  type="text"
+                  size="small"
+                  danger
+                  icon={<DeleteOutlined />}
+                  disabled
+                  style={actionIconButtonStyle}
+                />
+              </Tooltip>
             </div>
           );
         },
