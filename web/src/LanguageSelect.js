@@ -12,54 +12,77 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import React from "react";
-import {Dropdown} from "antd";
+import React, {useEffect, useState} from "react";
 import {GlobalOutlined} from "@ant-design/icons";
+import {Check} from "lucide-react";
 import * as Setting from "./Setting";
 import * as Conf from "./Conf";
+import "./shadcn-vars.css";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "./components/ui/dropdown-menu";
 
-function flagIcon(country, alt) {
+const countryMap = Object.fromEntries(Setting.Countries.map(c => [c.key, c]));
+
+const flagIcon = (country, alt) => (
+  <img className="language-icon" width={24} alt={alt} src={`${Conf.StaticBaseUrl}/flag-icons/${country}.svg`} />
+);
+
+export default function LanguageSelect({languages, style}) {
+  const [open, setOpen] = useState(false);
+  const [lang, setLang] = useState(() => Setting.getLanguage());
+  const availableLanguages = languages ?? Setting.Countries.map(item => item.key);
+
+  useEffect(() => {
+    availableLanguages.forEach(key => {
+      const c = countryMap[key];
+      if (c) {
+        new Image().src = `${Conf.StaticBaseUrl}/flag-icons/${c.country}.svg`;
+      }
+    });
+  }, []);
+
+  if (availableLanguages.length === 0) {
+    return null;
+  }
+
   return (
-    <img className="language-icon" width={24} alt={alt} src={`${Conf.StaticBaseUrl}/flag-icons/${country}.svg`} />
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <span
+          className="select-box cursor-pointer inline-flex items-center"
+          style={style}
+          onMouseEnter={() => setOpen(true)}
+        >
+          <GlobalOutlined style={{fontSize: "24px"}} />
+        </span>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        sideOffset={2}
+        className="w-36 z-[100] rounded-xl border border-[rgb(230,225,224)]"
+        onMouseLeave={() => setOpen(false)}
+      >
+        {availableLanguages.map(key => {
+          const c = countryMap[key];
+          if (!c) {return null;}
+          const isSelected = lang === key;
+          return (
+            <DropdownMenuItem
+              key={key}
+              onClick={() => {Setting.setLanguage(key); setLang(key); setOpen(false);}}
+              className={isSelected ? "text-red-500 data-[highlighted]:bg-accent data-[highlighted]:text-red-500" : "data-[highlighted]:bg-accent"}
+            >
+              <span className="mr-2">{flagIcon(c.country, c.alt)}</span>
+              {c.label}
+              {isSelected && <Check className="ml-auto h-4 w-4" />}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
-
-class LanguageSelect extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      languages: props.languages ?? Setting.Countries.map(item => item.key),
-    };
-
-    Setting.Countries.forEach((country) => {
-      new Image().src = `${Conf.StaticBaseUrl}/flag-icons/${country.country}.svg`;
-    });
-  }
-
-  items = Setting.Countries.map((country) => Setting.getItem(country.label, country.key, flagIcon(country.country, country.alt)));
-
-  getOrganizationLanguages(languages) {
-    const select = [];
-    for (const language of languages) {
-      this.items.map((item, index) => item.key === language ? select.push(item) : null);
-    }
-    return select;
-  }
-
-  render() {
-    const languageItems = this.getOrganizationLanguages(this.state.languages);
-    const onClick = (e) => {
-      Setting.setLanguage(e.key);
-    };
-
-    return (
-      <Dropdown menu={{items: languageItems, onClick}} >
-        <div className="select-box" style={{display: languageItems.length === 0 ? "none" : null, ...this.props.style}} >
-          <GlobalOutlined style={{fontSize: "24px"}} />
-        </div>
-      </Dropdown>
-    );
-  }
-}
-
-export default LanguageSelect;
