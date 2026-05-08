@@ -35,6 +35,7 @@ import (
 )
 
 var frontendBaseDir = conf.GetConfigString("frontendBaseDir")
+var cdnFrontendManifestHTTPClient = &http.Client{Timeout: 10 * time.Second}
 
 type frontendManifest struct {
 	Entrypoints []string `json:"entrypoints"`
@@ -62,15 +63,16 @@ func getCdnFrontendBase() string {
 
 func getCdnFrontendManifest() (frontendManifest, error) {
 	cdnFrontendManifestCache.mutex.Lock()
-	defer cdnFrontendManifestCache.mutex.Unlock()
-
 	now := time.Now()
 	if len(cdnFrontendManifestCache.manifest.Entrypoints) > 0 && now.Before(cdnFrontendManifestCache.expireTime) {
-		return cdnFrontendManifestCache.manifest, nil
+		manifest := cdnFrontendManifestCache.manifest
+		cdnFrontendManifestCache.mutex.Unlock()
+		return manifest, nil
 	}
+	cdnFrontendManifestCache.mutex.Unlock()
 
 	manifestURL := getCdnFrontendBase() + "/asset-manifest.json"
-	resp, err := http.Get(manifestURL)
+	resp, err := cdnFrontendManifestHTTPClient.Get(manifestURL)
 	if err != nil {
 		return frontendManifest{}, err
 	}
@@ -88,8 +90,10 @@ func getCdnFrontendManifest() (frontendManifest, error) {
 		return frontendManifest{}, fmt.Errorf("frontend manifest has no entrypoints")
 	}
 
+	cdnFrontendManifestCache.mutex.Lock()
 	cdnFrontendManifestCache.manifest = manifest
 	cdnFrontendManifestCache.expireTime = now.Add(10 * time.Minute)
+	cdnFrontendManifestCache.mutex.Unlock()
 	return manifest, nil
 }
 
