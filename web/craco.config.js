@@ -61,6 +61,26 @@ module.exports = {
         },
       ];
 
+      // Inject tailwindcss into CRA's PostCSS pipeline.
+      // CRA explicitly sets postcssOptions in webpack config, which overrides
+      // postcss.config.js detection in postcss-loader. We must inject here.
+      const tailwindPlugin = require("tailwindcss");
+      const rules = webpackConfig.module.rules;
+      for (const rule of rules) {
+        if (!rule.oneOf) continue;
+        for (const oneOf of rule.oneOf) {
+          const postcssLoader = Array.isArray(oneOf.use) && oneOf.use.find(
+            (u) => typeof u === "object" && u.loader && u.loader.includes("postcss-loader")
+          );
+          if (postcssLoader && postcssLoader.options && postcssLoader.options.postcssOptions) {
+            const plugins = postcssLoader.options.postcssOptions.plugins;
+            if (Array.isArray(plugins)) {
+              plugins.unshift(tailwindPlugin);
+            }
+          }
+        }
+      }
+
       return webpackConfig;
     },
   },
