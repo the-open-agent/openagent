@@ -251,8 +251,7 @@ function PasswordSigninPage({logo}) {
             </Button>
           </form>
 
-          <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
-            <span>{i18next.t("account:Sign in is unavailable")}</span>
+          <div className="flex items-center justify-end gap-3 text-sm text-muted-foreground">
             {signupUrl && (
               <a href={signupUrl} className="font-medium text-primary underline-offset-4 transition-colors hover:underline">
                 {i18next.t("account:Sign Up")}
@@ -270,7 +269,7 @@ function PasswordSigninPage({logo}) {
       <div className="absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col items-center px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
         {/* Top-left logo */}
-        <img src="/openagent-logo.png" alt="OpenAgent" className="absolute left-0 top-4 h-10 w-auto object-contain sm:left-0 sm:top-6 sm:h-12 lg:left-0 lg:top-8 lg:h-14" />
+        <img src="https://cdn.openagentai.org/img/openagent-logo_1900x450.png" alt="OpenAgent" className="absolute left-0 top-4 h-10 w-auto object-contain sm:left-0 sm:top-6 sm:h-12 lg:left-0 lg:top-8 lg:h-14" />
 
         <section className="w-full max-w-6xl space-y-6 pt-12 text-center sm:pt-16">
           <h1 className="whitespace-nowrap bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-4xl font-bold leading-tight tracking-tight text-transparent dark:from-indigo-400 dark:via-violet-400 dark:to-fuchsia-400 sm:text-5xl md:text-6xl lg:text-7xl">
