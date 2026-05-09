@@ -65,3 +65,155 @@
     --chart-5: 340 75% 55%;
   }
 }
+
+@keyframes signin-sway {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(6px);
+  }
+}
+
+@keyframes float-left {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.12;
+  }
+
+  50% {
+    transform: translateY(-12px) rotate(3deg);
+    opacity: 0.22;
+  }
+}
+
+@keyframes float-right {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.12;
+  }
+
+  50% {
+    transform: translateY(10px) rotate(-3deg);
+    opacity: 0.22;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+
+  50% {
+    transform: scale(1.8);
+    opacity: 0.6;
+  }
+}
+
+@keyframes orbit-1 {
+  0%,
+  100% {
+    top: 15%;
+    left: 50%;
+  }
+
+  25% {
+    top: 30%;
+    left: 70%;
+  }
+
+  50% {
+    top: 60%;
+    left: 55%;
+  }
+
+  75% {
+    top: 35%;
+    left: 25%;
+  }
+}
+
+@keyframes orbit-2 {
+  0%,
+  100% {
+    top: 55%;
+    left: 60%;
+  }
+
+  25% {
+    top: 20%;
+    left: 40%;
+  }
+
+  50% {
+    top: 40%;
+    left: 75%;
+  }
+
+  75% {
+    top: 65%;
+    left: 30%;
+  }
+}
+
+@keyframes orbit-3 {
+  0%,
+  100% {
+    top: 25%;
+    left: 65%;
+  }
+
+  25% {
+    top: 50%;
+    left: 30%;
+  }
+
+  50% {
+    top: 70%;
+    left: 50%;
+  }
+
+  75% {
+    top: 30%;
+    left: 70%;
+  }
+}
+
+@keyframes orbit-4 {
+  0%,
+  100% {
+    top: 45%;
+    left: 35%;
+  }
+
+  25% {
+    top: 15%;
+    left: 60%;
+  }
+
+  50% {
+    top: 55%;
+    left: 70%;
+  }
+
+  75% {
+    top: 35%;
+    left: 20%;
+  }
+}

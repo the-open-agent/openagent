@@ -15,10 +15,8 @@
 import React from "react";
 import PasswordSigninPage from "./PasswordSigninPage";
 
-class SigninPage extends React.Component {
-  render() {
-    return <PasswordSigninPage logo={this.props.logo} />;
-  }
+function SigninPage(props) {
+  return <PasswordSigninPage logo={props.logo} />;
 }
 
 export default SigninPage;
