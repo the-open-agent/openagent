@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {AutoComplete, Button, Card, Col, Input, InputNumber, Row, Select, Slider, Switch} from "antd";
+import {AutoComplete, Button, Col, Input, InputNumber, Row, Select, Slider, Switch} from "antd";
+import SectionCard from "./components/ui/section-card";
 import {LinkOutlined} from "@ant-design/icons";
 import * as ProviderBackend from "./backend/ProviderBackend";
 import * as Setting from "./Setting";
@@ -269,15 +270,6 @@ class ProviderEditPage extends React.Component {
 
     const colSpan = Setting.isMobile() ? 22 : 22;
 
-    const sectionCardStyle = {
-      marginBottom: "16px",
-      borderRadius: "14px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-      padding: "18px",
-    };
-
-    const cardHeadStyle = {background: "transparent", borderBottom: "none", fontWeight: 600, fontSize: "15px"};
-
     const btnStyle = {
       backgroundColor: "var(--ant-color-bg-container)",
       borderColor: "var(--ant-color-border)",
@@ -302,7 +294,7 @@ class ProviderEditPage extends React.Component {
         </div>
 
         {/* Card 1: General Settings */}
-        <Card size="small" title={i18next.t("general:General Settings")} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:General Settings")}>
           <Row style={{marginTop: "10px"}} gutter={16}>
             <Col style={{marginTop: "5px"}} span={Setting.isMobile() ? 22 : 11}>
               <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:ID"), i18next.t("general:Name - Tooltip"))}</div>
@@ -1029,11 +1021,11 @@ class ProviderEditPage extends React.Component {
               </Row>
             ) : null
           }
-        </Card>
+        </SectionCard>
 
         {/* Card 2: Advanced Model Parameters */}
         {isModelProvider && (this.isTemperatureEnabled(provider) || this.isTopPEnabled(provider) || (provider.type === "Gemini")) && (
-          <Card size="small" title={i18next.t("provider:Advanced Model Parameters")} style={sectionCardStyle} headStyle={cardHeadStyle}>
+          <SectionCard title={i18next.t("provider:Advanced Model Parameters")}>
             {this.isTemperatureEnabled(provider) ? (
               <Row style={{marginTop: "10px"}} gutter={16}>
                 <Col span={Setting.isMobile() ? 22 : 14}>
@@ -1171,10 +1163,10 @@ class ProviderEditPage extends React.Component {
                 </Col>
               </Row>
             ) : null}
-          </Card>
+          </SectionCard>
         )}
         {/* Card 3: Provider Test */}
-        <Card size="small" title={i18next.t("provider:Provider Test")} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("provider:Provider Test")}>
           <ModelTestWidget
             provider={this.state.provider}
             originalProvider={this.state.originalProvider}
@@ -1197,7 +1189,7 @@ class ProviderEditPage extends React.Component {
             originalProvider={this.state.originalProvider}
             onUpdateProvider={this.updateProviderField.bind(this)}
           />
-        </Card>
+        </SectionCard>
       </div>
     );
   }

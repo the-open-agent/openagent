@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Alert, Button, Card, Col, Input, Row, Select, Space, Switch, Table, Tag} from "antd";
+import {Alert, Button, Col, Input, Row, Select, Space, Switch, Table, Tag} from "antd";
+import SectionCard from "./components/ui/section-card";
 import * as ToolBackend from "./backend/ToolBackend";
 import * as Setting from "./Setting";
 import i18next from "i18next";
@@ -100,13 +101,6 @@ class ToolEditPage extends React.Component {
   renderTool() {
     const tool = this.state.tool;
     const rowGutter = [16, 8];
-    const cardHeadStyle = {background: "transparent", borderBottom: "none", fontWeight: 600, fontSize: "15px", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"};
-    const sectionCardStyle = {
-      marginBottom: "16px",
-      borderRadius: "14px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-      padding: "18px",
-    };
     const btnStyle = {
       backgroundColor: "var(--ant-color-bg-container)",
       borderColor: "var(--ant-color-border)",
@@ -114,13 +108,6 @@ class ToolEditPage extends React.Component {
       borderRadius: "10px",
       padding: "6px 10px",
     };
-
-    const renderCardTitle = (title, desc) => (
-      <div>
-        <div style={{fontWeight: 600, fontSize: "15px"}}>{title}</div>
-        <div style={{fontSize: "13px", color: "var(--ant-color-text-tertiary)", fontWeight: 400, marginTop: "2px"}}>{desc}</div>
-      </div>
-    );
 
     return (
       <div>
@@ -135,7 +122,7 @@ class ToolEditPage extends React.Component {
           </div>
         </div>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:General Settings"), i18next.t("general:General Settings desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:General Settings")} desc={i18next.t("general:General Settings desc")}>
           <Row gutter={rowGutter}>
             {this.renderToolField(
               Setting.getLabel(i18next.t("general:Name"), i18next.t("general:Name - Tooltip")),
@@ -289,10 +276,10 @@ class ToolEditPage extends React.Component {
               8
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
         {Setting.getToolFunctions(tool).length > 0 && (
-          <Card size="small" title={renderCardTitle(i18next.t("tool:Functions"), i18next.t("tool:Functions desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+          <SectionCard title={i18next.t("tool:Functions")} desc={i18next.t("tool:Functions desc")}>
             <Table
               size="small"
               pagination={false}
@@ -312,17 +299,17 @@ class ToolEditPage extends React.Component {
               ]}
               dataSource={Setting.getToolFunctions(tool).map((f, i) => ({...f, key: i}))}
             />
-          </Card>
+          </SectionCard>
         )}
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:Test"), i18next.t("general:Test desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Test")} desc={i18next.t("general:Test desc")}>
           <TestToolWidget
             tool={tool}
             originalTool={this.state.originalTool}
             onUpdateTool={this.updateToolField.bind(this)}
             account={this.props.account}
           />
-        </Card>
+        </SectionCard>
       </div>
     );
   }

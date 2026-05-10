@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Button, Card, Col, Input, Row, Space} from "antd";
+import {Button, Col, Input, Row, Space} from "antd";
+import SectionCard from "./components/ui/section-card";
 import {LinkOutlined} from "@ant-design/icons";
 import * as ServerBackend from "./backend/ServerBackend";
 import * as Setting from "./Setting";
@@ -105,15 +106,6 @@ class ServerEditPage extends React.Component {
       });
   }
 
-  renderCardTitle(title, desc) {
-    return (
-      <div>
-        <div style={{fontWeight: 600, fontSize: "15px"}}>{title}</div>
-        <div style={{fontSize: "13px", color: "var(--ant-color-text-tertiary)", fontWeight: 400, marginTop: "2px"}}>{desc}</div>
-      </div>
-    );
-  }
-
   renderServerField(label, control, span = 8, style = {}) {
     return (
       <Col style={{marginTop: "12px", ...style}} span={Setting.isMobile() ? 22 : span}>
@@ -126,13 +118,6 @@ class ServerEditPage extends React.Component {
   renderServer() {
     const server = this.state.server;
     const rowGutter = [16, 8];
-    const cardHeadStyle = {background: "transparent", borderBottom: "none", fontWeight: 600, fontSize: "15px", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"};
-    const sectionCardStyle = {
-      marginBottom: "16px",
-      borderRadius: "14px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-      padding: "18px",
-    };
     const btnStyle = {
       backgroundColor: "var(--ant-color-bg-container)",
       borderColor: "var(--ant-color-border)",
@@ -154,7 +139,7 @@ class ServerEditPage extends React.Component {
           </div>
         </div>
 
-        <Card size="small" title={this.renderCardTitle(i18next.t("general:General Settings"), i18next.t("general:General Settings desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:General Settings")} desc={i18next.t("general:General Settings desc")}>
           <Row gutter={rowGutter}>
             {this.renderServerField(
               Setting.getLabel(i18next.t("general:Name"), i18next.t("general:Name - Tooltip")),
@@ -177,9 +162,9 @@ class ServerEditPage extends React.Component {
               16
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={this.renderCardTitle(i18next.t("general:Tools"), i18next.t("general:Tools desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Tools")} desc={i18next.t("general:Tools desc")}>
           {!this.state.isNewServer && (
             <div style={{marginBottom: "8px"}}>
               <Button type="primary" loading={this.state.syncButtonLoading} onClick={() => this.syncMcpTool(false)}>{i18next.t("general:Sync")}</Button>
@@ -190,9 +175,9 @@ class ServerEditPage extends React.Component {
             tools={server.tools || []}
             onUpdateTable={(value) => this.updateServerField("tools", value)}
           />
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={this.renderCardTitle(i18next.t("general:Test"), i18next.t("general:Test desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Test")} desc={i18next.t("general:Test desc")}>
           <TestMcpWidget server={server} />
           <Row gutter={rowGutter}>
             {this.renderServerField(
@@ -201,7 +186,7 @@ class ServerEditPage extends React.Component {
               24
             )}
           </Row>
-        </Card>
+        </SectionCard>
       </div>
     );
   }

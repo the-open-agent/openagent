@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import React from "react";
-import {Card, Col, Progress, Row, Tag, Tooltip} from "antd";
+import {Col, Progress, Row, Tag, Tooltip} from "antd";
+import SectionCard from "./components/ui/section-card";
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
@@ -40,7 +41,7 @@ function getUsageColor(percent) {
   return "#52c41a";
 }
 
-function CardTitle({icon, text, live}) {
+function StatTitle({icon, text, live}) {
   return (
     <span style={{display: "flex", alignItems: "center", gap: 8}}>
       {icon}
@@ -136,30 +137,9 @@ class SystemInfo extends React.Component {
     const isDark = Setting.getIsDark();
     const isMobile = Setting.isMobile();
 
-    const cardBg = isDark ? "#1e1f22" : "#ffffff";
-    const cardBorder = isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #f0f0f0";
     const labelColor = isDark ? "#8b8fa8" : "#8c8c8c";
     const valueColor = isDark ? "#e8eaf0" : "#1a1a2e";
     const dividerColor = isDark ? "rgba(255,255,255,0.07)" : "#f5f5f5";
-
-    const cardStyle = {
-      background: cardBg,
-      border: cardBorder,
-      borderRadius: 12,
-      boxShadow: isDark
-        ? "0 2px 12px rgba(0,0,0,0.35)"
-        : "0 2px 12px rgba(0,0,0,0.06)",
-      height: "100%",
-    };
-
-    const cardHeadStyle = {
-      borderBottom: `1px solid ${dividerColor}`,
-      padding: "14px 20px",
-    };
-
-    const cardBodyStyle = {
-      padding: "20px",
-    };
 
     const {systemInfo, prometheusInfo, versionInfo, loading} = this.state;
 
@@ -395,83 +375,69 @@ class SystemInfo extends React.Component {
           <style>{pulseStyle}</style>
           <Row gutter={[16, 16]}>
             <Col span={8}>
-              <Card
+              <SectionCard
+                variant="bordered"
                 id="cpu-card"
-                title={<CardTitle icon={<DashboardOutlined style={{color: iconColor}} />} text={i18next.t("system:CPU Usage")} live />}
-                style={cardStyle}
-                headStyle={cardHeadStyle}
-                bodyStyle={cardBodyStyle}
+                title={<StatTitle icon={<DashboardOutlined style={{color: iconColor}} />} text={i18next.t("system:CPU Usage")} live />}
               >
                 {loading ? <Loading /> : cpuUi}
-              </Card>
+              </SectionCard>
             </Col>
             <Col span={8}>
-              <Card
+              <SectionCard
+                variant="bordered"
                 id="memory-card"
-                title={<CardTitle icon={<DatabaseOutlined style={{color: iconColor}} />} text={i18next.t("system:Memory Usage")} live />}
-                style={cardStyle}
-                headStyle={cardHeadStyle}
-                bodyStyle={cardBodyStyle}
+                title={<StatTitle icon={<DatabaseOutlined style={{color: iconColor}} />} text={i18next.t("system:Memory Usage")} live />}
               >
                 {loading ? <Loading /> : memUi}
-              </Card>
+              </SectionCard>
             </Col>
             <Col span={8}>
-              <Card
+              <SectionCard
+                variant="bordered"
                 id="disk-card"
-                title={<CardTitle icon={<HddOutlined style={{color: iconColor}} />} text={i18next.t("system:Disk Usage")} live />}
-                style={cardStyle}
-                headStyle={cardHeadStyle}
-                bodyStyle={cardBodyStyle}
+                title={<StatTitle icon={<HddOutlined style={{color: iconColor}} />} text={i18next.t("system:Disk Usage")} live />}
               >
                 {loading ? <Loading /> : diskUi}
-              </Card>
+              </SectionCard>
             </Col>
             <Col span={8}>
-              <Card
+              <SectionCard
+                variant="bordered"
                 id="network-card"
-                title={<CardTitle icon={<WifiOutlined style={{color: iconColor}} />} text={i18next.t("system:Network Usage")} live />}
-                style={cardStyle}
-                headStyle={cardHeadStyle}
-                bodyStyle={cardBodyStyle}
+                title={<StatTitle icon={<WifiOutlined style={{color: iconColor}} />} text={i18next.t("system:Network Usage")} live />}
               >
                 {loading ? <Loading /> : networkUi}
-              </Card>
+              </SectionCard>
             </Col>
             <Col span={8}>
-              <Card
+              <SectionCard
+                variant="bordered"
                 id="latency-card"
-                title={<CardTitle icon={<ThunderboltOutlined style={{color: iconColor}} />} text={i18next.t("system:API Latency")} />}
-                style={cardStyle}
-                headStyle={cardHeadStyle}
-                bodyStyle={cardBodyStyle}
+                title={<StatTitle icon={<ThunderboltOutlined style={{color: iconColor}} />} text={i18next.t("system:API Latency")} />}
               >
                 {loading ? <Loading /> : latencyUi}
-              </Card>
+              </SectionCard>
             </Col>
             <Col span={8}>
-              <Card
+              <SectionCard
+                variant="bordered"
                 id="throughput-card"
-                title={<CardTitle icon={<SwapOutlined style={{color: iconColor}} />} text={i18next.t("system:API Throughput")} />}
-                style={cardStyle}
-                headStyle={cardHeadStyle}
-                bodyStyle={cardBodyStyle}
+                title={<StatTitle icon={<SwapOutlined style={{color: iconColor}} />} text={i18next.t("system:API Throughput")} />}
               >
                 {loading ? <Loading /> : throughputUi}
-              </Card>
+              </SectionCard>
             </Col>
             <Col span={24}>
-              <Card
+              <SectionCard
+                variant="bordered"
                 id="about-card"
                 style={{
-                  ...cardStyle,
                   background: isDark
                     ? "linear-gradient(135deg, #1e1f22 0%, #1a1c2a 100%)"
                     : "linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)",
                 }}
-                headStyle={cardHeadStyle}
-                bodyStyle={{padding: "24px 28px"}}
-                title={<CardTitle icon={<CodeOutlined style={{color: iconColor}} />} text={i18next.t("system:About OpenAgent")} />}
+                title={<StatTitle icon={<CodeOutlined style={{color: iconColor}} />} text={i18next.t("system:About OpenAgent")} />}
               >
                 <div style={{display: "flex", alignItems: "flex-start", gap: 24, flexWrap: "wrap"}}>
                   <div style={{flex: 1, minWidth: 260}}>
@@ -491,7 +457,7 @@ class SystemInfo extends React.Component {
                           style={{
                             cursor: "pointer", borderRadius: 6, padding: "2px 10px",
                             background: isDark ? "rgba(255,255,255,0.07)" : "#f5f5f5",
-                            border: cardBorder, color: valueColor,
+                            color: valueColor,
                           }}>
                           GitHub
                         </Tag>
@@ -513,7 +479,7 @@ class SystemInfo extends React.Component {
                     </div>
                   </div>
                 </div>
-              </Card>
+              </SectionCard>
             </Col>
           </Row>
         </>
@@ -530,24 +496,20 @@ class SystemInfo extends React.Component {
               {id: "network-card", icon: <WifiOutlined style={{color: iconColor}} />, title: i18next.t("system:Network Usage"), ui: networkUi, live: true},
             ].map(({id, icon, title, ui, live}) => (
               <Col key={id} span={24}>
-                <Card
+                <SectionCard
+                  variant="bordered"
                   id={id}
-                  title={<CardTitle icon={icon} text={title} live={live} />}
-                  style={cardStyle}
-                  headStyle={cardHeadStyle}
-                  bodyStyle={cardBodyStyle}
+                  title={<StatTitle icon={icon} text={title} live={live} />}
                 >
                   {loading ? <Loading /> : ui}
-                </Card>
+                </SectionCard>
               </Col>
             ))}
             <Col span={24}>
-              <Card
+              <SectionCard
+                variant="bordered"
                 id="about-card"
-                title={<CardTitle icon={<CodeOutlined style={{color: iconColor}} />} text={i18next.t("system:About OpenAgent")} />}
-                style={cardStyle}
-                headStyle={cardHeadStyle}
-                bodyStyle={{padding: "20px"}}
+                title={<StatTitle icon={<CodeOutlined style={{color: iconColor}} />} text={i18next.t("system:About OpenAgent")} />}
               >
                 <div style={{fontSize: 13, color: isDark ? "#a0a8bf" : "#595959", lineHeight: 1.7, marginBottom: 14}}>
                   {i18next.t("system:🚀⚡️Next-generation personal AI assistant powered by LLM, RAG and agent loops,\nsupporting computer-use, browser-use and coding agent")}
@@ -563,7 +525,7 @@ class SystemInfo extends React.Component {
                     <Tag icon={<GlobalOutlined />} color="green" style={{cursor: "pointer", borderRadius: 6}}>{i18next.t("system:Official website")}</Tag>
                   </a>
                 </div>
-              </Card>
+              </SectionCard>
             </Col>
           </Row>
         </>

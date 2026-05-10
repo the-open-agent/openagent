@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Button, Card, Col, Image, Input, Modal, Popover, Row, Space, Switch, Upload} from "antd";
+import SectionCard from "./components/ui/section-card";
+import {Button, Col, Image, Input, Modal, Popover, Row, Space, Switch, Upload} from "antd";
 import {EyeInvisibleOutlined, EyeTwoTone} from "@ant-design/icons";
 import * as SiteBackend from "./backend/SiteBackend";
 import * as ResourceBackend from "./backend/ResourceBackend";
@@ -135,21 +136,6 @@ class SiteEditPage extends React.Component {
   renderSite() {
     const site = this.state.site;
     const rowGutter = [16, 8];
-    const cardHeadStyle = {background: "transparent", borderBottom: "none", fontWeight: 600, fontSize: "15px", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"};
-    const sectionCardStyle = {
-      marginBottom: "16px",
-      borderRadius: "14px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-      padding: "18px",
-    };
-
-    const renderCardTitle = (title, desc) => (
-      <div>
-        <div style={{fontWeight: 600, fontSize: "15px"}}>{title}</div>
-        <div style={{fontSize: "13px", color: "var(--ant-color-text-tertiary)", fontWeight: 400, marginTop: "2px"}}>{desc}</div>
-      </div>
-    );
-
     return (
       <div>
         <div style={{marginBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
@@ -159,7 +145,7 @@ class SiteEditPage extends React.Component {
           </div>
         </div>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:General Settings"), i18next.t("general:General Settings desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:General Settings")} desc={i18next.t("general:General Settings desc")}>
           <Row gutter={rowGutter}>
             {this.renderSiteField(
               Setting.getLabel(i18next.t("general:Name"), i18next.t("general:Name - Tooltip")),
@@ -190,9 +176,9 @@ class SiteEditPage extends React.Component {
               8
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:Branding"), i18next.t("general:Branding desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Branding")} desc={i18next.t("general:Branding desc")}>
           <Row gutter={rowGutter}>
             {this.renderSiteField(
               Setting.getLabel(i18next.t("general:Favicon URL"), i18next.t("general:Favicon URL - Tooltip")),
@@ -244,9 +230,9 @@ class SiteEditPage extends React.Component {
               12
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:Content"), i18next.t("general:Content desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Content")} desc={i18next.t("general:Content desc")}>
           <Row gutter={rowGutter}>
             {this.renderSiteField(
               Setting.getLabel(i18next.t("general:Navbar HTML"), i18next.t("general:Navbar HTML - Tooltip")),
@@ -318,9 +304,9 @@ class SiteEditPage extends React.Component {
               24
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(i18next.t("site:Authentication"), i18next.t("site:Authentication desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("site:Authentication")} desc={i18next.t("site:Authentication desc")}>
           <Row gutter={rowGutter}>
             {this.renderSiteField(
               Setting.getLabel(i18next.t("site:OIDC issuer"), i18next.t("site:OIDC issuer - Tooltip")),
@@ -356,9 +342,9 @@ class SiteEditPage extends React.Component {
               6
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(i18next.t("site:Advanced"), i18next.t("site:Advanced desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("site:Advanced")} desc={i18next.t("site:Advanced desc")}>
           <Row gutter={rowGutter}>
             {this.renderSiteField(
               Setting.getLabel(i18next.t("site:IP parsing mode"), i18next.t("site:IP parsing mode - Tooltip")),
@@ -389,7 +375,7 @@ class SiteEditPage extends React.Component {
               24
             )}
           </Row>
-        </Card>
+        </SectionCard>
       </div>
     );
   }

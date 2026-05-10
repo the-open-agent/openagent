@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Avatar, Button, Card, Cascader, Col, Input, InputNumber, Modal, Row, Select, Space, Spin, Switch} from "antd";
+import {Avatar, Button, Cascader, Col, Input, InputNumber, Modal, Row, Select, Space, Spin, Switch} from "antd";
+import SectionCard from "./components/ui/section-card";
 import * as StoreBackend from "./backend/StoreBackend";
 import * as StorageProviderBackend from "./backend/StorageProviderBackend";
 import * as ProviderBackend from "./backend/ProviderBackend";
@@ -317,20 +318,6 @@ class StoreEditPage extends React.Component {
     const store = this.state.store;
     const rowGutter = [16, 8];
     const providerOptions = this.state.storageProviders.concat(this.state.casdoorStorageProviders);
-    const cardHeadStyle = {background: "transparent", borderBottom: "none", fontWeight: 600, fontSize: "15px", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"};
-    const sectionCardStyle = {
-      marginBottom: "16px",
-      borderRadius: "14px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-      padding: "18px",
-    };
-
-    const renderCardTitle = (title, desc) => (
-      <div>
-        <div style={{fontWeight: 600, fontSize: "15px"}}>{title}</div>
-        <div style={{fontSize: "13px", color: "var(--ant-color-text-tertiary)", fontWeight: 400, marginTop: "2px"}}>{desc}</div>
-      </div>
-    );
 
     return (
       <div>
@@ -341,7 +328,7 @@ class StoreEditPage extends React.Component {
           </div>
         </div>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:General Settings"), i18next.t("general:General Settings desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:General Settings")} desc={i18next.t("general:General Settings desc")}>
           <Row gutter={rowGutter}>
             {this.renderStoreField(
               Setting.getLabel(i18next.t("general:Owner"), i18next.t("general:Owner - Tooltip")),
@@ -457,9 +444,9 @@ class StoreEditPage extends React.Component {
               6
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:Providers"), i18next.t("general:Providers desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Providers")} desc={i18next.t("general:Providers desc")}>
           <Row gutter={rowGutter}>
             {store.enableExtraOptions ? (
               <>
@@ -635,9 +622,9 @@ class StoreEditPage extends React.Component {
               8
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:Chat"), i18next.t("general:Chat desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Chat")} desc={i18next.t("general:Chat desc")}>
           <Row gutter={rowGutter}>
             {this.renderStoreField(
               Setting.getLabel(i18next.t("store:Welcome"), i18next.t("store:Welcome - Tooltip")),
@@ -679,9 +666,9 @@ class StoreEditPage extends React.Component {
               24
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:Options"), i18next.t("general:Options desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Options")} desc={i18next.t("general:Options desc")}>
           <Row gutter={rowGutter}>
             {this.renderStoreField(
               Setting.getLabel(i18next.t("store:Knowledge count"), i18next.t("store:Knowledge count - Tooltip")),
@@ -774,16 +761,16 @@ class StoreEditPage extends React.Component {
               8
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(Setting.getLabel(i18next.t("store:File tree"), i18next.t("store:File tree - Tooltip")), i18next.t("store:File tree desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={Setting.getLabel(i18next.t("store:File tree"), i18next.t("store:File tree - Tooltip"))} desc={i18next.t("store:File tree desc")}>
           <FileTree account={this.props.account} store={store} onUpdateStore={(store) => {
             this.setState({
               store: store,
             });
             this.submitStoreEdit(undefined, store);
           }} onRefresh={() => this.getStore()} />
-        </Card>
+        </SectionCard>
       </div>
     );
   }

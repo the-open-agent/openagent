@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Button, Card, Col, Input, InputNumber, Row, Space} from "antd";
+import {Button, Col, Input, InputNumber, Row, Space} from "antd";
+import SectionCard from "./components/ui/section-card";
 import i18next from "i18next";
 import * as Setting from "./Setting";
 import * as VectorBackend from "./backend/VectorBackend";
@@ -111,19 +112,6 @@ class VectorEditPage extends React.Component {
     const vector = this.state.vector;
     const isViewMode = this.state.mode === "view";
     const rowGutter = [16, 8];
-    const cardHeadStyle = {background: "transparent", borderBottom: "none", fontWeight: 600, fontSize: "15px", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"};
-    const sectionCardStyle = {
-      marginBottom: "16px",
-      borderRadius: "14px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-      padding: "18px",
-    };
-    const renderCardTitle = (title, desc) => (
-      <div>
-        <div style={{fontWeight: 600, fontSize: "15px"}}>{title}</div>
-        {desc && <div style={{fontSize: "13px", color: "var(--ant-color-text-tertiary)", fontWeight: 400, marginTop: "2px"}}>{desc}</div>}
-      </div>
-    );
 
     return (
       <div>
@@ -136,7 +124,7 @@ class VectorEditPage extends React.Component {
           </div>
         </div>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:General Settings"), i18next.t("general:General Settings desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:General Settings")} desc={i18next.t("general:General Settings desc")}>
           <Row gutter={rowGutter}>
             {this.renderVectorField(
               Setting.getLabel(i18next.t("general:Name"), i18next.t("general:Name - Tooltip")),
@@ -174,9 +162,9 @@ class VectorEditPage extends React.Component {
               4
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:Content"), "")} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Content")}>
           <Row gutter={rowGutter}>
             {this.renderVectorField(
               Setting.getLabel(i18next.t("general:Text"), i18next.t("general:Text - Tooltip")),
@@ -201,7 +189,7 @@ class VectorEditPage extends React.Component {
               24
             )}
           </Row>
-        </Card>
+        </SectionCard>
       </div>
     );
   }

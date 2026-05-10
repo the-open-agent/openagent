@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Card, Row, Spin} from "antd";
+import {Row, Spin} from "antd";
+import {Card, CardContent} from "../components/ui/card";
 import i18next from "i18next";
 import React from "react";
 import * as Setting from "../Setting";
@@ -31,8 +32,10 @@ const GridCards = (props) => {
 
   return (
     Setting.isMobile() ? (
-      <Card bodyStyle={{padding: 0}}>
-        {items.map(item => <SingleCard key={item.link} logo={item.logo} link={item.link} title={item.name} desc={item.description} time={item.createdTime} isSingle={items.length === 1} />)}
+      <Card>
+        <CardContent className="p-0">
+          {items.map(item => <SingleCard key={item.link} logo={item.logo} link={item.link} title={item.name} desc={item.description} time={item.createdTime} isSingle={items.length === 1} />)}
+        </CardContent>
       </Card>
     ) : (
       <div style={{margin: "0 15px"}}>

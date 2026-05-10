@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import React from "react";
-import {Card, Layout} from "antd";
+import {Layout} from "antd";
+import {Card, CardContent} from "./components/ui/card";
 import * as Setting from "./Setting";
 import i18next from "i18next";
 import copy from "copy-to-clipboard";
@@ -390,50 +391,52 @@ class ChatBox extends React.Component {
     return (
       <Layout style={{display: "flex", width: "100%", height: "100%", borderRadius: "6px", ...this.props.styles?.layout}}>
         <Card variant="borderless" style={{display: "flex", width: "100%", height: "100%", flexDirection: "column", position: "relative", padding: "0", boxShadow: "none", ...this.props.styles?.card}}>
-          {messages.length === 0 && !hasUrlMessage && <WelcomeHeader store={this.props.store} />}
+          <CardContent>
+            {messages.length === 0 && !hasUrlMessage && <WelcomeHeader store={this.props.store} />}
 
-          <MessageList
-            ref={this.messageListRef}
-            messages={messages}
-            account={this.props.account}
-            store={this.props.store}
-            onRegenerate={this.handleRegenerate}
-            onMessageLike={this.handleMessageLike}
-            onCopyMessage={this.copyMessageFromHTML}
-            onToggleRead={this.toggleMessageReadState}
-            onEditMessage={this.handleEditMessage}
-            hideInput={this.props.hideInput}
-            disableInput={this.props.disableInput}
-            isReading={this.state.isReading}
-            isLoadingTTS={this.state.isLoadingTTS}
-            readingMessage={this.state.readingMessage}
-            sendMessage={(text, fileName = "") => this.props.sendMessage(text, fileName, false, false, this.state.webSearchEnabled)}
-            files={this.state.files}
-            hideThinking={this.props.store?.hideThinking === true}
-          />
-
-          {!this.props.disableInput && (
-            <ChatInput
-              ref={this.inputRef}
-              value={this.state.value}
+            <MessageList
+              ref={this.messageListRef}
+              messages={messages}
+              account={this.props.account}
               store={this.props.store}
-              chat={this.props.chat}
-              files={this.state.files}
-              onFileChange={(files) => this.setState({files})}
-              onChange={(value) => this.setState({value})}
-              onSend={this.handleSend}
-              loading={this.props.loading}
+              onRegenerate={this.handleRegenerate}
+              onMessageLike={this.handleMessageLike}
+              onCopyMessage={this.copyMessageFromHTML}
+              onToggleRead={this.toggleMessageReadState}
+              onEditMessage={this.handleEditMessage}
+              hideInput={this.props.hideInput}
               disableInput={this.props.disableInput}
-              disableFocusHighlight={this.props.disableFocusHighlight}
-              messageError={this.props.messageError}
-              onCancelMessage={this.props.onCancelMessage}
-              onVoiceInputStart={this.startVoiceInput}
-              onVoiceInputEnd={this.stopVoiceInput}
-              isVoiceInput={this.state.isVoiceInput}
-              webSearchEnabled={this.state.webSearchEnabled}
-              onWebSearchChange={this.setWebSearchEnabled}
+              isReading={this.state.isReading}
+              isLoadingTTS={this.state.isLoadingTTS}
+              readingMessage={this.state.readingMessage}
+              sendMessage={(text, fileName = "") => this.props.sendMessage(text, fileName, false, false, this.state.webSearchEnabled)}
+              files={this.state.files}
+              hideThinking={this.props.store?.hideThinking === true}
             />
-          )}
+
+            {!this.props.disableInput && (
+              <ChatInput
+                ref={this.inputRef}
+                value={this.state.value}
+                store={this.props.store}
+                chat={this.props.chat}
+                files={this.state.files}
+                onFileChange={(files) => this.setState({files})}
+                onChange={(value) => this.setState({value})}
+                onSend={this.handleSend}
+                loading={this.props.loading}
+                disableInput={this.props.disableInput}
+                disableFocusHighlight={this.props.disableFocusHighlight}
+                messageError={this.props.messageError}
+                onCancelMessage={this.props.onCancelMessage}
+                onVoiceInputStart={this.startVoiceInput}
+                onVoiceInputEnd={this.stopVoiceInput}
+                isVoiceInput={this.state.isVoiceInput}
+                webSearchEnabled={this.state.webSearchEnabled}
+                onWebSearchChange={this.setWebSearchEnabled}
+              />
+            )}
+          </CardContent>
         </Card>
 
         {messages.length === 0 ? (

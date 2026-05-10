@@ -13,12 +13,11 @@
 // limitations under the License.
 
 import React from "react";
-import {Card, Col} from "antd";
+import {Col} from "antd";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "../components/ui/card";
 import * as Setting from "../Setting";
 import {withRouter} from "react-router-dom";
 import i18next from "i18next";
-
-const {Meta} = Card;
 
 class SingleCard extends React.Component {
   constructor(props) {
@@ -45,18 +44,20 @@ class SingleCard extends React.Component {
     const silentSigninLink = this.wrappedAsSilentSigninLink(link);
 
     return (
-      <Card.Grid style={gridStyle} onClick={() => Setting.goToLinkSoft(this, silentSigninLink)}>
-        <img src={logo} alt="logo" width={"100%"} style={{marginBottom: "20px"}} />
-        <Meta
-          title={title}
-          description={desc}
-          style={{justifyContent: "center"}}
-        />
-        <br />
-        {i18next.t("message:Comment")}
-        <br />
-        {time}
-      </Card.Grid>
+      <div style={gridStyle} onClick={() => Setting.goToLinkSoft(this, silentSigninLink)}>
+        <Card hoverable>
+          <img src={logo} alt="logo" width={"100%"} style={{marginBottom: "20px"}} />
+          <CardHeader style={{justifyContent: "center"}}>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{desc}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {i18next.t("message:Comment")}
+            <br />
+            {time}
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -67,17 +68,19 @@ class SingleCard extends React.Component {
       <Col style={{paddingLeft: "20px", paddingRight: "20px", paddingBottom: "20px", marginTop: "50px", marginBottom: "20px"}} span={6}>
         <Card
           hoverable
-          cover={
-            <img alt="logo" src={logo} style={{width: "100%", height: "200px", objectFit: "scale-down"}} />
-          }
           onClick={() => Setting.goToLinkSoft(this, silentSigninLink)}
           style={isSingle ? {width: "320px", height: "100%"} : {width: "100%", height: "100%"}}
         >
-          <Meta title={title} description={desc} />
-          <br />
-          {i18next.t("message:Comment")}
-          <br />
-          {time}
+          <img alt="logo" src={logo} style={{width: "100%", height: "200px", objectFit: "scale-down"}} />
+          <CardHeader>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{desc}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {i18next.t("message:Comment")}
+            <br />
+            {time}
+          </CardContent>
         </Card>
       </Col>
     );

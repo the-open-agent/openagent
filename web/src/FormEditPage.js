@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Button, Card, Col, Input, Row, Select, Space} from "antd";
+import {Button, Col, Input, Row, Select, Space} from "antd";
+import SectionCard from "./components/ui/section-card";
 import {LinkOutlined} from "@ant-design/icons";
 import * as FormBackend from "./backend/FormBackend";
 import * as Setting from "./Setting";
@@ -204,20 +205,6 @@ class FormEditPage extends React.Component {
   renderForm() {
     const form = this.state.form;
     const rowGutter = [16, 8];
-    const cardHeadStyle = {background: "transparent", borderBottom: "none", fontWeight: 600, fontSize: "15px", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"};
-    const sectionCardStyle = {
-      marginBottom: "16px",
-      borderRadius: "14px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-      padding: "18px",
-    };
-    const renderCardTitle = (title, desc) => (
-      <div>
-        <div style={{fontWeight: 600, fontSize: "15px"}}>{title}</div>
-        {desc && <div style={{fontSize: "13px", color: "var(--ant-color-text-tertiary)", fontWeight: 400, marginTop: "2px"}}>{desc}</div>}
-      </div>
-    );
-
     return (
       <div>
         <div style={{marginBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
@@ -227,7 +214,7 @@ class FormEditPage extends React.Component {
           </div>
         </div>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:General Settings"), i18next.t("general:General Settings desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:General Settings")} desc={i18next.t("general:General Settings desc")}>
           <Row gutter={rowGutter}>
             {this.renderFormField(
               Setting.getLabel(i18next.t("general:Name"), i18next.t("general:Name - Tooltip")),
@@ -256,15 +243,15 @@ class FormEditPage extends React.Component {
               8
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
         {form.category && (
-          <Card size="small" title={renderCardTitle(i18next.t("general:Content"), "")} style={sectionCardStyle} headStyle={cardHeadStyle}>
+          <SectionCard title={i18next.t("general:Content")}>
             {this.renderFormConfigContent()}
-          </Card>
+          </SectionCard>
         )}
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:Preview"), "")} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Preview")}>
           <Row gutter={rowGutter}>
             {this.renderFormField(
               "",
@@ -276,7 +263,7 @@ class FormEditPage extends React.Component {
               24
             )}
           </Row>
-        </Card>
+        </SectionCard>
       </div>
     );
   }

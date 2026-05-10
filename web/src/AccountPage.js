@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import React from "react";
-import {Avatar, Button, Card, Col, Form, Input, Modal, Row, Space, message} from "antd";
+import {Avatar, Button, Col, Form, Input, Modal, Row, Space, message} from "antd";
+import SectionCard from "./components/ui/section-card";
 import i18next from "i18next";
 import * as AccountBackend from "./backend/AccountBackend";
 import * as Setting from "./Setting";
@@ -114,28 +115,6 @@ class AccountPage extends React.Component {
       padding: "6px 10px",
     };
 
-    const cardHeadStyle = {
-      background: "transparent",
-      borderBottom: "none",
-      fontWeight: 600,
-      fontSize: "15px",
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    };
-
-    const sectionCardStyle = {
-      marginBottom: "16px",
-      borderRadius: "14px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-      padding: "18px",
-    };
-
-    const renderCardTitle = (title, desc) => (
-      <div>
-        <div style={{fontWeight: 600, fontSize: "15px"}}>{title}</div>
-        <div style={{fontSize: "13px", color: "var(--ant-color-text-tertiary)", fontWeight: 400, marginTop: "2px"}}>{desc}</div>
-      </div>
-    );
-
     return (
       <div style={{background: "var(--ant-color-bg-layout)", padding: "16px 20px 32px", minHeight: "100vh"}}>
         <div style={{marginBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
@@ -157,12 +136,7 @@ class AccountPage extends React.Component {
           onFinish={(values) => this.onFinish(values)}
           onValuesChange={(_, values) => this.setState({avatar: values.avatar ?? ""})}
         >
-          <Card
-            size="small"
-            title={renderCardTitle(i18next.t("account:Profile"), i18next.t("account:Profile desc"))}
-            style={sectionCardStyle}
-            headStyle={cardHeadStyle}
-          >
+          <SectionCard title={i18next.t("account:Profile")} desc={i18next.t("account:Profile desc")}>
             <Row gutter={[16, 8]}>
               {this.renderField(
                 Setting.getLabel(i18next.t("general:Name"), i18next.t("general:Name - Tooltip")),
@@ -193,14 +167,9 @@ class AccountPage extends React.Component {
                 24
               )}
             </Row>
-          </Card>
+          </SectionCard>
 
-          <Card
-            size="small"
-            title={renderCardTitle(i18next.t("general:Password"), i18next.t("account:Password desc"))}
-            style={sectionCardStyle}
-            headStyle={cardHeadStyle}
-          >
+          <SectionCard title={i18next.t("general:Password")} desc={i18next.t("account:Password desc")}>
             <Row gutter={[16, 8]}>
               {this.renderField(
                 Setting.getLabel(i18next.t("general:Password"), i18next.t("general:Password - Tooltip")),
@@ -210,7 +179,7 @@ class AccountPage extends React.Component {
                 12
               )}
             </Row>
-          </Card>
+          </SectionCard>
         </Form>
 
         <Modal
