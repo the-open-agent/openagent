@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Button, Card, Col, Input, Row, Select, Space, Switch} from "antd";
+import {Button, Col, Input, Row, Select, Space, Switch} from "antd";
+import SectionCard from "./components/ui/section-card";
 import * as RecordBackend from "./backend/RecordBackend";
 import * as ProviderBackend from "./backend/ProviderBackend";
 import * as Setting from "./Setting";
@@ -124,19 +125,6 @@ class RecordEditPage extends React.Component {
   renderRecord() {
     const record = this.state.record;
     const rowGutter = [16, 8];
-    const cardHeadStyle = {background: "transparent", borderBottom: "none", fontWeight: 600, fontSize: "15px", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"};
-    const sectionCardStyle = {
-      marginBottom: "16px",
-      borderRadius: "14px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-      padding: "18px",
-    };
-    const renderCardTitle = (title, desc) => (
-      <div>
-        <div style={{fontWeight: 600, fontSize: "15px"}}>{title}</div>
-        {desc && <div style={{fontSize: "13px", color: "var(--ant-color-text-tertiary)", fontWeight: 400, marginTop: "2px"}}>{desc}</div>}
-      </div>
-    );
 
     const pageTitle = this.state.mode === "add"
       ? i18next.t("record:New Record")
@@ -151,7 +139,7 @@ class RecordEditPage extends React.Component {
           </div>
         </div>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:General Settings"), i18next.t("general:General Settings desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:General Settings")} desc={i18next.t("general:General Settings desc")}>
           <Row gutter={rowGutter}>
             {this.renderRecordField(
               Setting.getLabel(i18next.t("general:Organization"), i18next.t("general:Organization - Tooltip")),
@@ -231,9 +219,9 @@ class RecordEditPage extends React.Component {
               8
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:Providers"), i18next.t("general:Providers desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Providers")} desc={i18next.t("general:Providers desc")}>
           <Row gutter={rowGutter}>
             {this.renderRecordField(
               Setting.getLabel(i18next.t("general:Provider"), i18next.t("general:Provider - Tooltip")),
@@ -264,9 +252,9 @@ class RecordEditPage extends React.Component {
               8
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:Content"), "")} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Content")}>
           <Row gutter={rowGutter}>
             {this.renderRecordField(
               Setting.getLabel(i18next.t("general:Object"), i18next.t("general:Object - Tooltip")),
@@ -301,7 +289,7 @@ class RecordEditPage extends React.Component {
               6
             )}
           </Row>
-        </Card>
+        </SectionCard>
       </div>
     );
   }

@@ -14,7 +14,8 @@
 
 import React from "react";
 import {withRouter} from "react-router-dom";
-import {Button, Card, Col, Descriptions, Empty, Input, Modal, Popconfirm, Radio, Result, Row, Spin, Tooltip, Tree, Upload} from "antd";
+import {Button, Col, Descriptions, Empty, Input, Modal, Popconfirm, Radio, Result, Row, Spin, Tooltip, Tree, Upload} from "antd";
+import {Card} from "./components/ui/card";
 import {CloudUploadOutlined, DeleteOutlined, DownloadOutlined, FileDoneOutlined, FolderAddOutlined, InfoCircleTwoTone, UploadOutlined, createFromIconfontCN} from "@ant-design/icons";
 import moment from "moment";
 import * as Setting from "./Setting";
@@ -977,7 +978,7 @@ class FileTree extends React.Component {
         <Row>
           <Col span={8}>
             <Card className="content-warp-card-filetreeleft" style={{marginRight: "10px"}}>
-              <div style={{margin: "-25px"}}>
+              <div>
                 {
                   this.renderSearch(this.props.store)
                 }
@@ -989,7 +990,7 @@ class FileTree extends React.Component {
           </Col>
           <Col span={16}>
             <Card className="content-warp-card-filetreeright">
-              <div style={{margin: "-25px"}}>
+              <div>
                 <div style={{height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}>
                   {
                     this.renderFileViewer(this.props.store)

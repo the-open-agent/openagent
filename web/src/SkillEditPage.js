@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Button, Card, Col, Collapse, Input, Row, Select, Space, Tag, Typography} from "antd";
+import {Button, Col, Collapse, Input, Row, Select, Space, Tag, Typography} from "antd";
+import SectionCard from "./components/ui/section-card";
 import * as SkillBackend from "./backend/SkillBackend";
 import * as Setting from "./Setting";
 import i18next from "i18next";
@@ -80,13 +81,6 @@ class SkillEditPage extends React.Component {
   renderSkill() {
     const {skill} = this.state;
     const rowGutter = [16, 8];
-    const cardHeadStyle = {background: "transparent", borderBottom: "none", fontWeight: 600, fontSize: "15px", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"};
-    const sectionCardStyle = {
-      marginBottom: "16px",
-      borderRadius: "14px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-      padding: "18px",
-    };
 
     const btnStyle = {
       backgroundColor: "var(--ant-color-bg-container)",
@@ -95,13 +89,6 @@ class SkillEditPage extends React.Component {
       borderRadius: "10px",
       padding: "6px 10px",
     };
-
-    const renderCardTitle = (title, desc) => (
-      <div>
-        <div style={{fontWeight: 600, fontSize: "15px"}}>{title}</div>
-        <div style={{fontSize: "13px", color: "var(--ant-color-text-tertiary)", fontWeight: 400, marginTop: "2px"}}>{desc}</div>
-      </div>
-    );
 
     return (
       <div>
@@ -116,7 +103,7 @@ class SkillEditPage extends React.Component {
           </div>
         </div>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:General Settings"), i18next.t("general:General Settings desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:General Settings")} desc={i18next.t("general:General Settings desc")}>
           <Row gutter={rowGutter}>
             {this.renderSkillField(
               Setting.getLabel(i18next.t("general:Name"), i18next.t("general:Name - Tooltip")),
@@ -161,9 +148,9 @@ class SkillEditPage extends React.Component {
               8
             )}
           </Row>
-        </Card>
+        </SectionCard>
 
-        <Card size="small" title={renderCardTitle(i18next.t("general:Content"), i18next.t("general:Content desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:Content")} desc={i18next.t("general:Content desc")}>
           <Row gutter={rowGutter}>
             {this.renderSkillField(
               Setting.getLabel(i18next.t("general:Description"), i18next.t("general:Description - Tooltip")),
@@ -252,7 +239,7 @@ class SkillEditPage extends React.Component {
               )
             )}
           </Row>
-        </Card>
+        </SectionCard>
       </div>
     );
   }

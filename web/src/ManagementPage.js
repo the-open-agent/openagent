@@ -14,7 +14,8 @@
 
 import React, {useEffect, useRef, useState} from "react";
 import {Link, Redirect, Route, Switch, withRouter} from "react-router-dom";
-import {Avatar, Button, Card, Drawer, Dropdown, Layout, Menu, Result} from "antd";
+import {Avatar, Button, Drawer, Dropdown, Layout, Menu, Result} from "antd";
+import {Card, CardContent} from "./components/ui/card";
 import {
   ApartmentOutlined,
   ApiOutlined,
@@ -768,8 +769,10 @@ function ManagementPage(props) {
         <Content style={{display: "flex", flexDirection: "column"}}>
           {isWithoutCard() ?
             renderRouter() :
-            <Card className="content-warp-card" styles={{body: {padding: 0, margin: 0}}}>
-              {renderRouter()}
+            <Card variant="inner" className="content-warp-card">
+              <CardContent className="p-0 m-0">
+                {renderRouter()}
+              </CardContent>
             </Card>
           }
         </Content>

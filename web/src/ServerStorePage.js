@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import React from "react";
-import {Button, Card, Col, Empty, Input, Row, Select, Tag, Typography} from "antd";
+import {Button, Col, Empty, Input, Row, Select, Tag, Typography} from "antd";
+import {Card, CardContent, CardHeader, CardTitle} from "./components/ui/card";
 import Loading from "./common/Loading";
 import moment from "moment";
 import * as Setting from "./Setting";
@@ -143,11 +144,9 @@ class ServerStorePage extends React.Component {
 
   renderServerCard = (server) => (
     <Col xs={24} sm={12} md={8} lg={6} key={server.id} style={{marginBottom: "16px"}}>
-      <Card
-        title={server.name || "-"}
-        hoverable
-        style={{height: "100%"}}
-        extra={
+      <Card hoverable style={{height: "100%"}}>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>{server.name || "-"}</CardTitle>
           <Button
             type="primary"
             size="small"
@@ -159,30 +158,31 @@ class ServerStorePage extends React.Component {
           >
             {i18next.t("general:Add")}
           </Button>
-        }
-      >
-        <div style={{minHeight: "48px", marginBottom: "8px"}}>
-          <Text type="secondary">{server.description || "-"}</Text>
-        </div>
-        <div style={{marginBottom: "8px"}}>
-          <Text strong>{i18next.t("general:URL")}: </Text>
-          {server.endpoint ? (
-            <a target="_blank" rel="noreferrer" href={server.endpoint}>{Setting.getShortText(server.endpoint, 40)}</a>
-          ) : (
-            <Text>-</Text>
-          )}
-        </div>
-        <div style={{marginBottom: "8px"}}>
-          <Text strong>{i18next.t("general:Website")}: </Text>
-          {server.website ? (
-            <a target="_blank" rel="noreferrer" href={this.getWebsiteUrl(server.website)}>{server.website}</a>
-          ) : (
-            <Text>-</Text>
-          )}
-        </div>
-        <div>
-          {(server.categoriesRaw || []).map((c) => <Tag key={`${server.id}-${c}`}>{c}</Tag>)}
-        </div>
+        </CardHeader>
+        <CardContent>
+          <div style={{minHeight: "48px", marginBottom: "8px"}}>
+            <Text type="secondary">{server.description || "-"}</Text>
+          </div>
+          <div style={{marginBottom: "8px"}}>
+            <Text strong>{i18next.t("general:URL")}: </Text>
+            {server.endpoint ? (
+              <a target="_blank" rel="noreferrer" href={server.endpoint}>{Setting.getShortText(server.endpoint, 40)}</a>
+            ) : (
+              <Text>-</Text>
+            )}
+          </div>
+          <div style={{marginBottom: "8px"}}>
+            <Text strong>{i18next.t("general:Website")}: </Text>
+            {server.website ? (
+              <a target="_blank" rel="noreferrer" href={this.getWebsiteUrl(server.website)}>{server.website}</a>
+            ) : (
+              <Text>-</Text>
+            )}
+          </div>
+          <div>
+            {(server.categoriesRaw || []).map((c) => <Tag key={`${server.id}-${c}`}>{c}</Tag>)}
+          </div>
+        </CardContent>
       </Card>
     </Col>
   );

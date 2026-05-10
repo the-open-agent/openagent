@@ -1,10 +1,18 @@
 import React from "react";
 import {cn} from "../../lib/utils";
 
-const Card = React.forwardRef(({className, ...props}, ref) => (
+const Card = React.forwardRef(({className, variant, hoverable, ...props}, ref) => (
   <div
     ref={ref}
-    className={cn("rounded-xl border bg-card text-card-foreground shadow-sm", className)}
+    className={cn(
+      "rounded-xl bg-card text-card-foreground",
+      variant === "bordered" && "border border-solid border-gray-200 shadow-md dark:border-gray-800",
+      variant === "inner" && "border-0 shadow-none",
+      variant === "borderless" && "border-0 shadow-none bg-transparent",
+      variant !== "bordered" && variant !== "inner" && variant !== "borderless" && "border border-solid border-gray-200 shadow-md dark:border-gray-800",
+      hoverable && "transition-shadow duration-200 hover:shadow-md cursor-pointer",
+      className
+    )}
     {...props}
   />
 ));
@@ -22,7 +30,7 @@ CardHeader.displayName = "CardHeader";
 const CardTitle = React.forwardRef(({className, ...props}, ref) => (
   <div
     ref={ref}
-    className={cn("text-2xl font-semibold leading-none tracking-tight", className)}
+    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
     {...props}
   />
 ));

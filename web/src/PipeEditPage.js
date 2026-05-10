@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Button, Card, Col, Input, Row, Select, Switch} from "antd";
+import {Button, Col, Input, Row, Select, Switch} from "antd";
+import SectionCard from "./components/ui/section-card";
 import {LinkOutlined, SendOutlined} from "@ant-design/icons";
 import * as PipeBackend from "./backend/PipeBackend";
 import * as StoreBackend from "./backend/StoreBackend";
@@ -209,15 +210,6 @@ class PipeEditPage extends React.Component {
   renderPipe() {
     const pipe = this.state.pipe;
 
-    const sectionCardStyle = {
-      marginBottom: "16px",
-      borderRadius: "14px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-      padding: "18px",
-    };
-
-    const cardHeadStyle = {background: "transparent", borderBottom: "none", fontWeight: 600, fontSize: "15px"};
-
     const btnStyle = {
       backgroundColor: "var(--ant-color-bg-container)",
       borderColor: "var(--ant-color-border)",
@@ -240,7 +232,7 @@ class PipeEditPage extends React.Component {
         </div>
 
         {/* Card 1: General Settings */}
-        <Card size="small" title={i18next.t("general:General Settings")} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("general:General Settings")}>
           <Row style={{marginTop: "10px"}} gutter={16}>
             <Col style={{marginTop: "5px"}} span={Setting.isMobile() ? 22 : 11}>
               <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("general:ID"), i18next.t("general:Name - Tooltip"))}</div>
@@ -436,10 +428,10 @@ class PipeEditPage extends React.Component {
               />
             </Col>
           </Row>
-        </Card>
+        </SectionCard>
 
         {/* Card 2: Pipe Test */}
-        <Card size="small" title={i18next.t("pipe:Pipe Test")} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("pipe:Pipe Test")}>
           <Row style={{marginTop: "10px"}}>
             <Col span={24}>
               <Button
@@ -454,10 +446,10 @@ class PipeEditPage extends React.Component {
               </span>
             </Col>
           </Row>
-        </Card>
+        </SectionCard>
 
         {/* Card 3: Chat Test */}
-        <Card size="small" title={i18next.t("pipe:Chat Test")} style={sectionCardStyle} headStyle={cardHeadStyle}>
+        <SectionCard title={i18next.t("pipe:Chat Test")}>
           <Row style={{marginTop: "10px"}} gutter={16}>
             <Col span={Setting.isMobile() ? 22 : 8}>
               <div style={{marginBottom: "4px"}}>{i18next.t("pipe:Chat ID")}</div>
@@ -498,7 +490,7 @@ class PipeEditPage extends React.Component {
               </Col>
             </Row>
           )}
-        </Card>
+        </SectionCard>
       </div>
     );
   }
