@@ -30,6 +30,7 @@ import * as FetchFilter from "./backend/FetchFilter";
 import {withTranslation} from "react-i18next";
 import i18next from "i18next";
 import ManagementPage from "./ManagementPage";
+import {TooltipProvider} from "./components/ui/tooltip";
 
 class App extends Component {
   constructor(props) {
@@ -263,10 +264,10 @@ class App extends Component {
 
   renderPage() {
     return (
-      <React.Fragment>
+      <TooltipProvider delayDuration={300}>
         <FloatButton.BackTop />
         {this.renderContent()}
-      </React.Fragment>
+      </TooltipProvider>
     );
   }
 

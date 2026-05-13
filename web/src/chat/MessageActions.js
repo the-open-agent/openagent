@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {AppTooltip} from "../components/ui/tooltip";
 import React from "react";
-import {Button, Space, Tooltip} from "antd";
+import {Button, Space} from "antd";
 import {
   CopyOutlined,
   DislikeFilled,
@@ -28,14 +29,14 @@ import {
 import i18next from "i18next";
 
 export const CopyButton = ({message, onCopy}) => (
-  <Tooltip title={i18next.t("general:Copy")} arrow={false}>
+  <AppTooltip title={i18next.t("general:Copy")} arrow={false}>
     <Button
       icon={<CopyOutlined />}
       color="primary"
       variant="text"
       onClick={() => onCopy(message)}
     />
-  </Tooltip>
+  </AppTooltip>
 );
 
 const MessageActions = ({
@@ -91,28 +92,28 @@ const MessageActions = ({
       <CopyButton message={message} onCopy={onCopy} />
 
       {!hideInput && (
-        <Tooltip title={i18next.t("general:Like")} arrow={false}>
+        <AppTooltip title={i18next.t("general:Like")} arrow={false}>
           <Button
             icon={message.likeUsers?.includes(account.name) ? <LikeFilled /> : <LikeOutlined />}
             color="primary"
             variant="text"
             onClick={() => onLike(message, "like")}
           />
-        </Tooltip>
+        </AppTooltip>
       )}
 
       {!hideInput && (
-        <Tooltip title={i18next.t("general:Dislike")} arrow={false}>
+        <AppTooltip title={i18next.t("general:Dislike")} arrow={false}>
           <Button
             icon={message.dislikeUsers?.includes(account.name) ? <DislikeFilled /> : <DislikeOutlined />}
             color="primary"
             variant="text"
             onClick={() => onLike(message, "dislike")}
           />
-        </Tooltip>
+        </AppTooltip>
       )}
 
-      <Tooltip title={getTtsTooltip()} arrow={false}>
+      <AppTooltip title={getTtsTooltip()} arrow={false}>
         <Button
           icon={getTtsIcon()}
           color="primary"
@@ -120,10 +121,10 @@ const MessageActions = ({
           onClick={() => onToggleRead(message)}
           disabled={isCurrentMessageBeingLoaded}
         />
-      </Tooltip>
+      </AppTooltip>
 
       {!hideInput && isLastMessage && (
-        <Tooltip title={i18next.t("general:Regenerate")} arrow={false}>
+        <AppTooltip title={i18next.t("general:Regenerate")} arrow={false}>
           <Button
             icon={<ReloadOutlined />}
             color="primary"
@@ -134,7 +135,7 @@ const MessageActions = ({
             }}
             disabled={isRegenerating}
           />
-        </Tooltip>
+        </AppTooltip>
       )}
     </Space>
   );

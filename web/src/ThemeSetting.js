@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Tag, Tooltip, theme} from "antd";
+import {Tag, theme} from "antd";
+import {AppTooltip} from "./components/ui/tooltip";
 import {QuestionCircleOutlined, SyncOutlined} from "@ant-design/icons";
 import React from "react";
 import i18next from "i18next";
@@ -108,27 +109,27 @@ export function getTag(text, type, state) {
 
   if (type === "Read") {
     return (
-      <Tooltip placement="top" title={i18next.t("store:Read")}>
+      <AppTooltip placement="top" title={i18next.t("store:Read")}>
         <Tag icon={icon} style={style} color={"success"}>
           {text}
         </Tag>
-      </Tooltip>
+      </AppTooltip>
     );
   } else if (type === "Write") {
     return (
-      <Tooltip placement="top" title={i18next.t("store:Write")}>
+      <AppTooltip placement="top" title={i18next.t("store:Write")}>
         <Tag icon={icon} style={style} color={"processing"}>
           {text}
         </Tag>
-      </Tooltip>
+      </AppTooltip>
     );
   } else if (type === "Admin") {
     return (
-      <Tooltip placement="top" title={i18next.t("general:Admin")}>
+      <AppTooltip placement="top" title={i18next.t("general:Admin")}>
         <Tag icon={icon} style={style} color={"error"}>
           {text}
         </Tag>
-      </Tooltip>
+      </AppTooltip>
     );
   } else {
     return null;
@@ -207,11 +208,11 @@ export function getLabelTags(labels) {
   const res = [];
   labels.forEach((label, i) => {
     res.push(
-      <Tooltip placement="top" title={getShortText(JSON.stringify(label.text), 500)}>
+      <AppTooltip placement="top" title={getShortText(JSON.stringify(label.text), 500)}>
         <Tag color={"processing"}>
           {`${label.startTime}: ${label.text !== "" ? label.text : "(Empty)"}`}
         </Tag>
-      </Tooltip>
+      </AppTooltip>
     );
   });
   return res;
@@ -401,9 +402,9 @@ export function getLabel(text, tooltip) {
   return (
     <React.Fragment>
       <span style={{marginRight: 4}}>{text}</span>
-      <Tooltip placement="top" title={tooltip}>
+      <AppTooltip placement="top" title={tooltip}>
         <QuestionCircleOutlined style={{color: "var(--ant-color-text-secondary)"}} />
-      </Tooltip>
+      </AppTooltip>
     </React.Fragment>
   );
 }

@@ -13,7 +13,9 @@
 // limitations under the License.
 
 import React from "react";
-import {Button, Col, Input, Row, Select, Switch, Table, Tooltip} from "antd";
+import {Button, Col, Input, Row, Select, Table} from "antd";
+import {AppTooltip} from "../components/ui/tooltip";
+import {Switch} from "../components/ui/switch";
 import {DeleteOutlined, DownOutlined, UpOutlined} from "@ant-design/icons";
 import * as Setting from "../Setting";
 import i18next from "i18next";
@@ -138,15 +140,15 @@ class FormItemTable extends React.Component {
         render: (text, record, index) => {
           return (
             <div>
-              <Tooltip placement="bottomLeft" title={i18next.t("general:Up")}>
+              <AppTooltip placement="bottomLeft" title={i18next.t("general:Up")}>
                 <Button style={{marginRight: "5px"}} disabled={index === 0} icon={<UpOutlined />} size="small" onClick={() => this.upRow(table, index)} />
-              </Tooltip>
-              <Tooltip placement="topLeft" title={i18next.t("general:Down")}>
+              </AppTooltip>
+              <AppTooltip placement="topLeft" title={i18next.t("general:Down")}>
                 <Button style={{marginRight: "5px"}} disabled={index === table.length - 1} icon={<DownOutlined />} size="small" onClick={() => this.downRow(table, index)} />
-              </Tooltip>
-              <Tooltip placement="topLeft" title={i18next.t("general:Delete")}>
+              </AppTooltip>
+              <AppTooltip placement="topLeft" title={i18next.t("general:Delete")}>
                 <Button icon={<DeleteOutlined />} size="small" onClick={() => this.deleteRow(table, index)} />
-              </Tooltip>
+              </AppTooltip>
             </div>
           );
         },
@@ -220,7 +222,7 @@ class FormItemTable extends React.Component {
         width: "200px",
         render: (text, record, index) => {
           return (
-            <Switch checked={text} onChange={checked => {
+            <Switch checked={text} onCheckedChange={checked => {
               this.updateField(table, index, "visible", checked);
             }} />
           );
@@ -245,17 +247,17 @@ class FormItemTable extends React.Component {
         render: (text, record, index) => {
           return (
             <div>
-              <Tooltip placement="bottomLeft" title={i18next.t("general:Up")}>
+              <AppTooltip placement="bottomLeft" title={i18next.t("general:Up")}>
                 <Button style={{marginRight: "5px"}} disabled={index === 0} icon={<UpOutlined />}
                   size="small" onClick={() => this.upRow(table, index)} />
-              </Tooltip>
-              <Tooltip placement="topLeft" title={i18next.t("general:Down")}>
+              </AppTooltip>
+              <AppTooltip placement="topLeft" title={i18next.t("general:Down")}>
                 <Button style={{marginRight: "5px"}} disabled={index === table.length - 1}
                   icon={<DownOutlined />} size="small" onClick={() => this.downRow(table, index)} />
-              </Tooltip>
-              <Tooltip placement="topLeft" title={i18next.t("general:Delete")}>
+              </AppTooltip>
+              <AppTooltip placement="topLeft" title={i18next.t("general:Delete")}>
                 <Button icon={<DeleteOutlined />} size="small" onClick={() => this.deleteRow(table, index)} />
-              </Tooltip>
+              </AppTooltip>
             </div>
           );
         },

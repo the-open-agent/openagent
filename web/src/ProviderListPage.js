@@ -14,7 +14,9 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Popconfirm, Switch, Table, Tooltip} from "antd";
+import {Button, Popconfirm, Table} from "antd";
+import {AppTooltip} from "./components/ui/tooltip";
+import {Switch} from "./components/ui/switch";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
@@ -238,7 +240,7 @@ class ProviderListPage extends BaseListPage {
         // ...this.getColumnSearchProps("isDefault"),
         render: (text, record, index) => {
           return (
-            <Switch disabled checkedChildren={i18next.t("general:ON")} unCheckedChildren={i18next.t("general:OFF")} checked={text} />
+            <Switch disabled checked={text} />
           );
         },
       },
@@ -250,7 +252,7 @@ class ProviderListPage extends BaseListPage {
         sorter: (a, b) => a.isRemote - b.isRemote,
         render: (text, record, index) => {
           return (
-            <Switch disabled checkedChildren={i18next.t("general:ON")} unCheckedChildren={i18next.t("general:OFF")} checked={text} />
+            <Switch disabled checked={text} />
           );
         },
       },
@@ -271,7 +273,7 @@ class ProviderListPage extends BaseListPage {
           const editLabel = record.isRemote ? i18next.t("general:View") : i18next.t("general:Edit");
           return (
             <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
-              <Tooltip title={editLabel}>
+              <AppTooltip title={editLabel}>
                 <Button
                   type="text"
                   size="small"
@@ -279,7 +281,7 @@ class ProviderListPage extends BaseListPage {
                   onClick={() => this.props.history.push(`/providers/${record.name}`)}
                   style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
                 />
-              </Tooltip>
+              </AppTooltip>
               <Popconfirm
                 title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
                 onConfirm={() => this.deleteProvider(record)}
@@ -287,7 +289,7 @@ class ProviderListPage extends BaseListPage {
                 cancelText={i18next.t("general:Cancel")}
                 disabled={record.isRemote}
               >
-                <Tooltip title={i18next.t("general:Delete")}>
+                <AppTooltip title={i18next.t("general:Delete")}>
                   <Button
                     type="text"
                     size="small"
@@ -296,7 +298,7 @@ class ProviderListPage extends BaseListPage {
                     icon={<DeleteOutlined />}
                     style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
                   />
-                </Tooltip>
+                </AppTooltip>
               </Popconfirm>
             </div>
           );

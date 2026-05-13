@@ -14,7 +14,9 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Alert, Button, Popconfirm, Popover, Switch, Table, Tooltip, Typography} from "antd";
+import {Alert, Button, Popconfirm, Popover, Table, Typography} from "antd";
+import {AppTooltip} from "./components/ui/tooltip";
+import {Switch} from "./components/ui/switch";
 import moment from "moment";
 import * as Setting from "./Setting";
 import * as RecordBackend from "./backend/RecordBackend";
@@ -514,7 +516,7 @@ class RecordListPage extends BaseListPage {
           }
 
           return (
-            <Switch disabled checkedChildren={i18next.t("general:ON")} unCheckedChildren={i18next.t("general:OFF")} checked={text} />
+            <Switch disabled checked={text} />
           );
         },
       },
@@ -574,7 +576,7 @@ class RecordListPage extends BaseListPage {
               {
                 <>
                   {(record.block === "") ? (
-                    <Tooltip title={i18next.t("record:Commit")}>
+                    <AppTooltip title={i18next.t("record:Commit")}>
                       <Button
                         disabled={record.block !== ""}
                         type="text"
@@ -584,7 +586,7 @@ class RecordListPage extends BaseListPage {
                         onClick={() => this.commitRecord(index, true)}
                         style={actionIconButtonStyle}
                       />
-                    </Tooltip>
+                    </AppTooltip>
                   ) : (
                     <Popover
                       placement="left"
@@ -605,7 +607,7 @@ class RecordListPage extends BaseListPage {
                       }
                       trigger="click"
                     >
-                      <Tooltip title={i18next.t("general:Query")}>
+                      <AppTooltip title={i18next.t("general:Query")}>
                         <Button
                           disabled={record.block === ""}
                           type="text"
@@ -616,12 +618,12 @@ class RecordListPage extends BaseListPage {
                           }}
                           style={actionIconButtonStyle}
                         />
-                      </Tooltip>
+                      </AppTooltip>
                     </Popover>
                   )}
                   {this.state.enableCrossChain && (
                     (record.block2 === "") ? (
-                      <Tooltip title={record.provider2 === "" ? i18next.t("general:Error") : ""}>
+                      <AppTooltip title={record.provider2 === "" ? i18next.t("general:Error") : ""}>
                         <Button
                           disabled={record.provider2 === ""}
                           type="text"
@@ -631,7 +633,7 @@ class RecordListPage extends BaseListPage {
                           onClick={() => this.commitRecord(index, false)}
                           style={actionIconButtonStyle}
                         />
-                      </Tooltip>
+                      </AppTooltip>
                     ) : (
                       <Popover
                         placement="left"
@@ -652,7 +654,7 @@ class RecordListPage extends BaseListPage {
                         }
                         trigger="click"
                       >
-                        <Tooltip title={i18next.t("general:Query") + " 2"}>
+                        <AppTooltip title={i18next.t("general:Query") + " 2"}>
                           <Button
                             disabled={record.block2 === ""}
                             type="text"
@@ -663,13 +665,13 @@ class RecordListPage extends BaseListPage {
                             }}
                             style={actionIconButtonStyle}
                           />
-                        </Tooltip>
+                        </AppTooltip>
                       </Popover>
                     )
                   )}
                 </>
               }
-              <Tooltip title={i18next.t("general:View")}>
+              <AppTooltip title={i18next.t("general:View")}>
                 <Button
                   type="text"
                   size="small"
@@ -677,8 +679,8 @@ class RecordListPage extends BaseListPage {
                   onClick={() => this.props.history.push(`/records/${record.owner}/${record.id}`)}
                   style={actionIconButtonStyle}
                 />
-              </Tooltip>
-              <Tooltip title={i18next.t("general:Delete")}>
+              </AppTooltip>
+              <AppTooltip title={i18next.t("general:Delete")}>
                 <Button
                   type="text"
                   size="small"
@@ -687,7 +689,7 @@ class RecordListPage extends BaseListPage {
                   disabled
                   style={actionIconButtonStyle}
                 />
-              </Tooltip>
+              </AppTooltip>
             </div>
           );
         },
@@ -713,11 +715,11 @@ class RecordListPage extends BaseListPage {
                 <>
                   <span style={{marginLeft: 32}}>
                     {i18next.t("record:Enable cross-chain")}:
-                    <Switch checked={this.state.enableCrossChain} onChange={this.toggleEnableCrossChain} style={{marginLeft: 8}} />
+                    <Switch checked={this.state.enableCrossChain} onCheckedChange={this.toggleEnableCrossChain} style={{marginLeft: 8}} />
                   </span>
                   <span style={{marginLeft: 32}}>
                     {i18next.t("record:Enable decoding")}:
-                    <Switch checked={this.state.enableDecoding} onChange={this.toggleEnableDecoding} style={{marginLeft: 8}} />
+                    <Switch checked={this.state.enableDecoding} onCheckedChange={this.toggleEnableDecoding} style={{marginLeft: 8}} />
                   </span>
                 </>
               )}

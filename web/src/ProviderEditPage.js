@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {AutoComplete, Button, Col, Input, InputNumber, Row, Select, Slider, Switch} from "antd";
+import {AutoComplete, Button, Col, Input, InputNumber, Row, Select, Slider} from "antd";
+import {Switch} from "./components/ui/switch";
 import SectionCard from "./components/ui/section-card";
 import {LinkOutlined} from "@ant-design/icons";
 import * as ProviderBackend from "./backend/ProviderBackend";
@@ -706,7 +707,7 @@ class ProviderEditPage extends React.Component {
                     {Setting.getLabel(i18next.t("provider:Enable thinking"), i18next.t("provider:Enable thinking - Tooltip"))}
                   </Col>
                   <Col span={22} >
-                    <Switch disabled={isRemote} checked={this.state.provider.enableThinking} onChange={checked => {
+                    <Switch disabled={isRemote} checked={this.state.provider.enableThinking} onCheckedChange={checked => {
                       this.updateProviderField("enableThinking", checked);
                     }} />
                   </Col>
@@ -976,7 +977,7 @@ class ProviderEditPage extends React.Component {
               {Setting.getLabel(i18next.t("store:Is default"), i18next.t("store:Is default - Tooltip"))}
             </Col>
             <Col span={1}>
-              <Switch disabled={isRemote} checked={this.state.provider.isDefault} onChange={checked => {
+              <Switch disabled={isRemote} checked={this.state.provider.isDefault} onCheckedChange={checked => {
                 this.updateProviderField("isDefault", checked);
               }} />
             </Col>

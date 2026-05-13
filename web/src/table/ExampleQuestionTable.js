@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Button, Input, Table, Tooltip} from "antd";
+import {AppTooltip} from "../components/ui/tooltip";
+import {Button, Input, Table} from "antd";
 import {DeleteOutlined, DownOutlined, UpOutlined} from "@ant-design/icons";
 import i18next from "i18next";
 import React from "react";
@@ -104,7 +105,7 @@ class ExampleQuestionTable extends React.Component {
         render: (text, record, index) => {
           return (
             <div>
-              <Tooltip placement="bottomLeft" title={i18next.t("general:Up")}>
+              <AppTooltip placement="bottomLeft" title={i18next.t("general:Up")}>
                 <Button
                   style={{marginRight: "5px"}}
                   disabled={index === 0}
@@ -112,8 +113,8 @@ class ExampleQuestionTable extends React.Component {
                   size="small"
                   onClick={() => this.upRow(this.props.table, index)}
                 />
-              </Tooltip>
-              <Tooltip placement="topLeft" title={i18next.t("general:Down")}>
+              </AppTooltip>
+              <AppTooltip placement="topLeft" title={i18next.t("general:Down")}>
                 <Button
                   style={{marginRight: "5px"}}
                   disabled={index === this.props.table.length - 1}
@@ -121,14 +122,14 @@ class ExampleQuestionTable extends React.Component {
                   size="small"
                   onClick={() => this.downRow(this.props.table, index)}
                 />
-              </Tooltip>
-              <Tooltip placement="right" title={i18next.t("general:Delete")}>
+              </AppTooltip>
+              <AppTooltip placement="right" title={i18next.t("general:Delete")}>
                 <Button
                   icon={<DeleteOutlined />}
                   size="small"
                   onClick={() => this.deleteRow(this.props.table, index)}
                 />
-              </Tooltip>
+              </AppTooltip>
             </div>
           );
         },

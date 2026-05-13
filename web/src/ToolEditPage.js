@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Alert, Button, Col, Input, Row, Select, Space, Switch, Table, Tag} from "antd";
+import {Alert, Button, Col, Input, Row, Select, Space, Table, Tag} from "antd";
+import {Switch} from "./components/ui/switch";
 import SectionCard from "./components/ui/section-card";
 import * as ToolBackend from "./backend/ToolBackend";
 import * as Setting from "./Setting";
@@ -95,7 +96,7 @@ class ToolEditPage extends React.Component {
   }
 
   renderToolSwitch(label, checked, onChange, span = 6) {
-    return this.renderToolField(label, <Switch checked={checked} onChange={onChange} />, span);
+    return this.renderToolField(label, <Switch checked={checked} onCheckedChange={onChange} />, span);
   }
 
   renderTool() {

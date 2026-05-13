@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import React from "react";
-import {Button, Col, Input, InputNumber, Row, Select, Switch} from "antd";
+import {Button, Col, Input, InputNumber, Row, Select} from "antd";
+import {Switch} from "../components/ui/switch";
 import * as Setting from "../Setting";
 import i18next from "i18next";
 import * as ServerBackend from "../backend/ServerBackend";
@@ -106,7 +107,7 @@ class TestMcpWidget extends React.Component {
         inputEl = (
           <Switch
             checked={!!testArgValues[argName]}
-            onChange={v => this.setState(prev => ({testArgValues: {...prev.testArgValues, [argName]: v}}))}
+            onCheckedChange={v => this.setState(prev => ({testArgValues: {...prev.testArgValues, [argName]: v}}))}
           />
         );
       } else if (type === "number" || type === "integer") {

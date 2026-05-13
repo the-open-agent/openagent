@@ -14,7 +14,8 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Popconfirm, Popover, Switch, Table, Tag, Tooltip} from "antd";
+import {Button, Popconfirm, Popover, Table, Tag} from "antd";
+import {Switch} from "./components/ui/switch";
 import BaseListPage from "./BaseListPage";
 import {ThemeDefault} from "./Conf";
 import * as Setting from "./Setting";
@@ -24,6 +25,7 @@ import moment from "moment";
 import i18next from "i18next";
 import * as Conf from "./Conf";
 import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
+import {AppTooltip} from "./components/ui/tooltip";
 import VectorTooltip from "./VectorTooltip";
 
 class MessageListPage extends BaseListPage {
@@ -531,7 +533,7 @@ class MessageListPage extends BaseListPage {
         ...this.getColumnFilterProps("isDeleted"),
         render: (text, record, index) => {
           return (
-            <Switch disabled checkedChildren={i18next.t("general:ON")} unCheckedChildren={i18next.t("general:OFF")} checked={text} />
+            <Switch disabled checked={text} />
           );
         },
       },
@@ -544,7 +546,7 @@ class MessageListPage extends BaseListPage {
         ...this.getColumnFilterProps("isAlerted"),
         render: (text, record, index) => {
           return (
-            <Switch disabled checkedChildren={i18next.t("general:ON")} unCheckedChildren={i18next.t("general:OFF")} checked={text} />
+            <Switch disabled checked={text} />
           );
         },
       },
@@ -557,18 +559,18 @@ class MessageListPage extends BaseListPage {
         render: (text, record, index) => {
           return (
             <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
-              <Tooltip title={i18next.t("general:Edit")}>
+              <AppTooltip title={i18next.t("general:Edit")}>
                 <Button type="text" size="small" icon={<EditOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} onClick={() => this.props.history.push(`/messages/${record.name}`)} />
-              </Tooltip>
+              </AppTooltip>
               <Popconfirm
                 title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
                 onConfirm={() => this.deleteMessage(record)}
                 okText={i18next.t("general:OK")}
                 cancelText={i18next.t("general:Cancel")}
               >
-                <Tooltip title={i18next.t("general:Delete")}>
+                <AppTooltip title={i18next.t("general:Delete")}>
                   <Button type="text" size="small" danger icon={<DeleteOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} disabled={!Setting.isLocalAdminUser(this.props.account)} />
-                </Tooltip>
+                </AppTooltip>
               </Popconfirm>
             </div>
           );

@@ -14,7 +14,9 @@
 
 import React from "react";
 import {DeleteOutlined, DownOutlined, UpOutlined} from "@ant-design/icons";
-import {Button, Col, Input, InputNumber, Row, Switch, Table, Tooltip} from "antd";
+import {Button, Col, Input, InputNumber, Row, Table} from "antd";
+import {AppTooltip} from "../components/ui/tooltip";
+import {Switch} from "../components/ui/switch";
 import * as Setting from "../Setting";
 import i18next from "i18next";
 import xlsx from "xlsx";
@@ -239,15 +241,15 @@ class LabelTable extends React.Component {
         render: (text, record, index) => {
           return (
             <div>
-              <Tooltip placement="bottomLeft" title={"Up"}>
+              <AppTooltip placement="bottomLeft" title={"Up"}>
                 <Button style={{marginRight: "5px"}} disabled={index === 0 || this.props.disabled || this.requireAdmin()} icon={<UpOutlined />} size="small" onClick={() => this.upRow(table, index)} />
-              </Tooltip>
-              <Tooltip placement="topLeft" title={"Down"}>
+              </AppTooltip>
+              <AppTooltip placement="topLeft" title={"Down"}>
                 <Button style={{marginRight: "5px"}} disabled={index === table.length - 1 || this.props.disabled || this.requireAdmin()} icon={<DownOutlined />} size="small" onClick={() => this.downRow(table, index)} />
-              </Tooltip>
-              <Tooltip placement="right" title={"Delete"}>
+              </AppTooltip>
+              <AppTooltip placement="right" title={"Delete"}>
                 <Button icon={<DeleteOutlined />} size="small" disabled={this.props.disabled || this.requireSelfOrAdmin(record)} onClick={() => this.deleteRow(table, index)} />
-              </Tooltip>
+              </AppTooltip>
             </div>
           );
         },
@@ -282,7 +284,7 @@ class LabelTable extends React.Component {
             &nbsp;&nbsp;&nbsp;&nbsp;
             {i18next.t("video:Tag on pause")}:
             &nbsp;&nbsp;
-            <Switch disabled={true} checked={this.props.video.tagOnPause} onChange={checked => {
+            <Switch disabled={true} checked={this.props.video.tagOnPause} onCheckedChange={checked => {
               this.updateTagOnPause(checked);
             }} />
           </div>

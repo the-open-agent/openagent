@@ -15,6 +15,7 @@
 import React from "react";
 import Loading from "./common/Loading";
 import {Button, Col, Collapse, Input, Row, Select, Space, Tag, Typography} from "antd";
+import {Switch} from "./components/ui/switch";
 import SectionCard from "./components/ui/section-card";
 import * as SkillBackend from "./backend/SkillBackend";
 import * as Setting from "./Setting";
@@ -74,8 +75,7 @@ class SkillEditPage extends React.Component {
   }
 
   renderSkillSwitch(label, checked, onChange, span = 6) {
-    const {Switch} = require("antd");
-    return this.renderSkillField(label, <Switch checked={checked} onChange={onChange} />, span);
+    return this.renderSkillField(label, <Switch checked={checked} onCheckedChange={onChange} />, span);
   }
 
   renderSkill() {

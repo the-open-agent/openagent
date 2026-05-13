@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Button, Col, Input, Row, Select, Space, Switch} from "antd";
+import {Button, Col, Input, Row, Select, Space} from "antd";
+import {Switch} from "./components/ui/switch";
 import SectionCard from "./components/ui/section-card";
 import i18next from "i18next";
 import * as Setting from "./Setting";
@@ -153,7 +154,7 @@ class MessageEditPage extends React.Component {
   }
 
   renderMessageSwitch(label, checked, onChange, span = 6) {
-    return this.renderMessageField(label, <Switch checked={checked} onChange={onChange} />, span);
+    return this.renderMessageField(label, <Switch checked={checked} onCheckedChange={onChange} />, span);
   }
 
   renderMessageActions() {

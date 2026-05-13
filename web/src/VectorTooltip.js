@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import React, {useEffect, useState} from "react";
-import {Tooltip} from "antd";
+import {AppTooltip} from "./components/ui/tooltip";
 import * as Setting from "./Setting";
 import * as VectorBackend from "./backend/VectorBackend";
 import i18next from "i18next";
@@ -54,9 +54,9 @@ const VectorTooltip = ({vectorScore, children}) => {
   };
 
   return (
-    <Tooltip title={tooltipContent()} placement="left" overlayStyle={{maxWidth: "none"}} overlayInnerStyle={{backgroundColor: "white", color: "black", maxWidth: "none"}}>
+    <AppTooltip title={tooltipContent()} placement="left" overlayStyle={{maxWidth: "none"}} overlayInnerStyle={{backgroundColor: "white", color: "black", maxWidth: "none"}}>
       {children}
-    </Tooltip>
+    </AppTooltip>
   );
 };
 

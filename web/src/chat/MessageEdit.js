@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {AppTooltip} from "../components/ui/tooltip";
 import React, {useState} from "react";
-import {Button, Input, Tooltip} from "antd";
+import {Button, Input} from "antd";
 import {CheckOutlined, CloseOutlined, EditOutlined} from "@ant-design/icons";
 import i18next from "i18next";
 
@@ -141,14 +142,14 @@ const MessageEdit = ({
   const renderEditButton = () => {
     if (message.author !== "AI" && !isEditing && !hideInput && (disableInput === false || index !== isLastMessage)) {
       return (
-        <Tooltip title={i18next.t("general:Edit")} arrow={false}>
+        <AppTooltip title={i18next.t("general:Edit")} arrow={false}>
           <Button
             icon={<EditOutlined />}
             color="primary"
             variant="text"
             onClick={handleEditActions.start}
           />
-        </Tooltip>
+        </AppTooltip>
       );
     }
     return null;

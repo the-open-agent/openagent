@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Button, Col, Input, Row, Select, Space, Switch} from "antd";
+import {Button, Col, Input, Row, Select, Space} from "antd";
+import {Switch} from "./components/ui/switch";
 import SectionCard from "./components/ui/section-card";
 import * as RecordBackend from "./backend/RecordBackend";
 import * as ProviderBackend from "./backend/ProviderBackend";
@@ -95,7 +96,7 @@ class RecordEditPage extends React.Component {
   }
 
   renderRecordSwitch(label, checked, onChange, span = 6) {
-    return this.renderRecordField(label, <Switch checked={checked} onChange={onChange} />, span);
+    return this.renderRecordField(label, <Switch checked={checked} onCheckedChange={onChange} />, span);
   }
 
   renderRecordActions() {

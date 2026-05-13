@@ -14,7 +14,9 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Popconfirm, Switch, Table, Tooltip} from "antd";
+import {Button, Popconfirm, Table} from "antd";
+import {AppTooltip} from "./components/ui/tooltip";
+import {Switch} from "./components/ui/switch";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
@@ -145,7 +147,7 @@ class PipeListPage extends BaseListPage {
         key: "isDefault",
         width: "120px",
         render: (text) => (
-          <Switch disabled checkedChildren={i18next.t("general:ON")} unCheckedChildren={i18next.t("general:OFF")} checked={text} />
+          <Switch disabled checked={text} />
         ),
       },
       {
@@ -163,7 +165,7 @@ class PipeListPage extends BaseListPage {
         fixed: "right",
         render: (text, record) => (
           <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
-            <Tooltip title={i18next.t("general:Edit")}>
+            <AppTooltip title={i18next.t("general:Edit")}>
               <Button
                 type="text"
                 size="small"
@@ -171,14 +173,14 @@ class PipeListPage extends BaseListPage {
                 onClick={() => this.props.history.push(`/pipes/${record.name}`)}
                 style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
               />
-            </Tooltip>
+            </AppTooltip>
             <Popconfirm
               title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
               onConfirm={() => this.deletePipe(record)}
               okText={i18next.t("general:OK")}
               cancelText={i18next.t("general:Cancel")}
             >
-              <Tooltip title={i18next.t("general:Delete")}>
+              <AppTooltip title={i18next.t("general:Delete")}>
                 <Button
                   type="text"
                   size="small"
@@ -186,7 +188,7 @@ class PipeListPage extends BaseListPage {
                   icon={<DeleteOutlined />}
                   style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
                 />
-              </Tooltip>
+              </AppTooltip>
             </Popconfirm>
           </div>
         ),

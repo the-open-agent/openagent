@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Avatar, Button, Col, Input, InputNumber, Modal, Row, Select, Space, Spin, Switch} from "antd";
+import {Avatar, Button, Col, Input, InputNumber, Modal, Row, Select, Space, Spin} from "antd";
+import {Switch} from "./components/ui/switch";
 import SectionCard from "./components/ui/section-card";
 import * as StoreBackend from "./backend/StoreBackend";
 import * as StorageProviderBackend from "./backend/StorageProviderBackend";
@@ -268,7 +269,7 @@ class StoreEditPage extends React.Component {
   }
 
   renderStoreSwitch(label, checked, onChange, span = 6) {
-    return this.renderStoreField(label, <Switch checked={checked} onChange={onChange} />, span);
+    return this.renderStoreField(label, <Switch checked={checked} onCheckedChange={onChange} />, span);
   }
 
   renderStore() {

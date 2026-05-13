@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Button, Col, Input, Row, Select, Switch} from "antd";
+import {Button, Col, Input, Row, Select} from "antd";
+import {Switch} from "./components/ui/switch";
 import SectionCard from "./components/ui/section-card";
 import {LinkOutlined, SendOutlined} from "@ant-design/icons";
 import * as PipeBackend from "./backend/PipeBackend";
@@ -405,7 +406,7 @@ class PipeEditPage extends React.Component {
               {Setting.getLabel(i18next.t("store:Is default"), i18next.t("store:Is default - Tooltip"))}
             </Col>
             <Col span={1}>
-              <Switch checked={pipe.isDefault} onChange={checked => this.updatePipeField("isDefault", checked)} />
+              <Switch checked={pipe.isDefault} onCheckedChange={checked => this.updatePipeField("isDefault", checked)} />
             </Col>
           </Row>
 

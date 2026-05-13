@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {AppTooltip} from "./components/ui/tooltip";
 import React, {useCallback, useEffect, useRef, useState} from "react";
-import {Badge, Button, Card, Col, Empty, Input, Modal, Row, Select, Spin, Tag, Tooltip, Typography} from "antd";
+import {Badge, Button, Card, Col, Empty, Input, Modal, Row, Select, Spin, Tag, Typography} from "antd";
 import {CheckCircleOutlined, CloudDownloadOutlined, SearchOutlined} from "@ant-design/icons";
 import * as SkillBackend from "./backend/SkillBackend";
 import * as Setting from "./Setting";
@@ -231,11 +232,11 @@ function SkillMarketplaceModal({open, onClose, onInstalled, installedNames = []}
                       {/* Footer: homepage + install button */}
                       <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto"}}>
                         {item.homepage ? (
-                          <Tooltip title={item.homepage}>
+                          <AppTooltip title={item.homepage}>
                             <a href={item.homepage} target="_blank" rel="noopener noreferrer" style={{fontSize: 11, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block"}}>
                               {item.homepage.replace(/^https?:\/\//, "")}
                             </a>
-                          </Tooltip>
+                          </AppTooltip>
                         ) : <span />}
                         <Button
                           type={isInstalled ? "default" : "primary"}

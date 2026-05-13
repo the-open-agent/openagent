@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import React from "react";
-import {Switch, Table} from "antd";
+import {Table} from "antd";
+import {Switch} from "../components/ui/switch";
 import i18next from "i18next";
 
 class ToolTable extends React.Component {
@@ -46,7 +47,7 @@ class ToolTable extends React.Component {
         key: "isAllowed",
         width: "120px",
         render: (text, record, index) => (
-          <Switch checked={record.isAllowed} onChange={(checked) => this.updateToolAllowed(table, index, checked)} />
+          <Switch checked={record.isAllowed} onCheckedChange={(checked) => this.updateToolAllowed(table, index, checked)} />
         ),
       },
     ];

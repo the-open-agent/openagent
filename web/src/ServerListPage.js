@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {AppTooltip} from "./components/ui/tooltip";
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Popconfirm, Table, Tooltip} from "antd";
+import {Button, Popconfirm, Table} from "antd";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
@@ -186,18 +187,18 @@ class ServerListPage extends BaseListPage {
         fixed: "right",
         render: (text, record) => (
           <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
-            <Tooltip title={i18next.t("general:Edit")}>
+            <AppTooltip title={i18next.t("general:Edit")}>
               <Button type="text" size="small" icon={<EditOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} onClick={() => this.props.history.push(`/servers/${record.name}`)} />
-            </Tooltip>
+            </AppTooltip>
             <Popconfirm
               title={`${i18next.t("general:Sure to delete")}: ${record.name}?`}
               onConfirm={() => this.deleteServer(record)}
               okText={i18next.t("general:OK")}
               cancelText={i18next.t("general:Cancel")}
             >
-              <Tooltip title={i18next.t("general:Delete")}>
+              <AppTooltip title={i18next.t("general:Delete")}>
                 <Button type="text" size="small" danger icon={<DeleteOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} />
-              </Tooltip>
+              </AppTooltip>
             </Popconfirm>
           </div>
         ),

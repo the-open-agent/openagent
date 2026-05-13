@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {AppTooltip} from "./components/ui/tooltip";
 import React from "react";
-import {Col, Progress, Row, Tag, Tooltip} from "antd";
+import {Col, Progress, Row, Tag} from "antd";
 import SectionCard from "./components/ui/section-card";
 import {
   ArrowDownOutlined,
@@ -178,7 +179,7 @@ class SystemInfo extends React.Component {
               const pct = Number(usage.toFixed(1));
               const color = getUsageColor(pct);
               return (
-                <Tooltip key={i} title={`Core ${i}: ${pct}%`}>
+                <AppTooltip key={i} title={`Core ${i}: ${pct}%`}>
                   <div style={{textAlign: "center"}}>
                     <div style={{fontSize: 10, color: labelColor, marginBottom: 2}}>C{i}</div>
                     <div style={{
@@ -202,7 +203,7 @@ class SystemInfo extends React.Component {
                     </div>
                     <div style={{fontSize: 10, color: labelColor, marginTop: 2}}>{pct}%</div>
                   </div>
-                </Tooltip>
+                </AppTooltip>
               );
             })}
           </div>

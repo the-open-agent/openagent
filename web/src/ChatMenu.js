@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {AppTooltip} from "./components/ui/tooltip";
 import React from "react";
-import {Button, Dropdown, Input, Menu, Popconfirm, Tooltip} from "antd";
+import {Button, Dropdown, Input, Menu, Popconfirm} from "antd";
 import {CloseOutlined, DeleteOutlined, EditOutlined, LayoutOutlined, PlusOutlined, SaveOutlined} from "@ant-design/icons";
 import i18next from "i18next";
 import {ThemeDefault} from "./Conf";
@@ -120,7 +121,7 @@ class ChatMenu extends React.Component {
                   onMouseLeave={() => this.setState({hoveredKey: null})}
                 >
                   <div style={{flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
-                    <Tooltip title={chat.displayName}>{chat.displayName}</Tooltip>
+                    <AppTooltip title={chat.displayName}>{chat.displayName}</AppTooltip>
                   </div>
                   {showActionButtons && (
                     <div>

@@ -14,7 +14,8 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Button, Col, Input, Row, Select, Space, Switch} from "antd";
+import {Button, Col, Input, Row, Select, Space} from "antd";
+import {Switch} from "./components/ui/switch";
 import SectionCard from "./components/ui/section-card";
 import * as ChatBackend from "./backend/ChatBackend";
 import * as ProviderBackend from "./backend/ProviderBackend";
@@ -142,7 +143,7 @@ class ChatEditPage extends React.Component {
   }
 
   renderChatSwitch(label, checked, onChange, span = 6) {
-    return this.renderChatField(label, <Switch checked={checked} onChange={onChange} />, span);
+    return this.renderChatField(label, <Switch checked={checked} onCheckedChange={onChange} />, span);
   }
 
   renderChat() {

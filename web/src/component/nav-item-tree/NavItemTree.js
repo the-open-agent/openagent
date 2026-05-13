@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {AppTooltip} from "../../components/ui/tooltip";
 import i18next from "i18next";
-import {Tooltip, Tree} from "antd";
+import {Tree} from "antd";
 
 export const NavItemTree = ({disabled, casdoorAvailable, checkedKeys, defaultExpandedKeys, onCheck}) => {
   const casdoorTooltip = (title) => casdoorAvailable ? title : (
-    <Tooltip title={i18next.t("general:Requires Casdoor to be installed")}>{title}</Tooltip>
+    <AppTooltip title={i18next.t("general:Requires Casdoor to be installed")}>{title}</AppTooltip>
   );
 
   const NavItemNodes = [

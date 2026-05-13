@@ -15,7 +15,8 @@
 import React from "react";
 import Loading from "./common/Loading";
 import SectionCard from "./components/ui/section-card";
-import {Button, Col, Image, Input, Modal, Popover, Row, Space, Switch, Upload} from "antd";
+import {Button, Col, Image, Input, Modal, Popover, Row, Space, Upload} from "antd";
+import {Switch} from "./components/ui/switch";
 import {EyeInvisibleOutlined, EyeTwoTone} from "@ant-design/icons";
 import * as SiteBackend from "./backend/SiteBackend";
 import * as ResourceBackend from "./backend/ResourceBackend";
@@ -108,7 +109,7 @@ class SiteEditPage extends React.Component {
   }
 
   renderSiteSwitch(label, checked, onChange, span = 6) {
-    return this.renderSiteField(label, <Switch checked={checked} onChange={onChange} />, span);
+    return this.renderSiteField(label, <Switch checked={checked} onCheckedChange={onChange} />, span);
   }
 
   renderSiteActions() {

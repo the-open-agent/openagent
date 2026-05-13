@@ -14,7 +14,9 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Avatar, Button, Dropdown, Popconfirm, Switch, Table, Tooltip} from "antd";
+import {Avatar, Button, Dropdown, Popconfirm, Table} from "antd";
+import {AppTooltip} from "./components/ui/tooltip";
+import {Switch} from "./components/ui/switch";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
@@ -327,7 +329,7 @@ class StoreListPage extends BaseListPage {
         ...this.getColumnFilterProps("isDefault"),
         render: (text, record, index) => {
           return (
-            <Switch disabled checkedChildren={i18next.t("general:ON")} unCheckedChildren={i18next.t("general:OFF")} checked={text} />
+            <Switch disabled checked={text} />
           );
         },
       },
@@ -468,7 +470,7 @@ class StoreListPage extends BaseListPage {
             <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
               {Setting.isLocalAdminUser(this.props.account) && (
                 <>
-                  <Tooltip title={i18next.t("general:Edit")}>
+                  <AppTooltip title={i18next.t("general:Edit")}>
                     <Button
                       type="text"
                       size="small"
@@ -476,7 +478,7 @@ class StoreListPage extends BaseListPage {
                       onClick={() => this.props.history.push(`/stores/${record.owner}/${record.name}`)}
                       style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
                     />
-                  </Tooltip>
+                  </AppTooltip>
                   <Popconfirm
                     title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
                     onConfirm={() => this.deleteStore(record)}
@@ -484,7 +486,7 @@ class StoreListPage extends BaseListPage {
                     cancelText={i18next.t("general:Cancel")}
                     disabled={record.isDefault || Setting.isUserBoundToStore(this.props.account)}
                   >
-                    <Tooltip title={i18next.t("general:Delete")}>
+                    <AppTooltip title={i18next.t("general:Delete")}>
                       <Button
                         type="text"
                         size="small"
@@ -493,20 +495,20 @@ class StoreListPage extends BaseListPage {
                         disabled={record.isDefault || Setting.isUserBoundToStore(this.props.account)}
                         style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
                       />
-                    </Tooltip>
+                    </AppTooltip>
                   </Popconfirm>
                 </>
               )}
               {moreItems.length > 0 && (
                 <Dropdown menu={{items: moreItems}} trigger={["click"]} placement="bottomRight">
-                  <Tooltip title={i18next.t("general:More")}>
+                  <AppTooltip title={i18next.t("general:More")}>
                     <Button
                       type="text"
                       size="small"
                       icon={<MoreOutlined />}
                       style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}}
                     />
-                  </Tooltip>
+                  </AppTooltip>
                 </Dropdown>
               )}
             </div>
@@ -565,7 +567,7 @@ class StoreListPage extends BaseListPage {
               }
               <span style={{marginLeft: 32}}>
                 {i18next.t("store:Hide chat")}:
-                <Switch checked={this.state.hideChat} onChange={this.toggleHideChat} style={{marginLeft: 8}} />
+                <Switch checked={this.state.hideChat} onCheckedChange={this.toggleHideChat} style={{marginLeft: 8}} />
               </span>
             </div>
           )}

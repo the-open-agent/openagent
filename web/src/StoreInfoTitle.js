@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import React, {useEffect, useMemo, useRef, useState} from "react";
-import {Button, Segmented, Select, Switch} from "antd";
+import {Button, Segmented, Select} from "antd";
+import {Switch} from "./components/ui/switch";
 import {FontSizeOutlined, MinusOutlined, PictureOutlined, PlusOutlined} from "@ant-design/icons";
 import * as Setting from "./Setting";
 import * as ProviderBackend from "./backend/ProviderBackend";
@@ -395,7 +396,7 @@ const StoreInfoTitle = (props) => {
       {storeInfo?.showAutoRead && (
         <div style={{display: "flex", alignItems: "center", gap: "6px"}}>
           <span style={labelStyle}>{i18next.t("store:Auto read")}</span>
-          <Switch size="small" checked={autoRead} onChange={checked => onUpdateAutoRead(checked)} />
+          <Switch checked={autoRead} onCheckedChange={checked => onUpdateAutoRead(checked)} />
         </div>
       )}
 

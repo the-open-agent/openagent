@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {AppTooltip} from "../components/ui/tooltip";
 import React from "react";
-import {Button, Col, Input, Row, Select, Table, Tooltip} from "antd";
+import {Button, Col, Input, Row, Select, Table} from "antd";
 import {DeleteOutlined, RedoOutlined} from "@ant-design/icons";
 import * as Setting from "../Setting";
 import i18next from "i18next";
@@ -105,16 +106,16 @@ class TagTable extends React.Component {
           options={this.props.tasks.map((task) => Setting.getOption(task.displayName, task.name))
           } />
         &nbsp;&nbsp;
-        <Tooltip placement="right" title={"Run"}>
+        <AppTooltip placement="right" title={"Run"}>
           <Button disabled={this.props.video[taskFieldName] === "" || this.state.selectedRowKeys.length === 0} icon={<RedoOutlined />} size="small" onClick={() => this.runTask(columnIndex)} />
-        </Tooltip>
+        </AppTooltip>
         &nbsp;&nbsp;
-        <Tooltip placement="right" title={"Clear"}>
+        <AppTooltip placement="right" title={"Clear"}>
           <Button icon={<DeleteOutlined />} size="small" onClick={() => {
             this.clearTask(columnIndex);
             this.updateVideoField(taskFieldName, "");
           }} />
-        </Tooltip>
+        </AppTooltip>
       </React.Fragment>
     );
   }

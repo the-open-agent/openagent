@@ -11,7 +11,8 @@
 // limitations under the License.
 
 import React from "react";
-import {Button, Select, Tooltip} from "antd";
+import {Button, Select} from "antd";
+import {AppTooltip} from "../components/ui/tooltip";
 import * as Setting from "../Setting";
 import {renderReason, renderText} from "../ChatMessageRender";
 import moment from "moment";
@@ -735,9 +736,9 @@ class ChatWidget extends React.Component {
         justifyContent: "space-between",
       }}>
         <div style={{display: "flex", alignItems: "center", gap: "12px", flex: 1, flexWrap: "wrap"}}>
-          <Tooltip title={chatDisplayName}>
+          <AppTooltip title={chatDisplayName}>
             <span style={{fontWeight: "500", color: "#333", width: Setting.isMobile() ? "35vw" : "15rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>{chatDisplayName}</span>
-          </Tooltip>
+          </AppTooltip>
 
           {displayProviders.length > 0 && (
             <Select

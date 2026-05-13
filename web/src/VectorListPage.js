@@ -14,13 +14,14 @@
 
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Popconfirm, Popover, Table, Tooltip} from "antd";
+import {Button, Popconfirm, Popover, Table} from "antd";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
 import * as VectorBackend from "./backend/VectorBackend";
 import i18next from "i18next";
 import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
+import {AppTooltip} from "./components/ui/tooltip";
 import Editor from "./common/Editor";
 
 class VectorListPage extends BaseListPage {
@@ -215,11 +216,11 @@ class VectorListPage extends BaseListPage {
         sorter: (a, b) => a.data.localeCompare(b.data),
         render: (text, record, index) => {
           return (
-            <Tooltip placement="left" title={Setting.getShortText(JSON.stringify(text), 1000)}>
+            <AppTooltip placement="left" title={Setting.getShortText(JSON.stringify(text), 1000)}>
               <div style={{maxWidth: "200px"}}>
                 {Setting.getShortText(JSON.stringify(text), 50)}
               </div>
-            </Tooltip>
+            </AppTooltip>
           );
         },
       },
@@ -239,18 +240,18 @@ class VectorListPage extends BaseListPage {
         render: (text, record, index) => {
           return (
             <div style={{display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap"}}>
-              <Tooltip title={i18next.t("general:Edit")}>
+              <AppTooltip title={i18next.t("general:Edit")}>
                 <Button type="text" size="small" icon={<EditOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} onClick={() => this.props.history.push(`/vectors/${record.name}`)} />
-              </Tooltip>
+              </AppTooltip>
               <Popconfirm
                 title={`${i18next.t("general:Sure to delete")}: ${record.name} ?`}
                 onConfirm={() => this.deleteVector(record)}
                 okText={i18next.t("general:OK")}
                 cancelText={i18next.t("general:Cancel")}
               >
-                <Tooltip title={i18next.t("general:Delete")}>
+                <AppTooltip title={i18next.t("general:Delete")}>
                   <Button type="text" size="small" danger icon={<DeleteOutlined />} style={{minWidth: "28px", width: "28px", height: "28px", padding: 0, borderRadius: "6px"}} />
-                </Tooltip>
+                </AppTooltip>
               </Popconfirm>
             </div>
           );

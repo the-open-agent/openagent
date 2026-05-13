@@ -13,7 +13,9 @@
 // limitations under the License.
 
 import React from "react";
-import {Button, Col, Input, Row, Select, Switch, Table, Tooltip} from "antd";
+import {Button, Col, Input, Row, Select, Table} from "antd";
+import {AppTooltip} from "../components/ui/tooltip";
+import {Switch} from "../components/ui/switch";
 import {DeleteOutlined, DownOutlined, UpOutlined} from "@ant-design/icons";
 import * as Setting from "../Setting";
 import i18next from "i18next";
@@ -184,7 +186,7 @@ class RemarkTable extends React.Component {
         width: "110px",
         render: (text, record, index) => {
           return (
-            <Switch disabled={this.props.disabled || this.requireSelfOrAdmin(record)} checked={this.filterRemark1Value(record, text)} onChange={checked => {
+            <Switch disabled={this.props.disabled || this.requireSelfOrAdmin(record)} checked={this.filterRemark1Value(record, text)} onCheckedChange={checked => {
               this.updateField(table, index, "isPublic", checked);
             }} />
           );
@@ -210,15 +212,15 @@ class RemarkTable extends React.Component {
         render: (text, record, index) => {
           return (
             <div>
-              <Tooltip placement="bottomLeft" title={"Up"}>
+              <AppTooltip placement="bottomLeft" title={"Up"}>
                 <Button style={{marginRight: "5px"}} disabled={index === 0 || this.props.disabled || this.requireAdmin()} icon={<UpOutlined />} size="small" onClick={() => this.upRow(table, index)} />
-              </Tooltip>
-              <Tooltip placement="topLeft" title={"Down"}>
+              </AppTooltip>
+              <AppTooltip placement="topLeft" title={"Down"}>
                 <Button style={{marginRight: "5px"}} disabled={index === table.length - 1 || this.props.disabled || this.requireAdmin()} icon={<DownOutlined />} size="small" onClick={() => this.downRow(table, index)} />
-              </Tooltip>
-              <Tooltip placement="topLeft" title={"Delete"}>
+              </AppTooltip>
+              <AppTooltip placement="topLeft" title={"Delete"}>
                 <Button icon={<DeleteOutlined />} size="small" disabled={this.props.disabled || this.requireSelfOrAdmin(record)} onClick={() => this.deleteRow(table, index)} />
-              </Tooltip>
+              </AppTooltip>
             </div>
           );
         },
