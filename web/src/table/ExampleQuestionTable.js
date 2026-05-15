@@ -13,7 +13,9 @@
 // limitations under the License.
 
 import {AppTooltip} from "../components/ui/tooltip";
-import {Button, Input, Table} from "antd";
+import {Table} from "antd";
+import {Button} from "../components/ui/button";
+import {Input} from "../components/ui/input";
 import {DeleteOutlined, DownOutlined, UpOutlined} from "@ant-design/icons";
 import i18next from "i18next";
 import React from "react";
@@ -107,28 +109,35 @@ class ExampleQuestionTable extends React.Component {
             <div>
               <AppTooltip placement="bottomLeft" title={i18next.t("general:Up")}>
                 <Button
-                  style={{marginRight: "5px"}}
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
                   disabled={index === 0}
-                  icon={<UpOutlined />}
-                  size="small"
                   onClick={() => this.upRow(this.props.table, index)}
-                />
+                >
+                  <UpOutlined />
+                </Button>
               </AppTooltip>
               <AppTooltip placement="topLeft" title={i18next.t("general:Down")}>
                 <Button
-                  style={{marginRight: "5px"}}
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
                   disabled={index === this.props.table.length - 1}
-                  icon={<DownOutlined />}
-                  size="small"
                   onClick={() => this.downRow(this.props.table, index)}
-                />
+                >
+                  <DownOutlined />
+                </Button>
               </AppTooltip>
               <AppTooltip placement="right" title={i18next.t("general:Delete")}>
                 <Button
-                  icon={<DeleteOutlined />}
-                  size="small"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
                   onClick={() => this.deleteRow(this.props.table, index)}
-                />
+                >
+                  <DeleteOutlined />
+                </Button>
               </AppTooltip>
             </div>
           );
@@ -149,9 +158,8 @@ class ExampleQuestionTable extends React.Component {
             <div>
               {i18next.t("store:Example questions")}&nbsp;&nbsp;&nbsp;&nbsp;
               <Button
-                style={{marginRight: "5px"}}
-                type="primary"
-                size="small"
+                variant="default"
+                size="sm"
                 onClick={() => this.addRow(this.props.table)}
               >
                 {i18next.t("general:Add")}

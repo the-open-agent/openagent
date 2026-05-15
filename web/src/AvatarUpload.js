@@ -13,7 +13,9 @@
 // limitations under the License.
 
 import React, {useState} from "react";
-import {Button, Col, Image, Input, Row, Space, Upload} from "antd";
+import {Col, Image, Row, Space, Upload} from "antd";
+import {Button} from "./components/ui/button";
+import {Input} from "./components/ui/input";
 import * as Setting from "./Setting";
 import i18next from "i18next";
 import * as ResourceBackend from "./backend/ResourceBackend";
@@ -81,8 +83,8 @@ const StoreAvatarUploader = (props) => {
 
             {disableUpload ? null : (
               <Upload name="file" accept="image/*" showUploadList={false} customRequest={handleUpload}>
-                <Button type="primary" loading={loading}>
-                  {i18next.t("general:Upload")}
+                <Button variant="default" size="sm" disabled={loading}>
+                  {loading ? i18next.t("general:Loading") : i18next.t("general:Upload")}
                 </Button>
               </Upload>
             )}

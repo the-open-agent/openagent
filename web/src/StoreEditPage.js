@@ -14,7 +14,10 @@
 
 import React from "react";
 import Loading from "./common/Loading";
-import {Avatar, Button, Col, Input, InputNumber, Modal, Row, Select, Space, Spin} from "antd";
+import {Avatar, Col, Modal, Row, Select, Spin} from "antd";
+import {Button} from "./components/ui/button";
+import {Input} from "./components/ui/input";
+import {Textarea} from "./components/ui/textarea";
 import {Switch} from "./components/ui/switch";
 import SectionCard from "./components/ui/section-card";
 import * as StoreBackend from "./backend/StoreBackend";
@@ -31,7 +34,6 @@ import ExampleQuestionTable from "./table/ExampleQuestionTable";
 import StoreAvatarUploader from "./AvatarUpload";
 
 const {Option} = Select;
-const {TextArea} = Input;
 
 class StoreEditPage extends React.Component {
   constructor(props) {
@@ -210,7 +212,7 @@ class StoreEditPage extends React.Component {
   }
 
   parseStoreField(key, value) {
-    if (["score"].includes(key)) {
+    if (["score", "knowledgeCount", "suggestionCount", "memoryLimit", "frequency", "limitMinutes"].includes(key)) {
       value = Setting.myParseInt(value);
     }
     return value;
@@ -241,21 +243,13 @@ class StoreEditPage extends React.Component {
       Setting.isChatAdminUser(this.props.account) &&
       !(useGlobalAdminCheck ? Setting.isGlobalAdminUser(this.props.account) : Setting.isAdminUser(this.props.account));
 
-    const btnStyle = {
-      backgroundColor: "var(--ant-color-bg-container)",
-      borderColor: "var(--ant-color-border)",
-      border: "1px solid var(--ant-color-border)",
-      borderRadius: "10px",
-      padding: "6px 10px",
-    };
-
     return (
-      <Space wrap>
-        <Button style={btnStyle} onClick={() => this.submitStoreEdit(false, undefined)}>{i18next.t("general:Save")}</Button>
-        <Button style={btnStyle} onClick={() => this.submitStoreEdit(true, undefined)}>{i18next.t("general:Save & Exit")}</Button>
-        {this.state.isNewStore && <Button style={btnStyle} onClick={() => this.cancelStoreEdit()}>{i18next.t("general:Cancel")}</Button>}
-        {shouldShowClaim && <Button style={btnStyle} onClick={() => this.claimStore()}>{i18next.t("store:Claim")}</Button>}
-      </Space>
+      <div style={{display: "flex", gap: "8px", flexWrap: "wrap"}}>
+        <Button variant="default" size="sm" onClick={() => this.submitStoreEdit(false, undefined)}>{i18next.t("general:Save")}</Button>
+        <Button variant="secondary" size="sm" onClick={() => this.submitStoreEdit(true, undefined)}>{i18next.t("general:Save & Exit")}</Button>
+        {this.state.isNewStore && <Button variant="outline" size="sm" onClick={() => this.cancelStoreEdit()}>{i18next.t("general:Cancel")}</Button>}
+        {shouldShowClaim && <Button variant="outline" size="sm" onClick={() => this.claimStore()}>{i18next.t("store:Claim")}</Button>}
+      </div>
     );
   }
 
@@ -555,15 +549,15 @@ class StoreEditPage extends React.Component {
               <>
                 {this.renderStoreField(
                   Setting.getLabel(i18next.t("store:Frequency"), i18next.t("store:Frequency - Tooltip")),
-                  <InputNumber min={0} style={{width: "100%"}} value={store.frequency} onChange={value => {
-                    this.updateStoreField("frequency", value);
+                  <Input type="number" min={0} value={store.frequency} onChange={e => {
+                    this.updateStoreField("frequency", e.target.value);
                   }} />,
                   8
                 )}
                 {this.renderStoreField(
                   Setting.getLabel(i18next.t("store:Limit minutes"), i18next.t("store:Limit minutes - Tooltip")),
-                  <InputNumber min={0} style={{width: "100%"}} value={store.limitMinutes} onChange={value => {
-                    this.updateStoreField("limitMinutes", value);
+                  <Input type="number" min={0} value={store.limitMinutes} onChange={e => {
+                    this.updateStoreField("limitMinutes", e.target.value);
                   }} />,
                   8
                 )}
@@ -571,8 +565,8 @@ class StoreEditPage extends React.Component {
             ) : null}
             {this.renderStoreField(
               Setting.getLabel(i18next.t("store:Memory limit"), i18next.t("store:Memory limit - Tooltip")),
-              <InputNumber min={0} style={{width: "100%"}} value={store.memoryLimit} onChange={value => {
-                this.updateStoreField("memoryLimit", value);
+              <Input type="number" min={0} value={store.memoryLimit} onChange={e => {
+                this.updateStoreField("memoryLimit", e.target.value);
               }} />,
               8
             )}
@@ -608,7 +602,7 @@ class StoreEditPage extends React.Component {
             )}
             {this.renderStoreField(
               Setting.getLabel(i18next.t("store:Prompt"), i18next.t("store:Prompt - Tooltip")),
-              <TextArea autoSize={{minRows: 1, maxRows: 15}} value={store.prompt} onChange={(e) => {
+              <Textarea rows={3} value={store.prompt} onChange={(e) => {
                 this.updateStoreField("prompt", e.target.value);
               }} />,
               24
@@ -627,22 +621,22 @@ class StoreEditPage extends React.Component {
           <Row gutter={rowGutter}>
             {this.renderStoreField(
               Setting.getLabel(i18next.t("store:Knowledge count"), i18next.t("store:Knowledge count - Tooltip")),
-              <InputNumber style={{width: "100%"}} min={0} max={100} value={store.knowledgeCount} onChange={value => {
-                this.updateStoreField("knowledgeCount", value);
+              <Input type="number" min={0} max={100} value={store.knowledgeCount} onChange={e => {
+                this.updateStoreField("knowledgeCount", e.target.value);
               }} />,
               8
             )}
             {this.renderStoreField(
               Setting.getLabel(i18next.t("store:Suggestion count"), i18next.t("store:Suggestion count - Tooltip")),
-              <InputNumber style={{width: "100%"}} min={0} max={10} value={store.suggestionCount} onChange={value => {
-                this.updateStoreField("suggestionCount", value);
+              <Input type="number" min={0} max={10} value={store.suggestionCount} onChange={e => {
+                this.updateStoreField("suggestionCount", e.target.value);
               }} />,
               8
             )}
             {this.renderStoreField(
               Setting.getLabel(i18next.t("store:Memory limit"), i18next.t("store:Memory limit - Tooltip")),
-              <InputNumber style={{width: "100%"}} min={0} value={store.memoryLimit} onChange={value => {
-                this.updateStoreField("memoryLimit", value);
+              <Input type="number" min={0} value={store.memoryLimit} onChange={e => {
+                this.updateStoreField("memoryLimit", e.target.value);
               }} />,
               8
             )}
@@ -650,15 +644,15 @@ class StoreEditPage extends React.Component {
               <>
                 {this.renderStoreField(
                   Setting.getLabel(i18next.t("store:Frequency"), i18next.t("store:Frequency - Tooltip")),
-                  <InputNumber style={{width: "100%"}} min={0} value={store.frequency} onChange={value => {
-                    this.updateStoreField("frequency", value);
+                  <Input type="number" min={0} value={store.frequency} onChange={e => {
+                    this.updateStoreField("frequency", e.target.value);
                   }} />,
                   8
                 )}
                 {this.renderStoreField(
                   Setting.getLabel(i18next.t("store:Limit minutes"), i18next.t("store:Limit minutes - Tooltip")),
-                  <InputNumber style={{width: "100%"}} min={0} value={store.limitMinutes} onChange={value => {
-                    this.updateStoreField("limitMinutes", value);
+                  <Input type="number" min={0} value={store.limitMinutes} onChange={e => {
+                    this.updateStoreField("limitMinutes", e.target.value);
                   }} />,
                   8
                 )}
