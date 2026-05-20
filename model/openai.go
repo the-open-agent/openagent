@@ -138,8 +138,8 @@ func CalculateOpenAIModelPrice(model string, modelResult *ModelResult, lang stri
 	// gpt 5.5 / 5.4 / 5.2 — Standard API prices per https://platform.openai.com/docs/pricing (per-1M → per-1k here)
 	case strings.Contains(model, "gpt-5.5"):
 		if strings.Contains(model, "5.5-pro") {
-			inputPricePerThousandTokens = 0.03   // $30/M input
-			outputPricePerThousandTokens = 0.18  // $180/M output
+			inputPricePerThousandTokens = 0.03 // $30/M input
+			outputPricePerThousandTokens = 0.18 // $180/M output
 		} else if strings.Contains(model, "5.5-mini") {
 			// Not listed separately; align with gpt-5-mini Standard tier
 			inputPricePerThousandTokens = 0.00025
@@ -148,8 +148,8 @@ func CalculateOpenAIModelPrice(model string, modelResult *ModelResult, lang stri
 			inputPricePerThousandTokens = 0.00005
 			outputPricePerThousandTokens = 0.0004
 		} else {
-			inputPricePerThousandTokens = 0.005  // $5/M input (<272K)
-			outputPricePerThousandTokens = 0.03  // $30/M output
+			inputPricePerThousandTokens = 0.005 // $5/M input (<272K)
+			outputPricePerThousandTokens = 0.03 // $30/M output
 		}
 		modelResult.Currency = "USD"
 

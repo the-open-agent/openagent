@@ -126,7 +126,7 @@ func (p *AlibabacloudModelProvider) calculatePrice(modelResult *ModelResult, lan
 		"deepseek-v3.2":                 {0.002, 0.003},
 		"deepseek-r1-distill-qwen-1.5b": {0.000, 0.000},
 		"deepseek-r1-distill-qwen-7b":   {0.001, 0.003},
-		"deepseek-r1-distill-qwen-14b": {0.002, 0.006},
+		"deepseek-r1-distill-qwen-14b":  {0.002, 0.006},
 		"deepseek-r1-distill-qwen-32b":  {0.000, 0.000},
 		"deepseek-r1-distill-llama-8b":  {0.000, 0.000},
 	}
