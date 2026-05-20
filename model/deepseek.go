@@ -15,25 +15,29 @@
 package model
 
 import (
-	"fmt"
 	"io"
-
-	"github.com/the-open-agent/openagent/i18n"
+	"strings"
 )
 
 type DeepSeekProvider struct {
-	subType     string
-	apiKey      string
-	temperature float32
-	topP        float32
+	subType                      string
+	apiKey                       string
+	temperature                  float32
+	topP                         float32
+	inputPricePerThousandTokens  float64
+	outputPricePerThousandTokens float64
+	currency                     string
 }
 
-func NewDeepSeekProvider(subType string, apiKey string, temperature float32, topP float32) (*DeepSeekProvider, error) {
+func NewDeepSeekProvider(subType string, apiKey string, temperature float32, topP float32, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*DeepSeekProvider, error) {
 	return &DeepSeekProvider{
-		subType:     subType,
-		apiKey:      apiKey,
-		temperature: temperature,
-		topP:        topP,
+		subType:                      subType,
+		apiKey:                       apiKey,
+		temperature:                  temperature,
+		topP:                         topP,
+		inputPricePerThousandTokens:  inputPricePerThousandTokens,
+		outputPricePerThousandTokens: outputPricePerThousandTokens,
+		currency:                     currency,
 	}, nil
 }
 
@@ -51,6 +55,10 @@ https://api-docs.deepseek.com/zh-cn/quick_start/pricing
 }
 
 func (p *DeepSeekProvider) calculatePrice(modelResult *ModelResult, lang string) error {
+	if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, pickCurrency(p.currency, "CNY"), modelResult) {
+		return nil
+	}
+
 	price := 0.0
 	priceTable := map[string][2]float64{
 		"deepseek-v4-pro":   {0.003, 0.006},
@@ -59,12 +67,33 @@ func (p *DeepSeekProvider) calculatePrice(modelResult *ModelResult, lang string)
 		"deepseek-reasoner": {0.003, 0.006},
 	}
 
-	if priceItem, ok := priceTable[p.subType]; ok {
-		inputPrice := getPrice(modelResult.TotalTokenCount, priceItem[0])
-		outputPrice := getPrice(modelResult.TotalTokenCount, priceItem[1])
+	var priceItem [2]float64
+	var ok bool
+	if priceItem, ok = priceTable[p.subType]; ok {
+		// use priceItem
+	} else {
+		lower := strings.ToLower(p.subType)
+		switch {
+		case strings.Contains(lower, "reasoner") || strings.Contains(lower, "r1"):
+			priceItem = [2]float64{0.003, 0.006}
+			ok = true
+		case strings.Contains(lower, "flash"):
+			priceItem = [2]float64{0.001, 0.002}
+			ok = true
+		case strings.Contains(lower, "deepseek"):
+			priceItem = [2]float64{0.001, 0.002}
+			ok = true
+		}
+	}
+
+	if ok {
+		inputPrice := getPrice(modelResult.PromptTokenCount, priceItem[0])
+		outputPrice := getPrice(modelResult.ResponseTokenCount, priceItem[1])
 		price = inputPrice + outputPrice
 	} else {
-		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), p.subType)
+		modelResult.TotalPrice = 0
+		modelResult.Currency = "CNY"
+		return nil
 	}
 
 	modelResult.TotalPrice = price
@@ -83,6 +112,8 @@ func (p *DeepSeekProvider) QueryText(question string, writer io.Writer, history 
 		localType = "Custom-think"
 	case "deepseek-chat":
 		localType = "Custom"
+	default:
+		localType = "Custom-think"
 	}
 	localProvider, err := NewLocalModelProvider(localType, "custom-model", p.apiKey, p.temperature, p.topP, 0, 0, BaseUrl, p.subType, 0, 0, "CNY")
 	if err != nil {

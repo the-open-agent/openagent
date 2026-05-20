@@ -28,14 +28,20 @@ import (
 )
 
 type ClaudeModelProvider struct {
-	subType        string
-	secretKey      string
-	budgetTokens   int
-	enableThinking bool
+	subType                      string
+	secretKey                    string
+	budgetTokens                 int
+	enableThinking               bool
+	inputPricePerThousandTokens  float64
+	outputPricePerThousandTokens float64
+	currency                     string
 }
 
-func NewClaudeModelProvider(subType string, secretKey string, enableThinking bool, budgetTokens int) (*ClaudeModelProvider, error) {
-	return &ClaudeModelProvider{subType: subType, secretKey: secretKey, enableThinking: enableThinking, budgetTokens: budgetTokens}, nil
+func NewClaudeModelProvider(subType string, secretKey string, enableThinking bool, budgetTokens int, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*ClaudeModelProvider, error) {
+	return &ClaudeModelProvider{
+		subType: subType, secretKey: secretKey, enableThinking: enableThinking, budgetTokens: budgetTokens,
+		inputPricePerThousandTokens: inputPricePerThousandTokens, outputPricePerThousandTokens: outputPricePerThousandTokens, currency: currency,
+	}, nil
 }
 
 func (p *ClaudeModelProvider) GetPricing() string {
@@ -56,9 +62,14 @@ https://docs.anthropic.com/en/docs/about-claude/pricing
 `
 }
 
-func (p *ClaudeModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
-	var inputPricePerThousandTokens, outputPricePerThousandTokens float64
+// ResolveClaudeUSDPerThousand returns input/output price per 1k tokens in USD for known Claude API model ids (including heuristics for new ids).
+func ResolveClaudeUSDPerThousand(subType string) (inputPricePerThousandTokens, outputPricePerThousandTokens float64, ok bool) {
 	priceTable := map[string][]float64{
+		"claude-opus-4-7":            {0.005, 0.025},
+		"claude-opus-4-6":            {0.005, 0.025},
+		"claude-sonnet-4-7":          {0.003, 0.015},
+		"claude-sonnet-4-6":          {0.003, 0.015},
+		"claude-haiku-4-5":           {0.0008, 0.004},
 		"claude-opus-4-5":            {0.005, 0.025},
 		"claude-opus-4-1":            {0.015, 0.075},
 		"claude-opus-4-0":            {0.015, 0.075},
@@ -76,11 +87,39 @@ func (p *ClaudeModelProvider) calculatePrice(modelResult *ModelResult, lang stri
 		"claude-3-haiku-20240307":    {0.00025, 0.00125},
 	}
 
-	if priceItem, ok := priceTable[p.subType]; ok {
-		inputPricePerThousandTokens = priceItem[0]
-		outputPricePerThousandTokens = priceItem[1]
-	} else {
-		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), p.subType)
+	if priceItem, hit := priceTable[subType]; hit {
+		return priceItem[0], priceItem[1], true
+	}
+
+	lower := strings.ToLower(subType)
+	switch {
+	case strings.Contains(lower, "haiku-4") || strings.Contains(lower, "haiku-3-5"):
+		return 0.0008, 0.004, true
+	case strings.Contains(lower, "sonnet-4") || strings.Contains(lower, "claude-sonnet-4"):
+		return 0.003, 0.015, true
+	case strings.Contains(lower, "opus-4") || strings.Contains(lower, "claude-opus-4"):
+		return 0.005, 0.025, true
+	case strings.Contains(lower, "sonnet-3") || strings.Contains(lower, "3-5-sonnet") || strings.Contains(lower, "3-7-sonnet"):
+		return 0.003, 0.015, true
+	case strings.Contains(lower, "opus-3") || strings.Contains(lower, "3-opus"):
+		return 0.015, 0.075, true
+	case strings.Contains(lower, "haiku-3") && !strings.Contains(lower, "3-5"):
+		return 0.00025, 0.00125, true
+	default:
+		return 0, 0, false
+	}
+}
+
+func (p *ClaudeModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
+	if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, p.currency, modelResult) {
+		return nil
+	}
+
+	inputPricePerThousandTokens, outputPricePerThousandTokens, ok := ResolveClaudeUSDPerThousand(p.subType)
+	if !ok {
+		modelResult.TotalPrice = 0
+		modelResult.Currency = "USD"
+		return nil
 	}
 
 	inputPrice := getPrice(modelResult.PromptTokenCount, inputPricePerThousandTokens)

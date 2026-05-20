@@ -52,23 +52,23 @@ func GetModelProvider(typ string, subType string, clientId string, clientSecret 
 	} else if typ == "Local" {
 		p, err = NewLocalModelProvider(typ, subType, clientSecret, temperature, topP, frequencyPenalty, presencePenalty, providerUrl, compatibleProvider, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "OpenAI" {
-		p, err = NewOpenAiModelProvider(subType, clientSecret, "", temperature, topP, frequencyPenalty, presencePenalty, 0, 0, "")
+		p, err = NewOpenAiModelProvider(subType, clientSecret, "", temperature, topP, frequencyPenalty, presencePenalty, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "OpenAI Compatible" {
 		p, err = NewLocalModelProvider("Custom-think", "custom-model", clientSecret, temperature, topP, frequencyPenalty, presencePenalty, providerUrl, subType, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "Gemini" {
-		p, err = NewGeminiModelProvider(subType, clientSecret, temperature, topP, topK)
+		p, err = NewGeminiModelProvider(subType, clientSecret, temperature, topP, topK, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "Azure" {
-		p, err = NewAzureModelProvider(typ, subType, clientId, clientSecret, temperature, topP, frequencyPenalty, presencePenalty, providerUrl, apiVersion)
+		p, err = NewAzureModelProvider(typ, subType, clientId, clientSecret, temperature, topP, frequencyPenalty, presencePenalty, providerUrl, apiVersion, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "Hugging Face" {
 		p, err = NewHuggingFaceModelProvider(subType, clientSecret, temperature)
 	} else if typ == "Claude" {
-		p, err = NewClaudeModelProvider(subType, clientSecret, enableThinking, topK)
+		p, err = NewClaudeModelProvider(subType, clientSecret, enableThinking, topK, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "Grok" {
-		p, err = NewGrokModelProvider(subType, clientSecret, temperature, topP)
+		p, err = NewGrokModelProvider(subType, clientSecret, temperature, topP, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "OpenRouter" {
-		p, err = NewOpenRouterModelProvider(subType, clientSecret, temperature, topP)
+		p, err = NewOpenRouterModelProvider(subType, clientSecret, temperature, topP, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "Baidu Cloud" {
-		p, err = NewBaiduCloudModelProvider(subType, clientSecret, temperature, topP)
+		p, err = NewBaiduCloudModelProvider(subType, clientSecret, temperature, topP, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "iFlytek" {
 		p, err = NewiFlytekModelProvider(subType, clientSecret, temperature)
 	} else if typ == "ChatGLM" {
@@ -78,27 +78,27 @@ func GetModelProvider(typ string, subType string, clientId string, clientSecret 
 	} else if typ == "Cohere" {
 		p, err = NewCohereModelProvider(subType, clientSecret)
 	} else if typ == "Moonshot" {
-		p, err = NewMoonshotModelProvider(subType, clientSecret, temperature, topP)
+		p, err = NewMoonshotModelProvider(subType, clientSecret, temperature, topP, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "Amazon Bedrock" {
-		p, err = NewAmazonBedrockModelProvider(subType, clientSecret, float64(temperature))
+		p, err = NewAmazonBedrockModelProvider(subType, clientSecret, float64(temperature), inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "Alibaba Cloud" {
-		p, err = NewAlibabacloudModelProvider(subType, clientSecret, temperature, topP)
+		p, err = NewAlibabacloudModelProvider(subType, clientSecret, temperature, topP, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "Baichuan" {
 		p, err = NewBaichuanModelProvider(subType, clientSecret, temperature, topP)
 	} else if typ == "Volcano Engine" {
-		p, err = NewVolcengineModelProvider(subType, providerUrl, clientSecret, temperature, topP)
+		p, err = NewVolcengineModelProvider(subType, providerUrl, clientSecret, temperature, topP, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "DeepSeek" {
-		p, err = NewDeepSeekProvider(subType, clientSecret, temperature, topP)
+		p, err = NewDeepSeekProvider(subType, clientSecret, temperature, topP, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "StepFun" {
 		p, err = NewStepFunModelProvider(subType, clientSecret, temperature, topP)
 	} else if typ == "Tencent Cloud" {
 		p, err = NewTencentCloudProvider(clientSecret, providerUrl, subType, temperature, topP)
 	} else if typ == "Mistral" {
-		p, err = NewMistralProvider(clientSecret, subType)
+		p, err = NewMistralProvider(clientSecret, subType, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "Yi" {
 		p, err = NewYiProvider(subType, clientSecret, temperature, topP)
 	} else if typ == "Silicon Flow" {
-		p, err = NewSiliconFlowProvider(subType, clientSecret, temperature, topP)
+		p, err = NewSiliconFlowProvider(subType, clientSecret, temperature, topP, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else if typ == "GitHub" {
 		p, err = NewGitHubModelProvider(typ, subType, clientSecret, temperature, topP, frequencyPenalty, presencePenalty)
 	} else if typ == "Writer" {

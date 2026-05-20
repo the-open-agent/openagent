@@ -135,17 +135,54 @@ func CalculateOpenAIModelPrice(model string, modelResult *ModelResult, lang stri
 		}
 		modelResult.Currency = "USD"
 
+	// gpt 5.5 / 5.4 / 5.2 — Standard API prices per https://platform.openai.com/docs/pricing (per-1M → per-1k here)
+	case strings.Contains(model, "gpt-5.5"):
+		if strings.Contains(model, "5.5-pro") {
+			inputPricePerThousandTokens = 0.03   // $30/M input
+			outputPricePerThousandTokens = 0.18  // $180/M output
+		} else if strings.Contains(model, "5.5-mini") {
+			// Not listed separately; align with gpt-5-mini Standard tier
+			inputPricePerThousandTokens = 0.00025
+			outputPricePerThousandTokens = 0.002
+		} else if strings.Contains(model, "5.5-nano") {
+			inputPricePerThousandTokens = 0.00005
+			outputPricePerThousandTokens = 0.0004
+		} else {
+			inputPricePerThousandTokens = 0.005  // $5/M input (<272K)
+			outputPricePerThousandTokens = 0.03  // $30/M output
+		}
+		modelResult.Currency = "USD"
+
+	case strings.Contains(model, "gpt-5.4"):
+		if strings.Contains(model, "5.4-pro") {
+			inputPricePerThousandTokens = 0.03
+			outputPricePerThousandTokens = 0.18
+		} else if strings.Contains(model, "5.4-mini") {
+			inputPricePerThousandTokens = 0.00075  // $0.75/M
+			outputPricePerThousandTokens = 0.0045 // $4.5/M
+		} else if strings.Contains(model, "5.4-nano") {
+			inputPricePerThousandTokens = 0.0002
+			outputPricePerThousandTokens = 0.00125
+		} else {
+			inputPricePerThousandTokens = 0.0025 // $2.5/M
+			outputPricePerThousandTokens = 0.015 // $15/M
+		}
+		modelResult.Currency = "USD"
+
 	// gpt 5.2 model (includes gpt-5.2-chat which uses same pricing)
 	case strings.Contains(model, "gpt-5.2"):
-		if strings.Contains(model, "5.2-mini") {
+		if strings.Contains(model, "5.2-pro") {
+			inputPricePerThousandTokens = 0.021  // $21/M
+			outputPricePerThousandTokens = 0.168 // $168/M
+		} else if strings.Contains(model, "5.2-mini") {
 			inputPricePerThousandTokens = 0.00025
 			outputPricePerThousandTokens = 0.002
 		} else if strings.Contains(model, "5.2-nano") {
 			inputPricePerThousandTokens = 0.00005
 			outputPricePerThousandTokens = 0.0004
 		} else {
-			inputPricePerThousandTokens = 0.00125
-			outputPricePerThousandTokens = 0.01
+			inputPricePerThousandTokens = 0.00175 // $1.75/M
+			outputPricePerThousandTokens = 0.014  // $14/M
 		}
 		modelResult.Currency = "USD"
 
@@ -215,9 +252,13 @@ func CalculateOpenAIModelPrice(model string, modelResult *ModelResult, lang stri
 		modelResult.Currency = "USD"
 		return nil
 	default:
-		// inputPricePerThousandTokens = 0
-		// outputPricePerThousandTokens = 0
-		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), model)
+		// Don't fail hard on unknown models. Model naming and availability can change;
+		// callers can still proceed with zero cost when pricing is unknown.
+		modelResult.TotalPrice = 0
+		if modelResult.Currency == "" {
+			modelResult.Currency = "USD"
+		}
+		return nil
 	}
 
 	inputPrice := getPrice(modelResult.PromptTokenCount, inputPricePerThousandTokens)
@@ -257,10 +298,17 @@ Language models:
 | GPT-5.1               | 400K    | $0.00125                 | $0.01                    |
 | GPT-5.1-mini          | 400K    | $0.00025                 | $0.002                   |
 | GPT-5.1-nano          | 400K    | $0.00005                 | $0.0004                  |
-| GPT-5.2               | 400K    | $0.00125                 | $0.01                    |
+| GPT-5.5               | 272K    | $0.005                   | $0.03                    |
+| GPT-5.5-pro           | 272K    | $0.03                    | $0.18                    |
+| GPT-5.4               | 272K    | $0.0025                  | $0.015                   |
+| GPT-5.4-mini          | —       | $0.00075                 | $0.0045                  |
+| GPT-5.4-nano          | —       | $0.0002                  | $0.00125                 |
+| GPT-5.4-pro           | 272K    | $0.03                    | $0.18                    |
+| GPT-5.2               | 400K    | $0.00175                 | $0.014                   |
+| GPT-5.2-pro           | —       | $0.021                   | $0.168                   |
 | GPT-5.2-mini          | 400K    | $0.00025                 | $0.002                   |
 | GPT-5.2-nano          | 400K    | $0.00005                 | $0.0004                  |
-| GPT-5.2-chat          | 400K    | $0.00125                 | $0.01                    |
+| GPT-5.2-chat          | 400K    | $0.00175                 | $0.014                   |
 | GPT-5-chat-latest     | 400K    | $0.00125                 | $0.01                    |
 | Deep-Research         | 200K    | $0.002                   | $0.008                   |
 Image generation models (token-based, per 1M tokens):
@@ -471,11 +519,8 @@ func (p *OpenAiModelProvider) QueryText(question string, writer io.Writer, histo
 			toolSession.ToolMessages.ToolCalls = toolCalls
 		}
 
-		if p.inputPricePerThousandTokens > 0 || p.outputPricePerThousandTokens > 0 {
-			inputPrice := getPrice(modelResult.PromptTokenCount, p.inputPricePerThousandTokens)
-			outputPrice := getPrice(modelResult.ResponseTokenCount, p.outputPricePerThousandTokens)
-			modelResult.TotalPrice = AddPrices(inputPrice, outputPrice)
-			modelResult.Currency = p.currency
+		if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, p.currency, modelResult) {
+			// admin-configured price applied
 		} else {
 			err = CalculateOpenAIModelPrice(model, modelResult, lang)
 			if err != nil {

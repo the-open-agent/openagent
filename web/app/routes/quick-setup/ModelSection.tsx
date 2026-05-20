@@ -12,14 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { LinkIcon } from "lucide-react"
+import { LinkIcon, Loader2Icon } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
 import i18next from "i18next"
 import {
   getModelProviderMetadata,
   getProviderLogoURL,
-  getProviderSubTypeOptions,
   getQuickSetupModelTypes,
 } from "~/lib/ProviderSetting"
+import {
+  getStaticModelOptions,
+  loadModelCatalog,
+  resolveModelOptions,
+  type ModelOption,
+} from "~/lib/ProviderModelCatalog"
 import { Input } from "~/components/ui/input"
 import {
   Select,
@@ -63,10 +69,72 @@ export default function ModelSection({
 }: ModelSectionProps) {
   const modelTypes = getQuickSetupModelTypes()
   const meta = selectedModelType ? getModelProviderMetadata(selectedModelType) : null
-  const modelList =
-    selectedModelType && selectedModelType !== "OpenAI Compatible"
-      ? getProviderSubTypeOptions("Model", selectedModelType)
-      : []
+  const [modelList, setModelList] = useState<ModelOption[]>([])
+  const [catalogType, setCatalogType] = useState("")
+  const [loadingModels, setLoadingModels] = useState(false)
+  const [modelSource, setModelSource] = useState<"dynamic" | "fallback">("fallback")
+
+  const modelRequest = useMemo(
+    () => ({
+      type: selectedModelType || "",
+      providerUrl,
+      clientId,
+      clientSecret: apiKey,
+      region,
+    }),
+    [selectedModelType, providerUrl, clientId, apiKey, region]
+  )
+
+  useEffect(() => {
+    if (!selectedModelType || selectedModelType === "OpenAI Compatible") {
+      setModelList([])
+      setCatalogType("")
+      setModelSource("fallback")
+      return
+    }
+
+    setCatalogType("")
+    setModelList([])
+
+    let cancelled = false
+    const timer = setTimeout(() => {
+      setLoadingModels(true)
+      const requestedType = modelRequest.type
+      loadModelCatalog(modelRequest)
+        .then((res) => {
+          if (cancelled) return
+          setCatalogType(requestedType)
+          setModelList(res.options)
+          setModelSource(res.source)
+        })
+        .finally(() => {
+          if (!cancelled) setLoadingModels(false)
+        })
+    }, 350)
+
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [selectedModelType, modelRequest])
+
+  const staticModelList = useMemo(
+    () => (selectedModelType ? getStaticModelOptions(selectedModelType) : []),
+    [selectedModelType]
+  )
+  const displayModelList = useMemo(
+    () =>
+      selectedModelType
+        ? resolveModelOptions({
+            providerType: selectedModelType,
+            catalogType,
+            loading: loadingModels,
+            dynamicOptions: modelList,
+            staticOptions: staticModelList,
+          })
+        : [],
+    [selectedModelType, catalogType, loadingModels, modelList, staticModelList]
+  )
 
   return (
     <Card>
@@ -99,15 +167,21 @@ export default function ModelSection({
             </p>
 
             <FieldRow label={i18next.t("general:Model")}>
-              {modelList.length > 0 ? (
+              {loadingModels && (
+                <div className="mb-2 flex items-center gap-1 text-xs text-muted-foreground">
+                  <Loader2Icon className="h-3 w-3 animate-spin" />
+                  {i18next.t("general:Loading")}
+                </div>
+              )}
+              {displayModelList.length > 0 ? (
                 <Select value={subType} onValueChange={(v) => v !== null && setSubType(v)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder={i18next.t("setup:Enter model name")} />
                   </SelectTrigger>
                   <SelectContent>
-                    {modelList.map((m: { id: string; name: string }) => (
+                    {displayModelList.map((m: ModelOption) => (
                       <SelectItem key={m.id} value={m.id}>
-                        {m.name}
+                        {m.name}{m.deprecated ? " (deprecated)" : ""}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -118,6 +192,11 @@ export default function ModelSection({
                   onChange={(e) => setSubType(e.target.value)}
                   placeholder={i18next.t("setup:Enter model name")}
                 />
+              )}
+              {!loadingModels && displayModelList.length > 0 && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {modelSource === "dynamic" ? "Models loaded from provider API" : "Using built-in fallback model list"}
+                </p>
               )}
             </FieldRow>
 

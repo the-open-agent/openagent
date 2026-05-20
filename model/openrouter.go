@@ -27,22 +27,28 @@ import (
 )
 
 type OpenRouterModelProvider struct {
-	subType     string
-	secretKey   string
-	siteName    string
-	siteUrl     string
-	temperature *float32
-	topP        *float32
+	subType                      string
+	secretKey                    string
+	siteName                     string
+	siteUrl                      string
+	temperature                  *float32
+	topP                         *float32
+	inputPricePerThousandTokens  float64
+	outputPricePerThousandTokens float64
+	currency                     string
 }
 
-func NewOpenRouterModelProvider(subType string, secretKey string, temperature float32, topP float32) (*OpenRouterModelProvider, error) {
+func NewOpenRouterModelProvider(subType string, secretKey string, temperature float32, topP float32, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*OpenRouterModelProvider, error) {
 	p := &OpenRouterModelProvider{
-		subType:     subType,
-		secretKey:   secretKey,
-		siteName:    "OpenAgent",
-		siteUrl:     "https://openagentai.org",
-		temperature: &temperature,
-		topP:        &topP,
+		subType:                      subType,
+		secretKey:                    secretKey,
+		siteName:                     "OpenAgent",
+		siteUrl:                      "https://openagentai.org",
+		temperature:                  &temperature,
+		topP:                         &topP,
+		inputPricePerThousandTokens:  inputPricePerThousandTokens,
+		outputPricePerThousandTokens: outputPricePerThousandTokens,
+		currency:                     currency,
 	}
 	return p, nil
 }
@@ -76,7 +82,44 @@ https://openrouter.ai/docs#models
 `
 }
 
+func openRouterHeuristicUSDPerK(modelID string, lang string) (inputPerK, outputPerK float64, ok bool) {
+	id := strings.TrimSpace(modelID)
+	lower := strings.ToLower(id)
+	if strings.HasPrefix(lower, "openai/") {
+		rest := strings.ToLower(id[len("openai/"):])
+		if strings.Contains(rest, "dall-e") || strings.Contains(rest, "gpt-image") {
+			return 0, 0, false
+		}
+		mrIn := &ModelResult{PromptTokenCount: 1000}
+		if err := CalculateOpenAIModelPrice(rest, mrIn, lang); err != nil {
+			return 0, 0, false
+		}
+		mrOut := &ModelResult{ResponseTokenCount: 1000}
+		_ = CalculateOpenAIModelPrice(rest, mrOut, lang)
+		return mrIn.TotalPrice, mrOut.TotalPrice, mrIn.TotalPrice > 0 || mrOut.TotalPrice > 0
+	}
+	if strings.HasPrefix(lower, "anthropic/") {
+		rest := id[len("anthropic/"):]
+		return ResolveClaudeUSDPerThousand(rest)
+	}
+	if strings.Contains(lower, "gemini") {
+		// Rough Gemini 2.5 Flash text tier per 1k USD
+		return 0.0003, 0.0025, true
+	}
+	return 0, 0, false
+}
+
 func (p *OpenRouterModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
+	if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, p.currency, modelResult) {
+		return nil
+	}
+
+	if inK, outK, hit := lookupOpenRouterPricePerThousand(p.secretKey, p.subType); hit {
+		modelResult.TotalPrice = AddPrices(getPrice(modelResult.PromptTokenCount, inK), getPrice(modelResult.ResponseTokenCount, outK))
+		modelResult.Currency = "USD"
+		return nil
+	}
+
 	var inputPricePerThousandTokens, outputPricePerThousandTokens float64
 	priceTable := map[string][]float64{
 		"google/palm-2-codechat-bison": {0.00025, 0.0005},
@@ -104,8 +147,14 @@ func (p *OpenRouterModelProvider) calculatePrice(modelResult *ModelResult, lang 
 	if priceItem, ok := priceTable[p.subType]; ok {
 		inputPricePerThousandTokens = priceItem[0]
 		outputPricePerThousandTokens = priceItem[1]
+	} else if inH, outH, okH := openRouterHeuristicUSDPerK(p.subType, lang); okH {
+		inputPricePerThousandTokens = inH
+		outputPricePerThousandTokens = outH
 	} else {
-		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), p.subType)
+		// Don't fail hard on unknown models. OpenRouter model ids are large and change frequently.
+		modelResult.TotalPrice = 0
+		modelResult.Currency = "USD"
+		return nil
 	}
 
 	inputPrice := getPrice(modelResult.PromptTokenCount, inputPricePerThousandTokens)

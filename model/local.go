@@ -81,15 +81,13 @@ func (p *LocalModelProvider) GetPricing() string {
 }
 
 func (p *LocalModelProvider) CalculatePrice(modelResult *ModelResult, lang string) error {
-	if p.inputPricePerThousandTokens > 0 || p.outputPricePerThousandTokens > 0 {
-		inputPrice := getPrice(modelResult.PromptTokenCount, p.inputPricePerThousandTokens)
-		outputPrice := getPrice(modelResult.ResponseTokenCount, p.outputPricePerThousandTokens)
-		modelResult.TotalPrice = AddPrices(inputPrice, outputPrice)
-		modelResult.Currency = p.currency
+	if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, p.currency, modelResult) {
 		return nil
 	}
+	if p.typ == "Azure" && p.compatibleProvider != "" {
+		return CalculateOpenAIModelPrice(p.compatibleProvider, modelResult, lang)
+	}
 	if p.subType == "custom-model" {
-		// OpenAI Compatible with no price configured: graceful fallback to price=0
 		modelResult.Currency = p.currency
 		return nil
 	}

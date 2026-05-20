@@ -27,6 +27,7 @@ import {
   getThinkingModelMaxTokens,
   getTtsFlavorOptions,
 } from "~/lib/ProviderSetting"
+import { loadModelCatalog, resolveModelOptions, type ModelOption } from "~/lib/ProviderModelCatalog"
 import { FormField, NumberInput, SectionCard } from "~/lib/Setting"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
@@ -50,22 +51,22 @@ const CATEGORIES = ["Storage", "Model", "Embedding", "Blockchain", "Video", "Tex
 const CURRENCIES = ["USD", "CNY", "EUR", "JPY", "GBP", "AUD", "CAD", "CHF", "HKD", "SGD"]
 const MODEL_DEFAULTS: Record<string, string> = {
   "OpenAI Compatible": "",
-  OpenAI: "gpt-4",
+  OpenAI: "gpt-5.4",
   Gemini: "gemini-pro",
-  "OpenRouter": "openai/gpt-4",
+  "OpenRouter": "anthropic/claude-opus-4-5",
   iFlytek: "spark4.0-ultra",
   "Baidu Cloud": "ernie-4.0-8k",
   MiniMax: "MiniMax-Text-01",
-  Claude: "claude-opus-4-0",
+  Claude: "claude-opus-4-5",
   "Hugging Face": "gpt2",
   ChatGLM: "chatglm2-6b",
   Ollama: "llama3.3:70b",
   Local: "custom-model",
-  Azure: "gpt-4",
+  Azure: "gpt-5.4",
   Cohere: "command",
-  "Alibaba Cloud": "qwen-long",
-  Moonshot: "Moonshot-v1-8k",
-  "Amazon Bedrock": "Claude",
+  "Alibaba Cloud": "qwen3-235b-a22b",
+  Moonshot: "kimi-k2-0905-preview",
+  "Amazon Bedrock": "claude",
   Baichuan: "Baichuan2-Turbo",
   "Volcano Engine": "Doubao-lite-4k",
   DeepSeek: "deepseek-v4-pro",
@@ -386,6 +387,10 @@ export default function ProviderEditPage() {
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
   const [embeddingResult, setEmbeddingResult] = useState<number[] | null>(null)
+  const [dynamicModelOptions, setDynamicModelOptions] = useState<ModelOption[]>([])
+  const [catalogType, setCatalogType] = useState("")
+  const [loadingDynamicModels, setLoadingDynamicModels] = useState(false)
+  const [dynamicModelSource, setDynamicModelSource] = useState<"dynamic" | "fallback">("fallback")
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const stableModelProviderNameRef = useRef("")
 
@@ -409,13 +414,57 @@ export default function ProviderEditPage() {
     setProvider((p) => (p ? { ...p, [key]: value } : null))
   }
 
+  const modelRequest = useMemo(
+    () => ({
+      type: provider?.type || "",
+      providerUrl: provider?.providerUrl || "",
+      clientId: provider?.clientId || "",
+      clientSecret: provider?.clientSecret || "",
+      region: provider?.region || "",
+    }),
+    [provider?.type, provider?.providerUrl, provider?.clientId, provider?.clientSecret, provider?.region]
+  )
+
+  useEffect(() => {
+    if (!provider || provider.category !== "Model" || !provider.type) {
+      setDynamicModelOptions([])
+      setCatalogType("")
+      setDynamicModelSource("fallback")
+      return
+    }
+
+    setCatalogType("")
+    setDynamicModelOptions([])
+
+    let cancelled = false
+    const timer = setTimeout(() => {
+      setLoadingDynamicModels(true)
+      const requestedType = modelRequest.type
+      loadModelCatalog(modelRequest)
+        .then((res) => {
+          if (cancelled) return
+          setCatalogType(requestedType)
+          setDynamicModelOptions(res.options)
+          setDynamicModelSource(res.source)
+        })
+        .finally(() => {
+          if (!cancelled) setLoadingDynamicModels(false)
+        })
+    }, 350)
+
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [provider?.category, provider?.type, modelRequest])
+
   function handleCategory(category: string) {
     setProvider((p) => {
       if (!p) return null
 
       let nextProvider: Provider = { ...p, category }
       if (category === "Storage") nextProvider = { ...nextProvider, type: "Local File System" }
-      if (category === "Model") nextProvider = { ...nextProvider, type: "OpenAI", subType: "gpt-4" }
+      if (category === "Model") nextProvider = { ...nextProvider, type: "OpenAI", subType: "gpt-5.5" }
       if (category === "Embedding") nextProvider = { ...nextProvider, type: "OpenAI", subType: "AdaSimilarity" }
       if (category === "Video") nextProvider = { ...nextProvider, type: "AWS" }
       if (category === "Text-to-Speech") nextProvider = { ...nextProvider, type: "Alibaba Cloud", subType: "cosyvoice-v1" }
@@ -533,15 +582,50 @@ export default function ProviderEditPage() {
   const isRemote = !!provider.isRemote
   const disabled = isRemote
   const showSubType = ["Model", "Embedding", "Text-to-Speech", "Speech-to-Text"].includes(provider.category)
-  const subtypeOptions = getProviderSubTypeOptions(provider.category, provider.type) ?? []
+  const staticSubtypeOptions = getProviderSubTypeOptions(provider.category, provider.type) ?? []
+  const rawSubtypeOptions =
+    provider.category === "Model"
+      ? resolveModelOptions({
+          providerType: provider.type,
+          catalogType,
+          loading: loadingDynamicModels,
+          dynamicOptions: dynamicModelOptions,
+          staticOptions: staticSubtypeOptions,
+        })
+      : staticSubtypeOptions
+  const subtypeOptions = rawSubtypeOptions.map((item: any) => ({
+    ...item,
+    name: item?.deprecated ? `${item.name} (deprecated)` : item.name,
+  }))
   const showProviderUrl =
     (provider.category === "Model" && provider.type === "OpenAI Compatible") ||
     ((provider.category !== "Model" || ["Local", "Ollama", "Azure", "Volcano Engine", "Tencent Cloud"].includes(provider.type)) &&
       !(provider.category === "Storage" && provider.type === "Alibaba Cloud OSS") &&
       provider.category !== "Blockchain")
-  const showPrice = provider.category === "Model" && ["Local", "Ollama", "OpenAI Compatible"].includes(provider.type)
+  const modelTypesWithOptionalTokenPrice = new Set([
+    "Local",
+    "Ollama",
+    "OpenAI Compatible",
+    "OpenAI",
+    "Azure",
+    "Claude",
+    "Gemini",
+    "OpenRouter",
+    "Grok",
+    "DeepSeek",
+    "Mistral",
+    "Moonshot",
+    "Alibaba Cloud",
+    "Silicon Flow",
+    "Volcano Engine",
+    "Baidu Cloud",
+    "Amazon Bedrock",
+  ])
+  const showPrice = provider.category === "Model" && modelTypesWithOptionalTokenPrice.has(provider.type)
   const showEmbeddingPrice = provider.category === "Embedding" && ["Local", "Ollama"].includes(provider.type)
-  const showCurrency = ["Local", "Ollama", "OpenAI Compatible"].includes(provider.type)
+  const showCurrency =
+    (provider.category === "Model" && modelTypesWithOptionalTokenPrice.has(provider.type)) ||
+    ["Local", "Ollama", "OpenAI Compatible"].includes(provider.type)
   const tempEnabled = isTemperatureEnabled(provider)
   const topPEnabled = isTopPEnabled(provider)
   const tempMax = ["Alibaba Cloud", "Gemini", "OpenAI", "OpenRouter", "Baichuan", "DeepSeek", "StepFun", "Tencent Cloud", "Mistral", "Yi", "Ollama", "Writer"].includes(provider.type) ? 2 : 1
@@ -591,10 +675,21 @@ export default function ProviderEditPage() {
         </FormField>
         {showSubType && (
           <FormField label={i18next.t("provider:Sub type")} tooltip={i18next.t("provider:Sub type - Tooltip")}>
+            {provider.category === "Model" && loadingDynamicModels && (
+              <div className="mb-2 flex items-center gap-1 text-xs text-muted-foreground">
+                <Loader2Icon className="h-3 w-3 animate-spin" />
+                {i18next.t("general:Loading")}
+              </div>
+            )}
             {provider.type === "Ollama" || provider.type === "OpenAI Compatible" ? (
               <DataListInput value={provider.subType} options={subtypeOptions} onChange={(v) => update("subType", v)} disabled={disabled} placeholder="Please select or enter the model name" />
             ) : (
               <SelectField value={provider.subType} options={subtypeOptions} onChange={(v) => update("subType", v)} disabled={disabled} />
+            )}
+            {provider.category === "Model" && !loadingDynamicModels && subtypeOptions.length > 0 && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {dynamicModelSource === "dynamic" ? "Models loaded from provider API" : "Using built-in fallback model list"}
+              </p>
             )}
           </FormField>
         )}
@@ -618,13 +713,18 @@ export default function ProviderEditPage() {
             <FieldInput value={provider.clientId} onChange={(v) => update("clientId", v)} disabled={disabled} />
           </FormField>
         )}
-        {provider.type === "Local" && (
-          <FormField label={i18next.t("provider:Compatible provider")} tooltip={i18next.t("provider:Compatible provider - Tooltip")}>
-            <DataListInput value={provider.compatibleProvider} options={getCompatibleProviderOptions(provider.category) ?? []} onChange={(v) => update("compatibleProvider", v)} disabled={disabled} placeholder="Please select or enter the compatible provider" />
+        {(provider.type === "Local" || provider.type === "Azure") && (
+          <FormField label={provider.type === "Azure" ? i18next.t("provider:Billing reference model") : i18next.t("provider:Compatible provider")} tooltip={provider.type === "Azure" ? i18next.t("provider:Billing reference model - Tooltip") : i18next.t("provider:Compatible provider - Tooltip")}>
+            <DataListInput value={provider.compatibleProvider} options={getCompatibleProviderOptions(provider.category) ?? []} onChange={(v) => update("compatibleProvider", v)} disabled={disabled} placeholder={provider.type === "Azure" ? "e.g. gpt-4o, gpt-5.4" : "Please select or enter the compatible provider"} />
           </FormField>
         )}
         {showPrice && (
           <>
+            {provider.type === "Azure" && (
+              <p className="col-span-full text-xs text-muted-foreground">
+                Azure deployment names often differ from OpenAI-style model ids. Fill in the &quot;Billing reference model&quot; field above with the corresponding OpenAI model name (e.g. gpt-4o) for accurate usage pricing, or set custom input/output price per 1k tokens below.
+              </p>
+            )}
             <FormField label={i18next.t("provider:Input price / 1k tokens")} tooltip={i18next.t("provider:Input price / 1k tokens - Tooltip")}>
               <NumberInput value={provider.inputPricePerThousandTokens} onChange={(v) => update("inputPricePerThousandTokens", v)} min={0} />
             </FormField>

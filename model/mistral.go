@@ -24,16 +24,22 @@ import (
 )
 
 type MistralModelProvider struct {
-	client    *mistral.MistralClient
-	modelName string
+	client                       *mistral.MistralClient
+	modelName                    string
+	inputPricePerThousandTokens  float64
+	outputPricePerThousandTokens float64
+	currency                     string
 }
 
-func NewMistralProvider(apiKey, modelName string) (*MistralModelProvider, error) {
+func NewMistralProvider(apiKey, modelName string, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*MistralModelProvider, error) {
 	client := mistral.NewMistralClientDefault(apiKey)
 
 	return &MistralModelProvider{
-		client:    client,
-		modelName: modelName,
+		client:                       client,
+		modelName:                    modelName,
+		inputPricePerThousandTokens:  inputPricePerThousandTokens,
+		outputPricePerThousandTokens: outputPricePerThousandTokens,
+		currency:                     currency,
 	}, nil
 }
 
@@ -57,7 +63,10 @@ func (c *MistralModelProvider) GetPricing() string {
 }
 
 func (c *MistralModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
-	price := 0.0
+	if applyConfiguredPerThousandTokenPrices(c.inputPricePerThousandTokens, c.outputPricePerThousandTokens, pickCurrency(c.currency, "USD"), modelResult) {
+		return nil
+	}
+
 	priceTable := map[string][2]float64{
 		"mistral-large-latest": {0.002, 0.006},
 		"pixtral-large-latest": {0.002, 0.006},
@@ -68,19 +77,53 @@ func (c *MistralModelProvider) calculatePrice(modelResult *ModelResult, lang str
 		"pixtral-12b":          {0.00015, 0.00015},
 		"mistral-nemo":         {0.00015, 0.00015},
 		"open-mistral-7b":      {0.00025, 0.00025},
-		"open-mixtral-8x7b ":   {0.002, 0.002},
+		"open-mixtral-8x7b":    {0.0007, 0.0007},
 		"open-mixtral-8x22b":   {0.002, 0.006},
 	}
 
-	if priceItem, ok := priceTable[c.modelName]; ok {
-		inputPrice := getPrice(modelResult.TotalTokenCount, priceItem[0])
-		outputPrice := getPrice(modelResult.TotalTokenCount, priceItem[1])
-		price = inputPrice + outputPrice
+	modelName := strings.TrimSpace(c.modelName)
+	var priceItem [2]float64
+	var ok bool
+	if priceItem, ok = priceTable[modelName]; ok {
+		// exact id
 	} else {
-		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), c.modelName)
+		lower := strings.ToLower(modelName)
+		switch {
+		case strings.Contains(lower, "large") || strings.Contains(lower, "pixtral-large"):
+			priceItem = [2]float64{0.002, 0.006}
+			ok = true
+		case strings.Contains(lower, "small"):
+			priceItem = [2]float64{0.0002, 0.0006}
+			ok = true
+		case strings.Contains(lower, "codestral"):
+			priceItem = [2]float64{0.0003, 0.0009}
+			ok = true
+		case strings.Contains(lower, "ministral"):
+			priceItem = [2]float64{0.0001, 0.0001}
+			ok = true
+		case strings.Contains(lower, "8x22") || strings.Contains(lower, "mixtral-8x22"):
+			priceItem = [2]float64{0.002, 0.006}
+			ok = true
+		case strings.Contains(lower, "8x7") || strings.Contains(lower, "mixtral-8x7"):
+			priceItem = [2]float64{0.0007, 0.0007}
+			ok = true
+		case strings.Contains(lower, "nemo"):
+			priceItem = [2]float64{0.00015, 0.00015}
+			ok = true
+		case strings.Contains(lower, "mistral") || strings.Contains(lower, "pixtral"):
+			priceItem = [2]float64{0.002, 0.006}
+			ok = true
+		}
 	}
 
-	modelResult.TotalPrice = price
+	if ok {
+		inputPrice := getPrice(modelResult.PromptTokenCount, priceItem[0])
+		outputPrice := getPrice(modelResult.ResponseTokenCount, priceItem[1])
+		modelResult.TotalPrice = AddPrices(inputPrice, outputPrice)
+	} else {
+		modelResult.TotalPrice = 0
+	}
+
 	modelResult.Currency = "USD"
 	return nil
 }

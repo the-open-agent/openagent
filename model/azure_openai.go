@@ -19,18 +19,21 @@ import (
 	"github.com/the-open-agent/openagent/proxy"
 )
 
-func NewAzureModelProvider(typ string, subType string, deploymentName string, secretKey string, temperature float32, topP float32, frequencyPenalty float32, presencePenalty float32, providerUrl string, apiVersion string) (*LocalModelProvider, error) {
+func NewAzureModelProvider(typ string, subType string, deploymentName string, secretKey string, temperature float32, topP float32, frequencyPenalty float32, presencePenalty float32, providerUrl string, apiVersion string, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*LocalModelProvider, error) {
 	p := &LocalModelProvider{
-		typ:              typ,
-		subType:          subType,
-		deploymentName:   deploymentName,
-		secretKey:        secretKey,
-		temperature:      temperature,
-		topP:             topP,
-		frequencyPenalty: frequencyPenalty,
-		presencePenalty:  presencePenalty,
-		providerUrl:      providerUrl,
-		apiVersion:       apiVersion,
+		typ:                          typ,
+		subType:                      subType,
+		deploymentName:               deploymentName,
+		secretKey:                    secretKey,
+		temperature:                  temperature,
+		topP:                         topP,
+		frequencyPenalty:             frequencyPenalty,
+		presencePenalty:              presencePenalty,
+		providerUrl:                  providerUrl,
+		apiVersion:                   apiVersion,
+		inputPricePerThousandTokens:  inputPricePerThousandTokens,
+		outputPricePerThousandTokens: outputPricePerThousandTokens,
+		currency:                     currency,
 	}
 	return p, nil
 }

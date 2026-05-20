@@ -149,6 +149,29 @@ export function deleteVector(vector: unknown): Promise<any> {
   return apiPost("/api/delete-vector", vector)
 }
 
+export type ProviderModelCatalogItem = {
+  id: string
+  name: string
+  deprecated?: boolean
+  source?: string
+}
+
+export type ProviderModelCatalogResponse = {
+  items: ProviderModelCatalogItem[]
+  source: "dynamic" | "fallback"
+  fallbackMsg?: string
+}
+
+export function getProviderModels(payload: {
+  type: string
+  providerUrl?: string
+  clientId?: string
+  clientSecret?: string
+  region?: string
+}): Promise<any> {
+  return apiPost("/api/get-provider-models", payload)
+}
+
 export async function generateTextToSpeechAudio(
   storeId: string,
   providerId: string,

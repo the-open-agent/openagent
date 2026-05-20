@@ -15,25 +15,29 @@
 package model
 
 import (
-	"fmt"
 	"io"
-
-	"github.com/the-open-agent/openagent/i18n"
+	"strings"
 )
 
 type BaiduCloudModelProvider struct {
-	subType     string
-	apiKey      string
-	temperature float32
-	topP        float32
+	subType                      string
+	apiKey                       string
+	temperature                  float32
+	topP                         float32
+	inputPricePerThousandTokens  float64
+	outputPricePerThousandTokens float64
+	currency                     string
 }
 
-func NewBaiduCloudModelProvider(subType string, apiKey string, temperature float32, topP float32) (*BaiduCloudModelProvider, error) {
+func NewBaiduCloudModelProvider(subType string, apiKey string, temperature float32, topP float32, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*BaiduCloudModelProvider, error) {
 	return &BaiduCloudModelProvider{
-		subType:     subType,
-		apiKey:      apiKey,
-		temperature: temperature,
-		topP:        topP,
+		subType:                      subType,
+		apiKey:                       apiKey,
+		temperature:                  temperature,
+		topP:                         topP,
+		inputPricePerThousandTokens:  inputPricePerThousandTokens,
+		outputPricePerThousandTokens: outputPricePerThousandTokens,
+		currency:                     currency,
 	}, nil
 }
 
@@ -146,6 +150,10 @@ https://cloud.baidu.com/doc/qianfan/s/wmh4sv6ya
 }
 
 func (p *BaiduCloudModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
+	if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, pickCurrency(p.currency, "CNY"), modelResult) {
+		return nil
+	}
+
 	price := 0.0
 	priceTable := map[string][2]float64{
 		"ernie-5.0":                      {0.006, 0.024},
@@ -250,11 +258,50 @@ func (p *BaiduCloudModelProvider) calculatePrice(modelResult *ModelResult, lang 
 	}
 
 	if priceItem, ok := priceTable[p.subType]; ok {
-		inputPrice := getPrice(modelResult.TotalTokenCount, priceItem[0])
-		outputPrice := getPrice(modelResult.TotalTokenCount, priceItem[1])
+		inputPrice := getPrice(modelResult.PromptTokenCount, priceItem[0])
+		outputPrice := getPrice(modelResult.ResponseTokenCount, priceItem[1])
 		price = inputPrice + outputPrice
 	} else {
-		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), p.subType)
+		lower := strings.ToLower(p.subType)
+		var item [2]float64
+		var hit bool
+		switch {
+		case strings.Contains(lower, "ernie-5"):
+			item = [2]float64{0.006, 0.024}
+			hit = true
+		case strings.Contains(lower, "ernie-4.5-turbo"):
+			item = [2]float64{0.0008, 0.0032}
+			hit = true
+		case strings.Contains(lower, "ernie-x1"):
+			item = [2]float64{0.001, 0.004}
+			hit = true
+		case strings.Contains(lower, "deepseek-r1"):
+			item = [2]float64{0.004, 0.016}
+			hit = true
+		case strings.Contains(lower, "deepseek"):
+			item = [2]float64{0.002, 0.008}
+			hit = true
+		case strings.Contains(lower, "qwen3"):
+			item = [2]float64{0.002, 0.008}
+			hit = true
+		case strings.Contains(lower, "glm"):
+			item = [2]float64{0.004, 0.018}
+			hit = true
+		case strings.Contains(lower, "kimi"):
+			item = [2]float64{0.004, 0.021}
+			hit = true
+		case strings.HasPrefix(lower, "ernie-"):
+			item = [2]float64{0.0008, 0.0032}
+			hit = true
+		}
+		if !hit {
+			modelResult.TotalPrice = 0
+			modelResult.Currency = "CNY"
+			return nil
+		}
+		inputPrice := getPrice(modelResult.PromptTokenCount, item[0])
+		outputPrice := getPrice(modelResult.ResponseTokenCount, item[1])
+		price = inputPrice + outputPrice
 	}
 
 	modelResult.TotalPrice = price

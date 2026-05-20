@@ -15,26 +15,29 @@
 package model
 
 import (
-	"fmt"
 	"io"
 	"strings"
-
-	"github.com/the-open-agent/openagent/i18n"
 )
 
 type GrokModelProvider struct {
-	subType     string
-	secretKey   string
-	temperature float32
-	topP        float32
+	subType                      string
+	secretKey                    string
+	temperature                  float32
+	topP                         float32
+	inputPricePerThousandTokens  float64
+	outputPricePerThousandTokens float64
+	currency                     string
 }
 
-func NewGrokModelProvider(subType string, secretKey string, temperature float32, topP float32) (*GrokModelProvider, error) {
+func NewGrokModelProvider(subType string, secretKey string, temperature float32, topP float32, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*GrokModelProvider, error) {
 	return &GrokModelProvider{
-		subType:     subType,
-		secretKey:   secretKey,
-		temperature: temperature,
-		topP:        topP,
+		subType:                      subType,
+		secretKey:                    secretKey,
+		temperature:                  temperature,
+		topP:                         topP,
+		inputPricePerThousandTokens:  inputPricePerThousandTokens,
+		outputPricePerThousandTokens: outputPricePerThousandTokens,
+		currency:                     currency,
 	}, nil
 }
 
@@ -60,9 +63,13 @@ Image models:
 }
 
 func (p *GrokModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
+	if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, pickCurrency(p.currency, "USD"), modelResult) {
+		return nil
+	}
+
 	var inputPricePerThousandTokens, outputPricePerThousandTokens float64
 
-	if strings.Contains(p.subType, "grok-3") {
+	if strings.Contains(p.subType, "grok-4") || strings.Contains(p.subType, "grok-3") {
 		if !strings.Contains(p.subType, "fast") && !strings.Contains(p.subType, "mini") {
 			inputPricePerThousandTokens = 0.003  // $0.003 per 1,000 tokens
 			outputPricePerThousandTokens = 0.015 // $0.015 per 1,000 tokens
@@ -88,7 +95,10 @@ func (p *GrokModelProvider) calculatePrice(modelResult *ModelResult, lang string
 		inputPricePerThousandTokens = 0.002 // $0.002 per 1,000 tokens
 		outputPricePerThousandTokens = 0.01 // $0.01 per 1,000 tokens
 	} else {
-		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), p.subType)
+		// Don't fail hard on unknown models.
+		modelResult.TotalPrice = 0
+		modelResult.Currency = "USD"
+		return nil
 	}
 
 	inputPrice := getPrice(modelResult.PromptTokenCount, inputPricePerThousandTokens)

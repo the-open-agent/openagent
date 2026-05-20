@@ -28,20 +28,26 @@ import (
 )
 
 type GeminiModelProvider struct {
-	subType     string
-	secretKey   string
-	temperature float32
-	topP        float32
-	topK        int
+	subType                      string
+	secretKey                    string
+	temperature                  float32
+	topP                         float32
+	topK                         int
+	inputPricePerThousandTokens  float64
+	outputPricePerThousandTokens float64
+	currency                     string
 }
 
-func NewGeminiModelProvider(subType string, secretKey string, temperature float32, topP float32, topK int) (*GeminiModelProvider, error) {
+func NewGeminiModelProvider(subType string, secretKey string, temperature float32, topP float32, topK int, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*GeminiModelProvider, error) {
 	p := &GeminiModelProvider{
-		subType:     subType,
-		secretKey:   secretKey,
-		temperature: temperature,
-		topP:        topP,
-		topK:        topK,
+		subType:                      subType,
+		secretKey:                    secretKey,
+		temperature:                  temperature,
+		topP:                         topP,
+		topK:                         topK,
+		inputPricePerThousandTokens:  inputPricePerThousandTokens,
+		outputPricePerThousandTokens: outputPricePerThousandTokens,
+		currency:                     currency,
 	}
 	return p, nil
 }
@@ -82,6 +88,10 @@ func (p *GeminiModelProvider) GetPricing() string {
 }
 
 func (p *GeminiModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
+	if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, p.currency, modelResult) {
+		return nil
+	}
+
 	if modelResult.PromptTokenCount == 0 && modelResult.ResponseTokenCount == 0 && modelResult.TotalTokenCount != 0 {
 		modelResult.ResponseTokenCount = modelResult.TotalTokenCount
 	}
@@ -254,7 +264,19 @@ func (p *GeminiModelProvider) calculatePrice(modelResult *ModelResult, lang stri
 		outputPricePerMillionTokens = 0
 
 	default:
-		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), p.subType)
+		lower := strings.ToLower(p.subType)
+		if strings.Contains(lower, "veo-") {
+			return fmt.Errorf(i18n.Translate(lang, "model:calculatePrice() error: video generation pricing requires duration information"))
+		}
+		if strings.Contains(lower, "gemini") {
+			// Unknown Gemini id: use Flash-tier estimate so chat and usage stats are not blocked.
+			inputPricePerMillionTokens = 0.30
+			outputPricePerMillionTokens = 2.50
+		} else {
+			modelResult.TotalPrice = 0
+			modelResult.Currency = "USD"
+			return nil
+		}
 	}
 
 	// Convert from per million to per token pricing

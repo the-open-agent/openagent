@@ -31,18 +31,24 @@ import (
 )
 
 type AlibabacloudModelProvider struct {
-	subType     string
-	apiKey      string
-	temperature float32
-	topP        float32
+	subType                      string
+	apiKey                       string
+	temperature                  float32
+	topP                         float32
+	inputPricePerThousandTokens  float64
+	outputPricePerThousandTokens float64
+	currency                     string
 }
 
-func NewAlibabacloudModelProvider(subType string, apiKey string, temperature float32, topP float32) (*AlibabacloudModelProvider, error) {
+func NewAlibabacloudModelProvider(subType string, apiKey string, temperature float32, topP float32, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*AlibabacloudModelProvider, error) {
 	return &AlibabacloudModelProvider{
-		subType:     subType,
-		apiKey:      apiKey,
-		temperature: temperature,
-		topP:        topP,
+		subType:                      subType,
+		apiKey:                       apiKey,
+		temperature:                  temperature,
+		topP:                         topP,
+		inputPricePerThousandTokens:  inputPricePerThousandTokens,
+		outputPricePerThousandTokens: outputPricePerThousandTokens,
+		currency:                     currency,
 	}, nil
 }
 
@@ -84,6 +90,10 @@ Image Generation Models:
 }
 
 func (p *AlibabacloudModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
+	if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, pickCurrency(p.currency, "CNY"), modelResult) {
+		return nil
+	}
+
 	price := 0.0
 
 	if isWanxModel(p.subType) {
@@ -116,7 +126,7 @@ func (p *AlibabacloudModelProvider) calculatePrice(modelResult *ModelResult, lan
 		"deepseek-v3.2":                 {0.002, 0.003},
 		"deepseek-r1-distill-qwen-1.5b": {0.000, 0.000},
 		"deepseek-r1-distill-qwen-7b":   {0.001, 0.003},
-		"deepseek-r1-distill-qwen-14b ": {0.002, 0.006},
+		"deepseek-r1-distill-qwen-14b": {0.002, 0.006},
 		"deepseek-r1-distill-qwen-32b":  {0.000, 0.000},
 		"deepseek-r1-distill-llama-8b":  {0.000, 0.000},
 	}
@@ -126,7 +136,34 @@ func (p *AlibabacloudModelProvider) calculatePrice(modelResult *ModelResult, lan
 		outputPrice := getPrice(modelResult.ResponseTokenCount, priceItem[1])
 		price = inputPrice + outputPrice
 	} else {
-		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), p.subType)
+		lower := strings.ToLower(p.subType)
+		var item [2]float64
+		var hit bool
+		switch {
+		case strings.Contains(lower, "qwen-max") || strings.Contains(lower, "qwq"):
+			item = [2]float64{0.04, 0.12}
+			hit = true
+		case strings.Contains(lower, "qwen-plus") || strings.Contains(lower, "qwen-long"):
+			item = [2]float64{0.004, 0.012}
+			hit = true
+		case strings.Contains(lower, "qwen-turbo") || strings.Contains(lower, "qwen3"):
+			item = [2]float64{0.002, 0.02}
+			hit = true
+		case strings.Contains(lower, "deepseek"):
+			item = [2]float64{0.002, 0.008}
+			hit = true
+		case strings.Contains(lower, "qwen"):
+			item = [2]float64{0.002, 0.008}
+			hit = true
+		}
+		if !hit {
+			modelResult.TotalPrice = 0
+			modelResult.Currency = "CNY"
+			return nil
+		}
+		inputPrice := getPrice(modelResult.PromptTokenCount, item[0])
+		outputPrice := getPrice(modelResult.ResponseTokenCount, item[1])
+		price = inputPrice + outputPrice
 	}
 
 	modelResult.TotalPrice = price

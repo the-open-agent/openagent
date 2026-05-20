@@ -15,6 +15,10 @@
 // @ts-nocheck
 
 export const openaiModels = [
+  // GPT-5.5 series (latest)
+  {id: "gpt-5.5", name: "gpt-5.5"},
+  {id: "gpt-5.5-mini", name: "gpt-5.5-mini"},
+  {id: "gpt-5.5-nano", name: "gpt-5.5-nano"},
   // GPT-5.4 series (latest)
   {id: "gpt-5.4", name: "gpt-5.4"},
   {id: "gpt-5.4-pro", name: "gpt-5.4-pro"},
@@ -91,6 +95,9 @@ export function getCompatibleProviderOptions(category) {
     return (
       [
         // GPT-5.4 series (latest)
+        {"id": "gpt-5.5", "name": "gpt-5.5"},
+        {"id": "gpt-5.5-mini", "name": "gpt-5.5-mini"},
+        {"id": "gpt-5.5-nano", "name": "gpt-5.5-nano"},
         {"id": "gpt-5.4", "name": "gpt-5.4"},
         {"id": "gpt-5.4-pro", "name": "gpt-5.4-pro"},
         {"id": "gpt-5.4-mini", "name": "gpt-5.4-mini"},
@@ -218,6 +225,10 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "Claude") {
     return [
+      {id: "claude-opus-4-7", name: "claude-opus-4-7"},
+      {id: "claude-opus-4-6", name: "claude-opus-4-6"},
+      {id: "claude-sonnet-4-6", name: "claude-sonnet-4-6"},
+      {id: "claude-haiku-4-5", name: "claude-haiku-4-5"},
       {id: "claude-opus-4-5", name: "claude-opus-4-5"},
       {id: "claude-opus-4-1", name: "claude-opus-4-1"},
       {id: "claude-opus-4-0", name: "claude-opus-4-0"},
@@ -236,6 +247,8 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "OpenRouter") {
     return [
+      {id: "anthropic/claude-opus-4-7", name: "anthropic/claude-opus-4-7"},
+      {id: "anthropic/claude-opus-4-6", name: "anthropic/claude-opus-4-6"},
       {id: "anthropic/claude-opus-4-5", name: "anthropic/claude-opus-4-5"},
       {id: "anthropic/claude-sonnet-4-0", name: "anthropic/claude-sonnet-4-0"},
       {id: "openai/gpt-4.1", name: "openai/gpt-4.1"},
@@ -412,6 +425,8 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "Moonshot") {
     return [
+      {id: "kimi-k2.6", name: "kimi-k2.6"},
+      {id: "kimi-k2.5", name: "kimi-k2.5"},
       {id: "kimi-k2-0905-preview", name: "kimi-k2-0905-preview"},
       {id: "kimi-k2-0711-preview", name: "kimi-k2-0711-preview"},
       {id: "kimi-k2-turbo-preview", name: "kimi-k2-turbo-preview"},
@@ -424,6 +439,12 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "Amazon Bedrock") {
     return [
+      {id: "anthropic.claude-opus-4-7", name: "anthropic.claude-opus-4-7"},
+      {id: "anthropic.claude-opus-4-6", name: "anthropic.claude-opus-4-6"},
+      {id: "anthropic.claude-sonnet-4-6", name: "anthropic.claude-sonnet-4-6"},
+      {id: "anthropic.claude-haiku-4-5", name: "anthropic.claude-haiku-4-5"},
+      {id: "amazon.nova-pro-v1:0", name: "amazon.nova-pro-v1:0"},
+      {id: "amazon.nova-lite-v1:0", name: "amazon.nova-lite-v1:0"},
       {id: "claude", name: "Claude"},
       {id: "claude-instant", name: "Claude Instant"},
       {id: "command", name: "Command"},
@@ -441,11 +462,15 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "Alibaba Cloud") {
     return [
+      {id: "qwen3-max", name: "qwen3-max"},
+      {id: "qwen3.5-plus", name: "qwen3.5-plus"},
+      {id: "qwen3.5-flash", name: "qwen3.5-flash"},
+      {id: "qwen-plus", name: "qwen-plus"},
+      {id: "qwen-flash", name: "qwen-flash"},
       {id: "qwen3-235b-a22b", name: "qwen3-235b-a22b"},
       {id: "qwen3-32b", name: "qwen3-32b"},
       {id: "qwen-max", name: "qwen-max"},
       {id: "qwen-max-longcontext", name: "qwen-max-longcontext"},
-      {id: "qwen-plus", name: "qwen-plus"},
       {id: "qwen-turbo", name: "qwen-turbo"},
       {id: "qwen-long", name: "qwen-long"},
       {id: "deepseek-r1", name: "deepseek-r1"},
@@ -454,7 +479,7 @@ export function getModelSubTypeOptions(type) {
       {id: "deepseek-v3.2", name: "deepseek-v3.2"},
       {id: "deepseek-r1-distill-qwen-1.5b", name: "deepseek-r1-distill-qwen-1.5b"},
       {id: "deepseek-r1-distill-qwen-7b", name: "deepseek-r1-distill-qwen-7b"},
-      {id: "deepseek-r1-distill-qwen-14b ", name: "deepseek-r1-distill-qwen-14b "},
+      {id: "deepseek-r1-distill-qwen-14b", name: "deepseek-r1-distill-qwen-14b"},
       {id: "deepseek-r1-distill-qwen-32b", name: "deepseek-r1-distill-qwen-32b"},
       {id: "deepseek-r1-distill-llama-8b", name: "deepseek-r1-distill-llama-8b"},
       {id: "deepseek-r1-distill-llama-70b", name: "deepseek-r1-distill-llama-70b"},
@@ -556,6 +581,11 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "Mistral") {
     return [
+      {id: "mistral-large-3", name: "mistral-large-3"},
+      {id: "mistral-medium-3.5", name: "mistral-medium-3.5"},
+      {id: "devstral-2", name: "devstral-2"},
+      {id: "codestral-2508", name: "codestral-2508"},
+      {id: "pixtral-large", name: "pixtral-large"},
       {id: "mistral-large-latest", name: "mistral-large-latest"},
       {id: "pixtral-large-latest", name: "pixtral-large-latest"},
       {id: "mistral-small-latest", name: "mistral-small-latest"},
@@ -599,6 +629,9 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "Grok") {
     return [
+      {id: "grok-4.3", name: "grok-4.3"},
+      {id: "grok-4.20-reasoning", name: "grok-4.20-reasoning"},
+      {id: "grok-4.20-non-reasoning", name: "grok-4.20-non-reasoning"},
       {id: "grok-3-latest", name: "grok-3-latest"},
       {id: "grok-3-fast-latest", name: "grok-3-fast-latest"},
       {id: "grok-3-mini-latest", name: "grok-3-mini-latest"},

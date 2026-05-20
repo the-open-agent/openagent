@@ -15,25 +15,29 @@
 package model
 
 import (
-	"fmt"
 	"io"
-
-	"github.com/the-open-agent/openagent/i18n"
+	"strings"
 )
 
 type SiliconFlowProvider struct {
-	subType     string
-	apiKey      string
-	temperature float32
-	topP        float32
+	subType                      string
+	apiKey                       string
+	temperature                  float32
+	topP                         float32
+	inputPricePerThousandTokens  float64
+	outputPricePerThousandTokens float64
+	currency                     string
 }
 
-func NewSiliconFlowProvider(subType string, apiKey string, temperature float32, topP float32) (*SiliconFlowProvider, error) {
+func NewSiliconFlowProvider(subType string, apiKey string, temperature float32, topP float32, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*SiliconFlowProvider, error) {
 	return &SiliconFlowProvider{
-		subType:     subType,
-		apiKey:      apiKey,
-		temperature: temperature,
-		topP:        topP,
+		subType:                      subType,
+		apiKey:                       apiKey,
+		temperature:                  temperature,
+		topP:                         topP,
+		inputPricePerThousandTokens:  inputPricePerThousandTokens,
+		outputPricePerThousandTokens: outputPricePerThousandTokens,
+		currency:                     currency,
 	}, nil
 }
 
@@ -68,6 +72,10 @@ https://cloud.siliconflow.cn/models
 }
 
 func (p *SiliconFlowProvider) calculatePrice(modelResult *ModelResult, lang string) error {
+	if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, pickCurrency(p.currency, "CNY"), modelResult) {
+		return nil
+	}
+
 	price := 0.0
 	priceTable := map[string][2]float64{
 		"deepseek-ai/DeepSeek-R1":                   {0.00400, 0.01600},
@@ -94,11 +102,35 @@ func (p *SiliconFlowProvider) calculatePrice(modelResult *ModelResult, lang stri
 	}
 
 	if priceItem, ok := priceTable[p.subType]; ok {
-		inputPrice := getPrice(modelResult.TotalTokenCount, priceItem[0])
-		outputPrice := getPrice(modelResult.TotalTokenCount, priceItem[1])
+		inputPrice := getPrice(modelResult.PromptTokenCount, priceItem[0])
+		outputPrice := getPrice(modelResult.ResponseTokenCount, priceItem[1])
 		price = inputPrice + outputPrice
 	} else {
-		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), p.subType)
+		lower := strings.ToLower(p.subType)
+		var item [2]float64
+		var hit bool
+		switch {
+		case strings.Contains(lower, "deepseek-r1"):
+			item = [2]float64{0.00400, 0.01600}
+			hit = true
+		case strings.Contains(lower, "deepseek"):
+			item = [2]float64{0.00200, 0.00800}
+			hit = true
+		case strings.Contains(lower, "405b") || strings.Contains(lower, "qwen3-235") || strings.Contains(lower, "llama-3.3-70b"):
+			item = [2]float64{0.00413, 0.00413}
+			hit = true
+		case strings.Contains(lower, "qwen") || strings.Contains(lower, "llama") || strings.Contains(lower, "gemma"):
+			item = [2]float64{0.00126, 0.00126}
+			hit = true
+		}
+		if !hit {
+			modelResult.TotalPrice = 0
+			modelResult.Currency = "CNY"
+			return nil
+		}
+		inputPrice := getPrice(modelResult.PromptTokenCount, item[0])
+		outputPrice := getPrice(modelResult.ResponseTokenCount, item[1])
+		price = inputPrice + outputPrice
 	}
 
 	modelResult.TotalPrice = price

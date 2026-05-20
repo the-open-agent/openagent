@@ -207,17 +207,32 @@ func getContextLength(typ string) int {
 		}
 	} else if strings.Contains(typ, "dummy") {
 		return 4096
-	} else if strings.Contains(typ, "Moonshot") {
-		if strings.Contains(typ, "v1") {
-			if strings.Contains(typ, "8k") {
-				return 8192
-			} else if strings.Contains(typ, "32k") {
-				return 32768
-			} else if strings.Contains(typ, "128k") {
-				return 131072
-			}
+	} else if strings.Contains(typ, "moonshot") || strings.HasPrefix(typ, "kimi-") {
+		// moonshot / kimi models
+		if strings.Contains(typ, "128k") {
+			return 131072
+		} else if strings.Contains(typ, "32k") {
+			return 32768
+		} else if strings.Contains(typ, "8k") {
+			return 8192
+		}
+		// kimi k2 series are typically long-context; keep conservative but practical default.
+		if strings.Contains(typ, "k2") || strings.Contains(typ, "latest") {
+			return 131072
 		}
 		return 4096
+	} else if strings.Contains(typ, "grok") {
+		// xAI Grok models are generally long-context.
+		if strings.Contains(typ, "vision") {
+			return 32768
+		}
+		return 131072
+	} else if strings.Contains(typ, "mistral") || strings.Contains(typ, "codestral") || strings.Contains(typ, "pixtral") || strings.Contains(typ, "ministral") || strings.Contains(typ, "mixtral") {
+		// Mistral family models are typically 32K+; default to 32K unless explicitly "large"/"latest" where 128K is common.
+		if strings.Contains(typ, "large") || strings.Contains(typ, "latest") || strings.Contains(typ, "nemo") {
+			return 131072
+		}
+		return 32768
 	} else if strings.Contains(typ, "llama") {
 		if strings.Contains(typ, "2") {
 			return 4096

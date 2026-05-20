@@ -28,16 +28,22 @@ import (
 )
 
 type AmazonBedrockModelProvider struct {
-	temperature float64
-	subType     string
-	secretKey   string
+	temperature                  float64
+	subType                      string
+	secretKey                    string
+	inputPricePerThousandTokens  float64
+	outputPricePerThousandTokens float64
+	currency                     string
 }
 
-func NewAmazonBedrockModelProvider(subType string, secretKey string, temperature float64) (*AmazonBedrockModelProvider, error) {
+func NewAmazonBedrockModelProvider(subType string, secretKey string, temperature float64, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*AmazonBedrockModelProvider, error) {
 	client := &AmazonBedrockModelProvider{
-		subType:     subType,
-		secretKey:   secretKey,
-		temperature: temperature,
+		subType:                      subType,
+		secretKey:                    secretKey,
+		temperature:                  temperature,
+		inputPricePerThousandTokens:  inputPricePerThousandTokens,
+		outputPricePerThousandTokens: outputPricePerThousandTokens,
+		currency:                     currency,
 	}
 	return client, nil
 }
@@ -78,6 +84,10 @@ Model
 }
 
 func (p *AmazonBedrockModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
+	if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, pickCurrency(p.currency, "USD"), modelResult) {
+		return nil
+	}
+
 	prices := map[string]struct {
 		InputTokenPrice  float64
 		OutputTokenPrice float64
@@ -99,7 +109,56 @@ func (p *AmazonBedrockModelProvider) calculatePrice(modelResult *ModelResult, la
 	}
 	price, ok := prices[p.subType]
 	if !ok {
-		return fmt.Errorf(i18n.Translate(lang, "model:unsupported model: %s"), p.subType)
+		if strings.Contains(strings.ToLower(p.subType), "claude-opus-4-7") || strings.Contains(strings.ToLower(p.subType), "claude-opus-4-6") || strings.Contains(strings.ToLower(p.subType), "claude-opus-4-5") {
+			price = struct {
+				InputTokenPrice  float64
+				OutputTokenPrice float64
+			}{InputTokenPrice: 0.005, OutputTokenPrice: 0.025}
+			ok = true
+		} else if strings.Contains(strings.ToLower(p.subType), "claude-sonnet-4-6") || strings.Contains(strings.ToLower(p.subType), "claude-sonnet-4") {
+			price = struct {
+				InputTokenPrice  float64
+				OutputTokenPrice float64
+			}{InputTokenPrice: 0.003, OutputTokenPrice: 0.015}
+			ok = true
+		}
+	}
+	if !ok {
+		lower := strings.ToLower(p.subType)
+		mid := lower
+		if i := strings.Index(mid, "anthropic."); i >= 0 {
+			mid = mid[i+len("anthropic."):]
+		}
+		if j := strings.Index(mid, ":"); j >= 0 {
+			mid = mid[:j]
+		}
+		mid = strings.ReplaceAll(mid, "_", "-")
+		if inK, outK, hit := ResolveClaudeUSDPerThousand(mid); hit {
+			inputTokenPrice := float64(modelResult.PromptTokenCount) / 1000.0 * inK
+			outputTokenPrice := float64(modelResult.ResponseTokenCount) / 1000.0 * outK
+			modelResult.TotalPrice = inputTokenPrice + outputTokenPrice
+			modelResult.Currency = "USD"
+			return nil
+		}
+		if strings.Contains(lower, "llama") || strings.Contains(lower, "meta.llama") {
+			if strings.Contains(lower, "70b") || strings.Contains(lower, "405") {
+				price = struct {
+					InputTokenPrice  float64
+					OutputTokenPrice float64
+				}{InputTokenPrice: 0.00195, OutputTokenPrice: 0.00256}
+			} else {
+				price = struct {
+					InputTokenPrice  float64
+					OutputTokenPrice float64
+				}{InputTokenPrice: 0.00075, OutputTokenPrice: 0.001}
+			}
+			ok = true
+		}
+	}
+	if !ok {
+		modelResult.TotalPrice = 0
+		modelResult.Currency = "USD"
+		return nil
 	}
 	inputTokenPrice := float64(modelResult.PromptTokenCount) / 1000.0 * price.InputTokenPrice
 	outputTokenPrice := float64(modelResult.ResponseTokenCount) / 1000.0 * price.OutputTokenPrice

@@ -15,25 +15,29 @@
 package model
 
 import (
-	"fmt"
 	"io"
-
-	"github.com/the-open-agent/openagent/i18n"
+	"strings"
 )
 
 type MoonshotModelProvider struct {
-	temperature float32
-	subType     string
-	secretKey   string
-	topP        float32
+	temperature                  float32
+	subType                      string
+	secretKey                    string
+	topP                         float32
+	inputPricePerThousandTokens  float64
+	outputPricePerThousandTokens float64
+	currency                     string
 }
 
-func NewMoonshotModelProvider(subType string, secretKey string, temperature float32, topP float32) (*MoonshotModelProvider, error) {
+func NewMoonshotModelProvider(subType string, secretKey string, temperature float32, topP float32, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, currency string) (*MoonshotModelProvider, error) {
 	client := &MoonshotModelProvider{
-		subType:     subType,
-		secretKey:   secretKey,
-		temperature: temperature,
-		topP:        topP,
+		subType:                      subType,
+		secretKey:                    secretKey,
+		temperature:                  temperature,
+		topP:                         topP,
+		inputPricePerThousandTokens:  inputPricePerThousandTokens,
+		outputPricePerThousandTokens: outputPricePerThousandTokens,
+		currency:                     currency,
 	}
 	return client, nil
 }
@@ -59,6 +63,10 @@ Model
 }
 
 func (p *MoonshotModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
+	if applyConfiguredPerThousandTokenPrices(p.inputPricePerThousandTokens, p.outputPricePerThousandTokens, pickCurrency(p.currency, "CNY"), modelResult) {
+		return nil
+	}
+
 	price := 0.0
 	priceTable := map[string][2]float64{
 		"moonshot-v1-8k":   {0.002, 0.010},
@@ -94,7 +102,26 @@ func (p *MoonshotModelProvider) calculatePrice(modelResult *ModelResult, lang st
 		outputPrice := getPrice(modelResult.ResponseTokenCount, priceItem[1])
 		price = inputPrice + outputPrice
 	} else {
-		return fmt.Errorf(i18n.Translate(lang, "embedding:calculatePrice() error: unknown model type: %s"), p.subType)
+		lower := strings.ToLower(p.subType)
+		if strings.Contains(lower, "kimi-k2") || strings.Contains(lower, "kimi_k2") {
+			if strings.Contains(lower, "turbo") {
+				priceItem = [2]float64{0.008, 0.058}
+			} else {
+				priceItem = [2]float64{0.004, 0.016}
+			}
+			inputPrice := getPrice(modelResult.PromptTokenCount, priceItem[0])
+			outputPrice := getPrice(modelResult.ResponseTokenCount, priceItem[1])
+			price = inputPrice + outputPrice
+		} else if strings.Contains(lower, "kimi") || strings.Contains(lower, "moonshot") {
+			priceItem = [2]float64{0.004, 0.016}
+			inputPrice := getPrice(modelResult.PromptTokenCount, priceItem[0])
+			outputPrice := getPrice(modelResult.ResponseTokenCount, priceItem[1])
+			price = inputPrice + outputPrice
+		} else {
+			modelResult.TotalPrice = 0
+			modelResult.Currency = "CNY"
+			return nil
+		}
 	}
 
 	modelResult.TotalPrice = price
