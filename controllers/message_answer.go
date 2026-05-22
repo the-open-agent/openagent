@@ -574,19 +574,6 @@ func (c *ApiController) GetAnswer() {
 		}
 	}
 
-	var answer string
-	var modelResult *model.ModelResult
-	var err error
-	if tool != "" {
-		answer, modelResult, err = object.GetAnswerWithTool(provider, tool, question, c.GetAcceptLanguage())
-	} else {
-		answer, modelResult, err = object.GetAnswer(provider, question, c.GetAcceptLanguage())
-	}
-	if err != nil {
-		c.ResponseError(err.Error())
-		return
-	}
-
 	chat, err := object.GetChat(util.GetId("admin", chatName))
 	if err != nil {
 		c.ResponseError(err.Error())
@@ -622,6 +609,8 @@ func (c *ApiController) GetAnswer() {
 		}
 	}
 
+	var answer string
+	var modelResult *model.ModelResult
 	if tool != "" {
 		answer, modelResult, err = object.GetAnswerWithTool(provider, tool, question, c.GetAcceptLanguage())
 	} else {
