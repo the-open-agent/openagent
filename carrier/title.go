@@ -43,11 +43,6 @@ func NewTitleCarrier(needTitle bool) (*TitleCarrier, error) {
 	return &TitleCarrier{divider: TitleDivider, needTitle: needTitle}, nil
 }
 
-// HasTitleDivider reports whether the streamed answer already contains a title suffix.
-func HasTitleDivider(answer string) bool {
-	return strings.Contains(answer, TitleDivider)
-}
-
 func (p *TitleCarrier) GetQuestion(question string) (string, error) {
 	if !p.needTitle {
 		return question, nil

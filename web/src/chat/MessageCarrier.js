@@ -18,6 +18,7 @@ import {resolveChatTitle} from "../carrier/titleUtils";
 
 export class MessageCarrier {
   constructor(needTitle) {
+    this.needTitle = needTitle;
     this.suggestionCarrier = new SuggestionCarrier();
     this.titleCarrier = new TitleCarrier(needTitle);
   }
@@ -30,7 +31,7 @@ export class MessageCarrier {
     return {
       finalAnswer,
       suggestionArray,
-      title: resolveChatTitle(title, userMessage),
+      title: this.needTitle ? resolveChatTitle(title, userMessage) : "",
     };
   };
 }

@@ -438,7 +438,9 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 	answer := writer.MessageString()
 	defer func() {
 		event := fmt.Sprintf("event: end\ndata: %s\n\n", "end")
-		_, _ = responseWriter.Write([]byte(event))
+		if _, writeErr := responseWriter.Write([]byte(event)); writeErr != nil {
+			fmt.Printf("write end SSE event failed: %s\n", writeErr.Error())
+		}
 		if flusher, ok := responseWriter.(http.Flusher); ok {
 			flusher.Flush()
 		}
