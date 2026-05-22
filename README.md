@@ -78,6 +78,8 @@ cd web && yarn install && yarn start
 docker-compose up
 ```
 
+Open [http://localhost:14000](http://localhost:14000) once the containers are running.
+
 ---
 
 ## Features

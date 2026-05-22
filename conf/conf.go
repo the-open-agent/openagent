@@ -146,8 +146,10 @@ func GetConfigDataSourceName() string {
 
 	runningInDocker := os.Getenv("RUNNING_IN_DOCKER")
 	if runningInDocker == "true" {
-		// https://stackoverflow.com/questions/48546124/what-is-linux-equivalent-of-host-docker-internal
-		if runtime.GOOS == "linux" {
+		if dbHost := os.Getenv("DOCKER_DB_HOST"); dbHost != "" {
+			dataSourceName = strings.ReplaceAll(dataSourceName, "localhost", dbHost)
+		} else if runtime.GOOS == "linux" {
+			// https://stackoverflow.com/questions/48546124/what-is-linux-equivalent-of-host-docker-internal
 			dataSourceName = strings.ReplaceAll(dataSourceName, "localhost", "172.17.0.1")
 		} else {
 			dataSourceName = strings.ReplaceAll(dataSourceName, "localhost", "host.docker.internal")

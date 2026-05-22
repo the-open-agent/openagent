@@ -75,7 +75,7 @@ yarn start   # Dev server on http://localhost:3000 (proxies API to :14444)
 
 ```bash
 docker-compose up
-# Opens on http://localhost:14444
+# Opens on http://localhost:14000
 ```
 
 ## Making Changes

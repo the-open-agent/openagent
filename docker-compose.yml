@@ -8,11 +8,12 @@ services:
       target: STANDARD
     entrypoint: /bin/sh -c './server --createDatabase=true'
     ports:
-      - "8000:8000"
+      - "14000:14000"
     depends_on:
       - db
     environment:
       RUNNING_IN_DOCKER: "true"
+      DOCKER_DB_HOST: db
     volumes:
       - ./conf:/conf/
   db:
