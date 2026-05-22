@@ -24,6 +24,7 @@ import * as MessageBackend from "./backend/MessageBackend";
 import * as ProviderBackend from "./backend/ProviderBackend";
 import i18next from "i18next";
 import {MessageCarrier} from "./chat/MessageCarrier";
+import {getFirstUserMessageText} from "./carrier/titleUtils";
 
 const {TextArea} = Input;
 
@@ -134,6 +135,7 @@ const MultiPaneManager = ({
     }
 
     const messageCarrier = new MessageCarrier(chat.needTitle);
+    const userTextForTitle = getFirstUserMessageText(messages);
 
     MessageBackend.getMessageAnswer(
       lastMessage.owner,
@@ -144,7 +146,7 @@ const MultiPaneManager = ({
 
         const lastMessage2 = Setting.deepCopy(lastMessage);
         text += jsonData.text;
-        const parsedResult = messageCarrier.parseAnswerWithCarriers(text);
+        const parsedResult = messageCarrier.parseAnswerWithCarriers(text, userTextForTitle);
 
         if (parsedResult.title) {
           const updatedChat = {...chat, displayName: parsedResult.title, needTitle: false};
@@ -254,7 +256,7 @@ const MultiPaneManager = ({
           finalMessage.vectorScores = messages[messages.length - 1].vectorScores;
         }
 
-        const parsedResult = messageCarrier.parseAnswerWithCarriers(text);
+        const parsedResult = messageCarrier.parseAnswerWithCarriers(text, userTextForTitle);
         if (parsedResult.title) {
           const updatedChat = {...chat, displayName: parsedResult.title, needTitle: false};
           setPanes(prev => prev.map((pane, i) =>
@@ -275,6 +277,16 @@ const MultiPaneManager = ({
           i === paneIndex ? {...pane, messages: [...messages]} : pane
         ));
         setLoadingForPane(paneIndex, false);
+      },
+      null,
+      (update) => {
+        if (!update?.displayName || update.name !== chat.name) {
+          return;
+        }
+        const updatedChat = {...chat, displayName: update.displayName, needTitle: update.needTitle ?? false};
+        setPanes(prev => prev.map((pane, i) =>
+          i === paneIndex ? {...pane, chat: updatedChat} : pane
+        ));
       }
     );
   }, [setLoadingForPane]);

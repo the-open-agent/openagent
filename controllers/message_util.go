@@ -77,6 +77,31 @@ func writeInfoStream(responseWriter http.ResponseWriter, infoText string) error 
 	return nil
 }
 
+func writeChatUpdateStream(responseWriter http.ResponseWriter, chat *object.Chat) error {
+	if chat == nil {
+		return nil
+	}
+
+	payload, err := json.Marshal(map[string]interface{}{
+		"owner":       chat.Owner,
+		"name":        chat.Name,
+		"displayName": chat.DisplayName,
+		"needTitle":   chat.NeedTitle,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = responseWriter.Write([]byte(fmt.Sprintf("event: chat\ndata: %s\n\n", payload)))
+	if err != nil {
+		return err
+	}
+	if flusher, ok := responseWriter.(http.Flusher); ok {
+		flusher.Flush()
+	}
+	return nil
+}
+
 func (c *ApiController) ResponseErrorStream(message *object.Message, errorText string) {
 	if err := writeMessageErrorStream(c.Ctx.ResponseWriter, c.GetAcceptLanguage(), message, errorText); err != nil {
 		c.ResponseError(err.Error())

@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/beego/beego/context"
+	"github.com/the-open-agent/openagent/carrier"
 	"github.com/the-open-agent/openagent/conf"
 	"github.com/the-open-agent/openagent/embedding"
 	"github.com/the-open-agent/openagent/i18n"
@@ -434,14 +435,14 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 
 	fmt.Printf("]\n")
 
-	event := fmt.Sprintf("event: end\ndata: %s\n\n", "end")
-	_, err = responseWriter.Write([]byte(event))
-	if err != nil {
-		responseErrorStream(message, err.Error())
-		return
-	}
-
 	answer := writer.MessageString()
+	defer func() {
+		event := fmt.Sprintf("event: end\ndata: %s\n\n", "end")
+		_, _ = responseWriter.Write([]byte(event))
+		if flusher, ok := responseWriter.(http.Flusher); ok {
+			flusher.Flush()
+		}
+	}()
 	message.ReasonText = writer.ReasonString()
 	message.ToolCalls = model.GetToolCallsFromWriter(writer.ToolString())
 	searchString := writer.SearchString()
@@ -505,9 +506,18 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 		chat.ModelProvider = modelProvider.Name
 	}
 
-	if chat.NeedTitle && textTitle != "" {
-		chat.DisplayName = textTitle
-		chat.NeedTitle = false
+	emitChatUpdate := false
+	if chat.NeedTitle {
+		userTextForTitle := question
+		if firstUserText, firstErr := object.GetFirstUserMessageText(chat.Name); firstErr == nil && strings.TrimSpace(firstUserText) != "" {
+			userTextForTitle = firstUserText
+		}
+		resolvedTitle := carrier.ResolveChatTitle(textTitle, userTextForTitle)
+		if resolvedTitle != "" {
+			chat.DisplayName = resolvedTitle
+			chat.NeedTitle = false
+			emitChatUpdate = true
+		}
 	}
 
 	if questionMessage != nil {
@@ -521,6 +531,13 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 	if err != nil {
 		responseErrorStream(message, err.Error())
 		return
+	}
+
+	if emitChatUpdate {
+		if err := writeChatUpdateStream(responseWriter, chat); err != nil {
+			responseErrorStream(message, err.Error())
+			return
+		}
 	}
 
 	object.StartExperienceReview(object.ExperienceReviewRequest{

@@ -28,6 +28,7 @@ import * as MessageBackend from "./backend/MessageBackend";
 import i18next from "i18next";
 import BaseListPage from "./BaseListPage";
 import {MessageCarrier} from "./chat/MessageCarrier";
+import {getFirstUserMessageText} from "./carrier/titleUtils";
 
 class ChatPage extends BaseListPage {
   constructor(props) {
@@ -328,6 +329,7 @@ class ChatPage extends BaseListPage {
               return;
             }
             const mssageCarrier = new MessageCarrier(chat.needTitle);
+            const userTextForTitle = getFirstUserMessageText(res.data);
             MessageBackend.getMessageAnswer(lastMessage.owner, lastMessage.name, (data) => {
               const jsonData = JSON.parse(data);
 
@@ -337,9 +339,9 @@ class ChatPage extends BaseListPage {
               const currentMessage = res.data[res.data.length - 1];
               const lastMessage2 = Setting.deepCopy(currentMessage);
               text += jsonData.text;
-              const parsedResult = mssageCarrier.parseAnswerWithCarriers(text);
+              const parsedResult = mssageCarrier.parseAnswerWithCarriers(text, userTextForTitle);
               this.updateChatDisplayName(parsedResult.title, chat);
-              if (!chat || (this.state.chat.name !== chat.name)) {
+              if (!chat || (this.state.chat?.name !== chat.name)) {
                 return;
               }
               lastMessage2.text = parsedResult.finalAnswer;
@@ -359,7 +361,7 @@ class ChatPage extends BaseListPage {
                 messageError: false,
               });
             }, (data) => {
-              if (!chat || (this.state.chat.name !== chat.name)) {
+              if (!chat || (this.state.chat?.name !== chat.name)) {
                 return;
               }
               const jsonData = JSON.parse(data);
@@ -387,7 +389,7 @@ class ChatPage extends BaseListPage {
               });
             }, (data) => {
               // onTool callback (handles both tool-start and tool-complete events)
-              if (!chat || (this.state.chat.name !== chat.name)) {
+              if (!chat || (this.state.chat?.name !== chat.name)) {
                 return;
               }
               const jsonData = JSON.parse(data);
@@ -434,7 +436,7 @@ class ChatPage extends BaseListPage {
               });
             }, (data) => {
               // onSearch callback
-              if (!chat || (this.state.chat.name !== chat.name)) {
+              if (!chat || (this.state.chat?.name !== chat.name)) {
                 return;
               }
               const searchResults = JSON.parse(data);
@@ -448,7 +450,7 @@ class ChatPage extends BaseListPage {
                 messages: res.data,
               });
             }, (data) => {
-              if (!chat || (this.state.chat.name !== chat.name)) {
+              if (!chat || (this.state.chat?.name !== chat.name)) {
                 return;
               }
               const vectorScores = JSON.parse(data);
@@ -475,7 +477,7 @@ class ChatPage extends BaseListPage {
                 messageError: true,
               });
             }, (data) => {
-              if (!chat || (this.state.chat.name !== chat.name)) {
+              if (!chat || (this.state.chat?.name !== chat.name)) {
                 return;
               }
               const lastMessage2 = Setting.deepCopy(lastMessage);
@@ -505,11 +507,12 @@ class ChatPage extends BaseListPage {
               // We're no longer in reasoning phase
               lastMessage2.isReasoningPhase = false;
               // If there are suggestions or title , split them from the text
-              const parsedResult = mssageCarrier.parseAnswerWithCarriers(text);
+              const parsedResult = mssageCarrier.parseAnswerWithCarriers(text, userTextForTitle);
               text = parsedResult.finalAnswer;
               if (parsedResult.title !== "") {
                 chat.displayName = parsedResult.title;
                 chat.needTitle = false;
+                this.updateChatDisplayName(parsedResult.title, chat);
               }
               lastMessage2.text = parsedResult.finalAnswer;
               lastMessage2.suggestions = parsedResult.suggestionArray;
@@ -537,7 +540,7 @@ class ChatPage extends BaseListPage {
                 }
               }
             }, (infoText) => {
-              if (!chat || (this.state.chat.name !== chat.name)) {
+              if (!chat || (this.state.chat?.name !== chat.name)) {
                 return;
               }
               const currentMessage = res.data[res.data.length - 1];
@@ -545,6 +548,11 @@ class ChatPage extends BaseListPage {
               lastMessage2.hintText = infoText;
               res.data[res.data.length - 1] = lastMessage2;
               this.setState({messages: res.data});
+            }, (update) => {
+              if (!chat || update?.name !== chat.name || !update.displayName) {
+                return;
+              }
+              this.updateChatDisplayName(update.displayName, {...chat, needTitle: update.needTitle ?? false});
             });
           } else {
             this.setState({
@@ -563,7 +571,12 @@ class ChatPage extends BaseListPage {
       const index = updatedChats.findIndex(c => c.name === chat.name);
       if (index !== -1) {
         updatedChats[index].displayName = title;
-        this.setState({data: updatedChats});
+        updatedChats[index].needTitle = false;
+        const nextState = {data: updatedChats};
+        if (this.state.chat?.name === chat.name) {
+          nextState.chat = {...this.state.chat, displayName: title, needTitle: false};
+        }
+        this.setState(nextState);
       }
     }
   }
