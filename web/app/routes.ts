@@ -11,6 +11,9 @@ export default [
 
     // Stores
     route("stores", "routes/StoreListPage.tsx"),
+    route("stores/:owner/:storeName/chats", "routes/ChatListPage.tsx", { id: "store-chats-list" }),
+    route("stores/:owner/:storeName/messages", "routes/MessageListPage.tsx", { id: "store-messages-list" }),
+    route("stores/:owner/:storeName/vectors", "routes/VectorListPage.tsx", { id: "store-vectors-list" }),
     route("stores/:owner/:storeName", "routes/StoreEditPage.tsx"),
 
     // Providers

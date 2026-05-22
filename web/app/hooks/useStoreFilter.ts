@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { useParams } from "react-router"
 
 function readStore(): string | undefined {
   try {
@@ -9,12 +10,18 @@ function readStore(): string | undefined {
   }
 }
 
+function storeFromRouteParams(storeName: string | undefined): string | undefined {
+  return storeName && storeName !== "" ? storeName : undefined
+}
+
 export function useStoreFilter(): string | undefined {
-  const [store, setStore] = useState(readStore)
+  const { storeName } = useParams()
+  const routeStore = storeFromRouteParams(storeName)
+  const [store, setStore] = useState(() => routeStore ?? readStore())
 
   const sync = useCallback(() => {
-    setStore(readStore())
-  }, [])
+    setStore(routeStore ?? readStore())
+  }, [routeStore])
 
   useEffect(() => {
     window.addEventListener("globalStoreChanged", sync)
