@@ -178,7 +178,7 @@ class SiteEditPage extends React.Component {
               8
             )}
             {this.renderSiteField(
-              Setting.getLabel(i18next.t("site:Endpoint"), i18next.t("site:Endpoint - Tooltip")),
+              Setting.getLabel(i18next.t("provider:Endpoint"), i18next.t("provider:Endpoint - Tooltip")),
               <Input prefix={<LinkOutlined />} value={site.endpoint} onChange={e => {
                 this.updateSiteField("endpoint", e.target.value);
               }} />,

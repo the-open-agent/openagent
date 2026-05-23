@@ -626,8 +626,6 @@
     "Check user balance": "检查用户余额",
     "Check user balance - Tooltip": "开启后，系统在处理每个AI请求前会检查用户是否有足够的余额。内网部署无需计费时可关闭此选项。",
     "Edit Site": "编辑站点",
-    "Endpoint": "端点地址",
-    "Endpoint - Tooltip": "当前OpenAgent部署的公网URL（如https://try.openagentai.org）。若为空，系统将从首个API请求中自动检测并填写。",
     "Hub DB names": "Hub数据库列表",
     "Hub DB names - Tooltip": "逗号分隔的额外数据库名列表，这些数据库中已发布的Agent将汇总显示在Hub页面（如 openagent-db1, openagent-db2）。所有数据库须共享相同的服务器地址和账号密码。",
     "IP parsing mode": "IP解析模式",

@@ -132,8 +132,10 @@ func UpdateSite(id string, site *Site) (bool, error) {
 	if err2 != nil {
 		return false, err2
 	}
+	// Keep the auto-fill flag in sync: if the admin clears or sets a non-public
+	// endpoint, re-enable monitoring so the next public request can fill it in.
 	if site.Name == "site-built-in" {
-		siteEndpointNeedsAutoFill = site.Endpoint == ""
+		siteEndpointNeedsAutoFill = !isPublicEndpoint(site.Endpoint)
 	}
 	return affected != 0, nil
 }
