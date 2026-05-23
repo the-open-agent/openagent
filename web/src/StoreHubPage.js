@@ -263,7 +263,7 @@ class StoreHubPage extends React.Component {
           {store.description ? (
             <div style={{marginBottom: 14}}>
               <div style={{fontSize: 12, color: "var(--ant-color-text-tertiary)", marginBottom: 3, fontWeight: 500}}>
-                {i18next.t("store:Description")}
+                {i18next.t("store:Hub description")}
               </div>
               <Paragraph
                 style={{fontSize: 14, color: "var(--ant-color-text)", lineHeight: "22px", marginBottom: 0, whiteSpace: "pre-wrap"}}

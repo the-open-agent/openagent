@@ -110,7 +110,7 @@ function buildMetaSection(result) {
     [i18next.t("task:Designer"), result.designer],
     [i18next.t("video:Stage"), result.stage],
     [i18next.t("task:Participants"), result.participants],
-    [i18next.t("video:Grade"), result.grade],
+    [i18next.t("store:Grade"), result.grade],
     [i18next.t("task:Instructor"), result.instructor],
     [i18next.t("store:Subject"), result.subject],
     [i18next.t("video:School"), result.school],

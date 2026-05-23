@@ -68,7 +68,7 @@ export default function TaskAnalysisReport({result, downloadFileName}) {
     {label: i18next.t("task:Designer"), value: result.designer},
     {label: i18next.t("video:Stage"), value: result.stage},
     {label: i18next.t("task:Participants"), value: result.participants},
-    {label: i18next.t("video:Grade"), value: result.grade},
+    {label: i18next.t("store:Grade"), value: result.grade},
     {label: i18next.t("task:Instructor"), value: result.instructor},
     {label: i18next.t("store:Subject"), value: result.subject},
     {label: i18next.t("video:School"), value: result.school},

@@ -372,7 +372,7 @@ export function getFormTypeItems(formType) {
       {name: "topic", label: "video:Topic", visible: true, width: "200"},
       {name: "result", label: "general:Result", visible: true, width: "200"},
       {name: "activity", label: "task:Activity", visible: true, width: "200"},
-      {name: "grade", label: "video:Grade", visible: true, width: "200"},
+      {name: "grade", label: "store:Grade", visible: true, width: "200"},
       // { name: "application", label: "task:Application", visible: false, width: "180" },
       // { name: "path", label: "general:Path", visible: false },
       {name: "text", label: "general:Text", visible: true},

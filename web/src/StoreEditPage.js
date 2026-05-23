@@ -482,7 +482,7 @@ class StoreEditPage extends React.Component {
         <Card size="small" title={renderCardTitle(i18next.t("store:Agent Profile"), i18next.t("store:Agent Profile desc"))} style={sectionCardStyle} headStyle={cardHeadStyle}>
           <Row gutter={rowGutter}>
             {this.renderStoreField(
-              Setting.getLabel(i18next.t("store:Author"), i18next.t("store:Author - Tooltip")),
+              Setting.getLabel(i18next.t("store:Hub author"), i18next.t("store:Hub author - Tooltip")),
               <Input value={store.author} onChange={e => {
                 this.updateStoreField("author", e.target.value);
               }} />,
@@ -524,7 +524,7 @@ class StoreEditPage extends React.Component {
               24
             )}
             {this.renderStoreField(
-              Setting.getLabel(i18next.t("store:Description"), i18next.t("store:Description - Tooltip")),
+              Setting.getLabel(i18next.t("store:Hub description"), i18next.t("store:Hub description - Tooltip")),
               <TextArea autoSize={{minRows: 3, maxRows: 10}} value={store.description} onChange={e => {
                 this.updateStoreField("description", e.target.value);
               }} />,
