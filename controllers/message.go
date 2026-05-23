@@ -256,6 +256,11 @@ func (c *ApiController) AddMessage() {
 	}
 	// if originMessage not nil, means edit message, delete all later messages
 	if originMessage != nil {
+		err = cancelMessageAnswersFromTime(originMessage.Chat, originMessage.CreatedTime)
+		if err != nil {
+			c.ResponseError(err.Error())
+			return
+		}
 		err = object.DeleteAllLaterMessages(id)
 		if err != nil {
 			c.ResponseError(err.Error())
@@ -298,6 +303,7 @@ func (c *ApiController) AddMessage() {
 				message.ReplyTo = "Welcome"
 				addMessageAfterSuccess = false
 			}
+			cancelMessageAnswer(lastAIMessage.GetId())
 			_, err = object.DeleteMessage(lastAIMessage)
 			if err != nil {
 				c.ResponseError(err.Error())
@@ -407,6 +413,7 @@ func (c *ApiController) AddMessage() {
 				c.ResponseError(err.Error())
 				return
 			}
+			cancelStaleChatAnswerJobs(message.Chat, answerMessage.Name)
 
 			chat.IsRead = false
 			chat.IsGenerating = true
@@ -436,6 +443,7 @@ func (c *ApiController) DeleteMessage() {
 		return
 	}
 
+	cancelMessageAnswer(util.GetIdFromOwnerAndName(message.Owner, message.Name))
 	success, err := object.DeleteMessage(&message)
 	if err != nil {
 		c.ResponseError(err.Error())

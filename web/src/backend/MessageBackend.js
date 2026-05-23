@@ -97,21 +97,22 @@ export function getMessageAnswer(owner, name, onMessage, onReason, onTool, onSea
     });
   }
 
+  const streamKey = `${owner}/${name}`;
+
   eventSource.addEventListener("myerror", (e) => {
     onError(e.data);
     eventSource.close();
-    eventSourceMap.delete(`${owner}/${name}`);
+    eventSourceMap.delete(streamKey);
   });
 
-  eventSource.addEventListener("error", (e) => {
-    let error = e.data;
-    if (!error) {
-      error = "Unknown error";
+  eventSource.onerror = () => {
+    if (!eventSourceMap.has(streamKey)) {
+      return;
     }
-    onError(error);
+    onError("Unknown error");
     eventSource.close();
-    eventSourceMap.delete(`${owner}/${name}`);
-  });
+    eventSourceMap.delete(streamKey);
+  };
 
   eventSource.addEventListener("end", (e) => {
     onEnd(e.data);

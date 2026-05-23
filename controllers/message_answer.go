@@ -336,6 +336,9 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 
 		_, err = object.UpdateMessage(questionMessage.GetId(), questionMessage, false)
 		if err != nil {
+			if object.IsMessageNotFound(err) {
+				return
+			}
 			responseErrorStream(message, err.Error())
 			return
 		}
@@ -437,6 +440,9 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 
 	answer := writer.MessageString()
 	defer func() {
+		if msg, err := object.GetMessage(message.GetId()); err != nil || msg == nil {
+			return
+		}
 		event := fmt.Sprintf("event: end\ndata: %s\n\n", "end")
 		if _, writeErr := responseWriter.Write([]byte(event)); writeErr != nil {
 			fmt.Printf("write end SSE event failed: %s\n", writeErr.Error())
@@ -491,8 +497,14 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 		return
 	}
 
+	if msg, getErr := object.GetMessage(message.GetId()); getErr != nil || msg == nil {
+		return
+	}
 	_, err = object.UpdateMessage(message.GetId(), message, false)
 	if err != nil {
+		if object.IsMessageNotFound(err) {
+			return
+		}
 		responseErrorStream(message, err.Error())
 		return
 	}

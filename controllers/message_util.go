@@ -44,9 +44,9 @@ func writeMessageErrorStream(responseWriter http.ResponseWriter, lang string, me
 		if message.ErrorText != errorText || !message.IsAlerted || err != nil {
 			message.ErrorText = errorText
 			message.IsAlerted = true
-			_, err = object.UpdateMessage(message.GetId(), message, false)
-			if err != nil {
-				errorText = fmt.Sprintf("%s\n%s", errorText, err.Error())
+			_, updateErr := object.UpdateMessage(message.GetId(), message, false)
+			if updateErr != nil && !object.IsMessageNotFound(updateErr) {
+				errorText = fmt.Sprintf("%s\n%s", errorText, updateErr.Error())
 			}
 
 			if chatErr := clearMessageChatGenerating(message); chatErr != nil {

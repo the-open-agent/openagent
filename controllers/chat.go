@@ -355,6 +355,8 @@ func (c *ApiController) DeleteChat() {
 		return
 	}
 
+	cancelChatAnswerJobs(chat.Name)
+
 	success, err := object.DeleteChat(&chat)
 	if err != nil {
 		c.ResponseError(err.Error())

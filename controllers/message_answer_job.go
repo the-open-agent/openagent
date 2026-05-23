@@ -229,3 +229,44 @@ func (w *messageAnswerJobWriter) Write(p []byte) (int, error) {
 }
 
 func (w *messageAnswerJobWriter) Flush() {}
+
+func cancelMessageAnswer(id string) {
+	messageAnswerJobs.cancel(id)
+}
+
+func cancelChatAnswerJobs(chat string) {
+	messages, err := object.GetChatMessages(chat)
+	if err != nil {
+		return
+	}
+	for _, msg := range messages {
+		if msg.Author == "AI" {
+			messageAnswerJobs.cancel(msg.GetId())
+		}
+	}
+}
+
+func cancelMessageAnswersFromTime(chat string, fromCreatedTime string) error {
+	messages, err := object.GetChatMessages(chat)
+	if err != nil {
+		return err
+	}
+	for _, msg := range messages {
+		if msg.Author == "AI" && msg.CreatedTime >= fromCreatedTime {
+			messageAnswerJobs.cancel(msg.GetId())
+		}
+	}
+	return nil
+}
+
+func cancelStaleChatAnswerJobs(chat string, keepAnswerName string) {
+	messages, err := object.GetChatMessages(chat)
+	if err != nil {
+		return
+	}
+	for _, msg := range messages {
+		if msg.Author == "AI" && msg.Text == "" && msg.ErrorText == "" && msg.Name != keepAnswerName {
+			messageAnswerJobs.cancel(msg.GetId())
+		}
+	}
+}

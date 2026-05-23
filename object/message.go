@@ -185,6 +185,9 @@ func UpdateMessage(id string, message *Message, isHitOnly bool) (bool, error) {
 	if message == nil {
 		return false, nil
 	}
+	if originMessage == nil {
+		return false, fmt.Errorf("The message: %s is not found", id)
+	}
 
 	if originMessage.TextTokenCount == 0 || originMessage.Text != message.Text {
 		size, err := getMessageTextTokenCount(message.ModelProvider, message.Text)
@@ -204,6 +207,14 @@ func UpdateMessage(id string, message *Message, isHitOnly bool) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// IsMessageNotFound reports whether err indicates the message row no longer exists.
+func IsMessageNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), " is not found")
 }
 
 // dataURLMimeType returns e.g. "image/png" from "data:image/png;base64,AAAA...".
