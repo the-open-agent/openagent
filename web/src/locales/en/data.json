@@ -628,6 +628,8 @@
     "Edit Site": "Edit Site",
     "Endpoint": "Endpoint",
     "Endpoint - Tooltip": "The public URL of this OpenAgent deployment (e.g. https://try.openagentai.org). Auto-detected from the first API request if left empty.",
+    "Hub DB names": "Hub DB names",
+    "Hub DB names - Tooltip": "Comma-separated list of additional database names whose published agents will appear in the Hub (e.g. openagent-db1, openagent-db2). All databases must share the same server endpoint and credentials.",
     "IP parsing mode": "IP parsing mode",
     "IP parsing mode - Tooltip": "Method used for parsing client IP addresses (e.g. MaxMind GeoIP2, 17monipdb)",
     "Log config": "Log config",

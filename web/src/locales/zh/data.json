@@ -628,6 +628,8 @@
     "Edit Site": "编辑站点",
     "Endpoint": "端点地址",
     "Endpoint - Tooltip": "当前OpenAgent部署的公网URL（如https://try.openagentai.org）。若为空，系统将从首个API请求中自动检测并填写。",
+    "Hub DB names": "Hub数据库列表",
+    "Hub DB names - Tooltip": "逗号分隔的额外数据库名列表，这些数据库中已发布的Agent将汇总显示在Hub页面（如 openagent-db1, openagent-db2）。所有数据库须共享相同的服务器地址和账号密码。",
     "IP parsing mode": "IP解析模式",
     "IP parsing mode - Tooltip": "客户端IP地址的解析方式（如MaxMind GeoIP2、17monipdb）",
     "Log config": "日志配置",

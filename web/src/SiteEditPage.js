@@ -377,6 +377,13 @@ class SiteEditPage extends React.Component {
               8
             )}
             {this.renderSiteField(
+              Setting.getLabel(i18next.t("site:Hub DB names"), i18next.t("site:Hub DB names - Tooltip")),
+              <Input value={site.hubDbNames} placeholder={"openagent-db1, openagent-db2"} onChange={e => {
+                this.updateSiteField("hubDbNames", e.target.value);
+              }} />,
+              16
+            )}
+            {this.renderSiteField(
               Setting.getLabel(i18next.t("site:Socks5 proxy"), i18next.t("site:Socks5 proxy - Tooltip")),
               <Input value={site.socks5Proxy} onChange={e => {
                 this.updateSiteField("socks5Proxy", e.target.value);

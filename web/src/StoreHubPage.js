@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import React from "react";
-import {Avatar, Card, Col, Empty, Row, Spin, Typography} from "antd";
+import {Avatar, Card, Col, Empty, Row, Spin, Tag, Typography} from "antd";
 import {CommentOutlined} from "@ant-design/icons";
 import * as StoreBackend from "./backend/StoreBackend";
 import * as Setting from "./Setting";
@@ -50,17 +50,26 @@ class StoreHubPage extends React.Component {
   }
 
   renderStoreCard(store) {
-    const chatLink = `/stores/${store.owner}/${store.name}/chat`;
+    const chatPath = `/stores/${store.owner}/${store.name}/chat`;
+    const chatUrl = store.endpoint ? `${store.endpoint}${chatPath}` : null;
     const initials = (store.displayName || store.name || "?")[0].toUpperCase();
     const description = store.welcomeText || store.prompt || "";
 
+    const handleClick = () => {
+      if (chatUrl) {
+        window.open(chatUrl, "_blank", "noopener,noreferrer");
+      } else {
+        this.props.history.push(chatPath);
+      }
+    };
+
     return (
-      <Col xs={24} sm={12} md={8} lg={6} key={`${store.owner}/${store.name}`}>
+      <Col xs={24} sm={12} md={8} lg={6} key={`${store.owner}/${store.name}/${store.hubDbName}`}>
         <Card
           hoverable
           style={{borderRadius: 12, height: "100%", cursor: "pointer"}}
           bodyStyle={{padding: "20px"}}
-          onClick={() => this.props.history.push(chatLink)}
+          onClick={handleClick}
         >
           <div style={{display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 12}}>
             {store.avatar ? (
@@ -77,6 +86,11 @@ class StoreHubPage extends React.Component {
               <Text type="secondary" style={{fontSize: 12}}>
                 {i18next.t("store:By")} {store.owner}
               </Text>
+              {store.hubDbName ? (
+                <div style={{marginTop: 2}}>
+                  <Tag color="blue" style={{fontSize: 11, padding: "0 4px", lineHeight: "18px"}}>{store.hubDbName}</Tag>
+                </div>
+              ) : null}
             </div>
           </div>
           {description ? (

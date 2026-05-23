@@ -32,7 +32,7 @@ import (
 // @Success 200 {array} object.Store The Response object
 // @router /get-hub-stores [get]
 func (c *ApiController) GetHubStores() {
-	stores, err := object.GetPublishedStores()
+	stores, err := object.GetPublishedStoresFromAllDbs()
 	if err != nil {
 		c.ResponseError(err.Error())
 		return

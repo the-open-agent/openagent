@@ -46,6 +46,7 @@ type Site struct {
 	CasdoorApplication  string `xorm:"varchar(100)" json:"casdoorApplication"`  // casdoor backward compat
 	IpParsingMode       string `xorm:"varchar(100)" json:"ipParsingMode"`
 	ParentDbName        string `xorm:"varchar(100)" json:"parentDbName"`
+	HubDbNames          string `xorm:"varchar(1000)" json:"hubDbNames"`
 	Socks5Proxy         string `xorm:"varchar(200)" json:"socks5Proxy"`
 	LogConfig           string `xorm:"varchar(1000)" json:"logConfig"`
 }
