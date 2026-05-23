@@ -529,6 +529,7 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 		}
 	}
 
+	chat.IsGenerating = false
 	_, err = object.UpdateChat(chat.GetId(), chat)
 	if err != nil {
 		responseErrorStream(message, err.Error())

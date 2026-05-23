@@ -44,6 +44,8 @@ type Chat struct {
 	Currency      string  `xorm:"varchar(100)" json:"currency"`
 	IsHidden      bool    `json:"isHidden"`
 	IsDeleted     bool    `json:"isDeleted"`
+	IsRead        bool    `json:"isRead"`
+	IsGenerating  bool    `json:"isGenerating"`
 	NeedTitle     bool    `json:"needTitle"`
 }
 
@@ -111,7 +113,13 @@ func UpdateChat(id string, chat *Chat) (bool, error) {
 	return true, nil
 }
 
+func ResetGeneratingChats() error {
+	_, err := adapter.engine.Where("is_generating = ?", true).Cols("is_generating").Update(&Chat{IsGenerating: false})
+	return err
+}
+
 func AddChat(chat *Chat) (bool, error) {
+	chat.IsRead = true
 	affected, err := adapter.engine.Insert(chat)
 	if err != nil {
 		return false, err

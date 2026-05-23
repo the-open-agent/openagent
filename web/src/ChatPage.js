@@ -30,6 +30,8 @@ import BaseListPage from "./BaseListPage";
 import {MessageCarrier} from "./chat/MessageCarrier";
 import {getFirstUserMessageText} from "./carrier/titleUtils";
 
+const chatStatusPollingInterval = 2000;
+
 class ChatPage extends BaseListPage {
   constructor(props) {
     super(props);
@@ -66,6 +68,79 @@ class ChatPage extends BaseListPage {
     });
 
     this.fetch();
+    this.pollingChatNames = new Set();
+    this.chatStatusPollingErrorShown = false;
+    this.isChatPageUnmounted = false;
+    this.startPolling();
+  }
+
+  componentWillUnmount() {
+    this.isChatPageUnmounted = true;
+    this.stopPolling();
+  }
+
+  startPolling() {
+    if (this.timer) {
+      return;
+    }
+    this.timer = setInterval(() => {
+      const generatingChats = this.state.data?.filter(chat => chat.isGenerating) || [];
+      generatingChats.forEach(chat => {
+        if (this.pollingChatNames.has(chat.name)) {
+          return;
+        }
+
+        this.pollingChatNames.add(chat.name);
+        ChatBackend.getChatStatus(chat.owner, chat.name)
+          .then(res => {
+            if (this.isChatPageUnmounted) {
+              return;
+            }
+            if (res.status !== "ok") {
+              if (!this.chatStatusPollingErrorShown) {
+                Setting.showMessage("error", `${i18next.t("general:Failed to get")}: ${res.msg}`);
+                this.chatStatusPollingErrorShown = true;
+              }
+              return;
+            }
+            this.chatStatusPollingErrorShown = false;
+
+            const status = res.data;
+            const isViewing = this.state.chat?.name === chat.name;
+
+            if (chat.isGenerating && !status.isGenerating && isViewing && status.isRead === false) {
+              this.markChatRead({...chat, ...status});
+              return;
+            }
+
+            if (status.isGenerating !== chat.isGenerating || status.isRead !== chat.isRead) {
+              this.updateChatStatus(chat.name, status);
+            }
+          })
+          .catch(error => {
+            if (this.isChatPageUnmounted) {
+              return;
+            }
+            if (!this.chatStatusPollingErrorShown) {
+              Setting.showMessage("error", `${i18next.t("general:Failed to get")}: ${error}`);
+              this.chatStatusPollingErrorShown = true;
+            }
+          })
+          .finally(() => {
+            if (!this.isChatPageUnmounted) {
+              this.pollingChatNames.delete(chat.name);
+            }
+          });
+      });
+    }, chatStatusPollingInterval);
+  }
+
+  stopPolling() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+    this.pollingChatNames?.clear();
   }
 
   handleGenerationModeChange = (mode) => {
@@ -145,6 +220,49 @@ class ChatPage extends BaseListPage {
     this.goToLinkSoft(this.generateChatUrl(updatedChat.name, updatedChat.store));
     this.setState({chat: updatedChat});
     return updatedChat;
+  };
+
+  updateChatStatus = (chatName, updates) => {
+    this.setState(prevState => {
+      const data = prevState.data;
+      if (!data) {return prevState;}
+
+      const index = data.findIndex(c => c.name === chatName);
+      if (index === -1) {return prevState;}
+
+      const newChat = {...data[index], ...updates};
+      const newData = [...data];
+      newData[index] = newChat;
+
+      const nextState = {data: newData};
+      if (prevState.chat?.name === chatName) {
+        nextState.chat = newChat;
+      }
+      return nextState;
+    });
+  };
+
+  markChatRead = (chat) => {
+    if (!chat || chat.isRead !== false || chat.isGenerating) {
+      return;
+    }
+
+    const updatedChat = {...chat, isRead: true};
+    ChatBackend.updateChat(chat.owner, chat.name, updatedChat)
+      .then(res => {
+        if (this.isChatPageUnmounted) {
+          return;
+        }
+        if (res.status === "ok") {
+          this.updateChatStatus(chat.name, {isRead: true, isGenerating: chat.isGenerating});
+        }
+      })
+      .catch(error => {
+        if (this.isChatPageUnmounted) {
+          return;
+        }
+        Setting.showMessage("error", `${i18next.t("general:Failed to save")}: ${error}`);
+      });
   };
 
   getGlobalStores() {
@@ -311,6 +429,7 @@ class ChatPage extends BaseListPage {
         this.setState({
           messages: res.data,
         });
+        this.markChatRead(chat);
 
         if (res.data.length > 0) {
           const lastMessage = res.data[res.data.length - 1];
@@ -464,6 +583,12 @@ class ChatPage extends BaseListPage {
                 messages: res.data,
               });
             }, (error) => {
+              this.updateChatStatus(chat.name, {isGenerating: false});
+
+              if (!chat || (this.state.chat?.name !== chat.name)) {
+                return;
+              }
+
               const lastMessage2 = Setting.deepCopy(lastMessage);
               lastMessage2.errorText = error;
               res.data[res.data.length - 1] = lastMessage2;
@@ -471,6 +596,7 @@ class ChatPage extends BaseListPage {
               res.data.map((message) => {
                 message.html = renderText(message.text);
               });
+
               this.setState({
                 messages: res.data,
                 messageLoading: false,
@@ -516,6 +642,17 @@ class ChatPage extends BaseListPage {
               }
               lastMessage2.text = parsedResult.finalAnswer;
               lastMessage2.suggestions = parsedResult.suggestionArray;
+
+              const isCurrentChat = this.state.chat?.name === chat.name;
+              const updates = {isGenerating: false};
+              if (isCurrentChat) {
+                this.markChatRead({...chat, isGenerating: false});
+              }
+              this.updateChatStatus(chat.name, updates);
+
+              if (!isCurrentChat) {
+                return;
+              }
 
               res.data[res.data.length - 1] = lastMessage2;
               res.data.map((message, index) => {
@@ -766,7 +903,7 @@ class ChatPage extends BaseListPage {
               borderRight: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #ebebeb",
               flexShrink: 0,
             }}>
-              <ChatMenu ref={this.menu} chats={chats} chatName={this.getChat()} onSelectChat={onSelectChat} onAddChat={onAddChat} onDeleteChat={onDeleteChat} onUpdateChatName={onUpdateChatName} stores={this.state.stores} currentStoreName={currentStoreName} />
+              <ChatMenu ref={this.menu} chats={chats} chatName={this.getChat()} onSelectChat={onSelectChat} onAddChat={onAddChat} onDeleteChat={onDeleteChat} onUpdateChatName={onUpdateChatName} stores={this.state.stores} currentStoreName={currentStoreName} messageLoading={this.state.messageLoading} />
             </div>
           )
         }
@@ -774,7 +911,7 @@ class ChatPage extends BaseListPage {
         {Setting.isMobile() && (
           <Drawer title={i18next.t("general:Chats")} placement="left" open={this.state.chatMenuVisible} onClose={this.closeChatMenu} width={250}
           >
-            <ChatMenu ref={this.menu} chats={chats} chatName={this.getChat()} onSelectChat={onSelectChat} onAddChat={onAddChat} onDeleteChat={onDeleteChat} onUpdateChatName={onUpdateChatName} stores={this.state.stores} />
+            <ChatMenu ref={this.menu} chats={chats} chatName={this.getChat()} onSelectChat={onSelectChat} onAddChat={onAddChat} onDeleteChat={onDeleteChat} onUpdateChatName={onUpdateChatName} stores={this.state.stores} messageLoading={this.state.messageLoading} />
           </Drawer>
         )}
 
@@ -862,16 +999,19 @@ class ChatPage extends BaseListPage {
       .then((res) => {
         if (res.status === "ok") {
           const chats = res.data;
-          this.setState({
+          const nextState = {
             loading: false,
             data: chats,
-            messages: [],
-            chat: undefined,
-            draftStoreName: storeName,
             messageError: false,
             searchText: params.searchText,
             searchedColumn: params.searchedColumn,
-          });
+          };
+          if (setLoading) {
+            nextState.messages = [];
+            nextState.chat = undefined;
+            nextState.draftStoreName = storeName;
+          }
+          this.setState(nextState);
 
           if (chats.length > 0) {
             let chat;
@@ -882,12 +1022,18 @@ class ChatPage extends BaseListPage {
               chat = chats[0];
               this.goToLinkSoft(this.generateChatUrl(chat.name, chat.store));
             }
-            this.getMessages(chat);
-            this.setState({
-              chat: chat,
-              draftStoreName: chat.store,
-              generationMode: Setting.loadChatGenerationMode(chat.owner, chat.name),
-            });
+
+            if (setLoading) {
+              this.setState({
+                messages: [],
+                chat: chat,
+                draftStoreName: chat.store,
+                generationMode: Setting.loadChatGenerationMode(chat.owner, chat.name),
+              });
+              this.getMessages(chat);
+            } else if (this.state.chat?.name === chat.name) {
+              this.setState({chat: chat});
+            }
           }
           this.getGlobalStores();
 

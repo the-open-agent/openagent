@@ -28,6 +28,7 @@ import (
 	"github.com/the-open-agent/openagent/i18n"
 	"github.com/the-open-agent/openagent/object"
 	"github.com/the-open-agent/openagent/txt"
+	"github.com/the-open-agent/openagent/util"
 )
 
 func writeMessageErrorStream(responseWriter http.ResponseWriter, lang string, message *object.Message, errorText string) error {
@@ -47,6 +48,10 @@ func writeMessageErrorStream(responseWriter http.ResponseWriter, lang string, me
 			if err != nil {
 				errorText = fmt.Sprintf("%s\n%s", errorText, err.Error())
 			}
+
+			if chatErr := clearMessageChatGenerating(message); chatErr != nil {
+				errorText = fmt.Sprintf("%s\n%s", errorText, chatErr.Error())
+			}
 		}
 	}
 
@@ -63,6 +68,21 @@ func writeMessageErrorStream(responseWriter http.ResponseWriter, lang string, me
 		flusher.Flush()
 	}
 	return nil
+}
+
+func clearMessageChatGenerating(message *object.Message) error {
+	chatId := util.GetId(message.Owner, message.Chat)
+	chat, err := object.GetChat(chatId)
+	if err != nil {
+		return err
+	}
+	if chat == nil {
+		return fmt.Errorf("chat %s not found", chatId)
+	}
+
+	chat.IsGenerating = false
+	_, err = object.UpdateChat(chatId, chat)
+	return err
 }
 
 func writeInfoStream(responseWriter http.ResponseWriter, infoText string) error {

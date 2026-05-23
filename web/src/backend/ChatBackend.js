@@ -44,6 +44,16 @@ export function getChat(owner, name) {
   }).then(res => Setting.handleFetchResponse(res));
 }
 
+export function getChatStatus(owner, name) {
+  return fetch(`${Setting.ServerUrl}/api/get-chat-status?id=${owner}/${encodeURIComponent(name)}`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Accept-Language": Setting.getAcceptLanguage(),
+    },
+  }).then(res => Setting.handleFetchResponse(res));
+}
+
 export function updateChat(owner, name, chat) {
   const newChat = Setting.deepCopy(chat);
   return fetch(`${Setting.ServerUrl}/api/update-chat?id=${owner}/${encodeURIComponent(name)}`, {

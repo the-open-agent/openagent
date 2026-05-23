@@ -169,6 +169,40 @@ func (c *ApiController) GetChats() {
 	c.ResponseOk(chats)
 }
 
+// GetChatStatus
+// @Title GetChatStatus
+// @Tag Chat API
+// @Description get chat status
+// @Param id query string true "The id of chat"
+// @Success 200 {object} controllers.Response The Response object
+// @router /get-chat-status [get]
+func (c *ApiController) GetChatStatus() {
+	id := c.Input().Get("id")
+
+	chat, err := object.GetChat(id)
+	if err != nil {
+		c.ResponseError(err.Error())
+		return
+	}
+	if chat == nil {
+		c.ResponseError(fmt.Sprintf("The chat: %s is not found", id))
+		return
+	}
+
+	if !c.IsAdmin() {
+		username := c.GetSessionUsername()
+		if username != chat.User {
+			c.ResponseError(c.T("auth:Unauthorized operation"))
+			return
+		}
+	}
+
+	c.ResponseOk(map[string]bool{
+		"isRead":       chat.IsRead,
+		"isGenerating": chat.IsGenerating,
+	})
+}
+
 // GetChat
 // @Title GetChat
 // @Tag Chat API

@@ -407,6 +407,14 @@ func (c *ApiController) AddMessage() {
 				c.ResponseError(err.Error())
 				return
 			}
+
+			chat.IsRead = false
+			chat.IsGenerating = true
+			_, err = object.UpdateChat(chatId, chat)
+			if err != nil {
+				c.ResponseError(err.Error())
+				return
+			}
 		}
 	}
 

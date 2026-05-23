@@ -14,8 +14,9 @@
 
 import React from "react";
 import {Button, Dropdown, Input, Menu, Popconfirm, Tooltip} from "antd";
-import {CloseOutlined, DeleteOutlined, EditOutlined, LayoutOutlined, PlusOutlined, SaveOutlined} from "@ant-design/icons";
+import {CloseOutlined, DeleteOutlined, EditOutlined, LayoutOutlined, LoadingOutlined, PlusOutlined, SaveOutlined} from "@ant-design/icons";
 import i18next from "i18next";
+import * as Setting from "./Setting";
 import {ThemeDefault} from "./Conf";
 
 class ChatMenu extends React.Component {
@@ -34,6 +35,37 @@ class ChatMenu extends React.Component {
       hoveredKey: null,
       popconfirmOpenKey: null,
     };
+  }
+
+  renderIndicator(chat) {
+    const isDark = Setting.getIsDark();
+    const color = isDark ? "#ffffff" : "#000000";
+
+    if (chat.isGenerating) {
+      return (
+        <LoadingOutlined spin style={{
+          fontSize: "12px",
+          color: ThemeDefault.colorPrimary,
+          marginRight: "12px",
+          flexShrink: 0,
+        }} />
+      );
+    }
+
+    return (
+      <div style={{
+        width: "10px",
+        height: "10px",
+        borderRadius: "50%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: "14px",
+        flexShrink: 0,
+        backgroundColor: chat.isRead === false ? color : "transparent",
+        border: chat.isRead === false ? `1px solid ${color}` : `1px solid ${isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.15)"}`,
+      }} />
+    );
   }
 
   chatsToItems(chats) {
@@ -119,8 +151,13 @@ class ChatMenu extends React.Component {
                   onMouseEnter={() => this.setState({hoveredKey: itemKey})}
                   onMouseLeave={() => this.setState({hoveredKey: null})}
                 >
-                  <div style={{flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
-                    <Tooltip title={chat.displayName}>{chat.displayName}</Tooltip>
+                  <div style={{flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "flex", alignItems: "center"}}>
+                    {this.renderIndicator(chat)}
+                    <Tooltip title={chat.displayName}>
+                      <span style={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
+                        {chat.displayName}
+                      </span>
+                    </Tooltip>
                   </div>
                   {showActionButtons && (
                     <div>
