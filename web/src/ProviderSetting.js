@@ -392,7 +392,12 @@ export function getCompatibleProviderOptions(category) {
   if (category === "Model") {
     return (
       [
-        // GPT-5.4 series (latest)
+        // GPT-5.5 series (latest)
+        {"id": "gpt-5.5", "name": "gpt-5.5"},
+        {"id": "gpt-5.5-pro", "name": "gpt-5.5-pro"},
+        {"id": "gpt-5.5-instant", "name": "gpt-5.5-instant"},
+        {"id": "gpt-5.5-cyber", "name": "gpt-5.5-cyber"},
+        // GPT-5.4 series
         {"id": "gpt-5.4", "name": "gpt-5.4"},
         {"id": "gpt-5.4-pro", "name": "gpt-5.4-pro"},
         {"id": "gpt-5.4-mini", "name": "gpt-5.4-mini"},
@@ -447,7 +452,12 @@ export function getCompatibleProviderOptions(category) {
 }
 
 const openaiModels = [
-  // GPT-5.4 series (latest)
+  // GPT-5.5 series (latest)
+  {id: "gpt-5.5", name: "gpt-5.5"},
+  {id: "gpt-5.5-pro", name: "gpt-5.5-pro"},
+  {id: "gpt-5.5-instant", name: "gpt-5.5-instant"},
+  {id: "gpt-5.5-cyber", name: "gpt-5.5-cyber"},
+  // GPT-5.4 series
   {id: "gpt-5.4", name: "gpt-5.4"},
   {id: "gpt-5.4-pro", name: "gpt-5.4-pro"},
   {id: "gpt-5.4-mini", name: "gpt-5.4-mini"},
@@ -767,6 +777,7 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "Claude") {
     return [
+      {id: "claude-opus-4-7", name: "claude-opus-4-7"},
       {id: "claude-opus-4-5", name: "claude-opus-4-5"},
       {id: "claude-opus-4-1", name: "claude-opus-4-1"},
       {id: "claude-opus-4-0", name: "claude-opus-4-0"},
@@ -785,6 +796,7 @@ export function getModelSubTypeOptions(type) {
     ];
   } else if (type === "OpenRouter") {
     return [
+      {id: "anthropic/claude-opus-4-7", name: "anthropic/claude-opus-4-7"},
       {id: "anthropic/claude-opus-4-5", name: "anthropic/claude-opus-4-5"},
       {id: "anthropic/claude-sonnet-4-0", name: "anthropic/claude-sonnet-4-0"},
       {id: "openai/gpt-4.1", name: "openai/gpt-4.1"},
@@ -1332,15 +1344,15 @@ export function getQuickSetupModelTypes() {
 
 export function getModelProviderMetadata(type) {
   const metadata = {
-    "OpenAI": {desc: "GPT-5.4, GPT-4.1, o3...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "gpt-5.4"},
-    "Claude": {desc: "Claude Opus, Sonnet...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "claude-opus-4-5"},
+    "OpenAI": {desc: "GPT-5.5, GPT-4.1, o3...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "gpt-5.5"},
+    "Claude": {desc: "Claude Opus, Sonnet...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "claude-opus-4-7"},
     "Gemini": {desc: "Gemini 2.5 Pro, Flash...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "gemini-2.5-pro"},
     "DeepSeek": {desc: "DeepSeek-V4, R1...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "deepseek-v4-pro"},
     "Grok": {desc: "Grok-3, Grok-2...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "grok-3-latest"},
     "Ollama": {desc: "Run models locally", needsApiKey: false, needsUrl: true, needsClientId: false, needsRegion: false, defaultSubType: "deepseek-r1:671b", urlPlaceholder: "http://localhost:11434", defaultUrl: "http://localhost:11434"},
-    "OpenRouter": {desc: "100+ models unified", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "anthropic/claude-opus-4-5"},
+    "OpenRouter": {desc: "100+ models unified", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "anthropic/claude-opus-4-7"},
     "Mistral": {desc: "Mistral Large, Medium...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "mistral-large-latest"},
-    "Azure": {desc: "Azure-hosted GPT models", needsApiKey: true, needsUrl: true, needsClientId: false, needsRegion: false, defaultSubType: "gpt-5.4", urlPlaceholder: "https://your-resource.openai.azure.com"},
+    "Azure": {desc: "Azure-hosted GPT models", needsApiKey: true, needsUrl: true, needsClientId: false, needsRegion: false, defaultSubType: "gpt-5.5", urlPlaceholder: "https://your-resource.openai.azure.com"},
     "OpenAI Compatible": {desc: "Any compatible API", needsApiKey: true, needsUrl: true, needsClientId: false, needsRegion: false, defaultSubType: "", urlPlaceholder: "https://api.example.com/v1"},
     "Alibaba Cloud": {desc: "Qwen3, Qwen-Max...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "qwen3-235b-a22b"},
     "Moonshot": {desc: "Kimi K2, long-context models", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "kimi-k2-0905-preview"},

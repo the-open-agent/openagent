@@ -44,6 +44,7 @@ https://docs.anthropic.com/en/docs/about-claude/pricing
 
 | Model family        | Context window | Input Pricing         | Output Pricing        |
 |---------------------|----------------|-----------------------|-----------------------|
+| Claude Opus 4.7     | 1,000,000 tokens| $5.00/million tokens  | $25.00/million tokens |
 | Claude Opus 4.5     | 200,000 tokens | $5.00/million tokens  | $25.00/million tokens |
 | Claude Opus 4.1     | 200,000 tokens | $15.00/million tokens | $75.00/million tokens |
 | Claude Opus 4       | 200,000 tokens | $15.00/million tokens | $75.00/million tokens |
@@ -59,6 +60,7 @@ https://docs.anthropic.com/en/docs/about-claude/pricing
 func (p *ClaudeModelProvider) calculatePrice(modelResult *ModelResult, lang string) error {
 	var inputPricePerThousandTokens, outputPricePerThousandTokens float64
 	priceTable := map[string][]float64{
+		"claude-opus-4-7":            {0.005, 0.025},
 		"claude-opus-4-5":            {0.005, 0.025},
 		"claude-opus-4-1":            {0.015, 0.075},
 		"claude-opus-4-0":            {0.015, 0.075},

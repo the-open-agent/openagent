@@ -135,6 +135,12 @@ func CalculateOpenAIModelPrice(model string, modelResult *ModelResult, lang stri
 		}
 		modelResult.Currency = "USD"
 
+	// gpt 5.5 model
+	case strings.Contains(model, "gpt-5.5"):
+		inputPricePerThousandTokens = 0.005
+		outputPricePerThousandTokens = 0.030
+		modelResult.Currency = "USD"
+
 	// gpt 5.2 model (includes gpt-5.2-chat which uses same pricing)
 	case strings.Contains(model, "gpt-5.2"):
 		if strings.Contains(model, "5.2-mini") {
@@ -251,6 +257,10 @@ Language models:
 | o3                    | 200K    | $0.002                   | $0.008                   |
 | o3-mini               | 200K    | $0.0011                  | $0.0044                  |
 | o4-mini               | 200K    | $0.0011                  | $0.0044                  |
+| GPT-5.5               | 1050K   | $0.005                   | $0.030                   |
+| GPT-5.5-Pro           | 1050K   | $0.005                   | $0.030                   |
+| GPT-5.5-Instant       | 1050K   | $0.005                   | $0.030                   |
+| GPT-5.5-Cyber         | 1050K   | $0.005                   | $0.030                   |
 | GPT-5                 | 400K    | $0.00125                 | $0.01                    |
 | GPT-5-mini            | 400K    | $0.00025                 | $0.002                   |
 | GPT-5-nano            | 400K    | $0.00005                 | $0.0004                  |
