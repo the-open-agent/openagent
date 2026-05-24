@@ -181,3 +181,62 @@ Full docs at **[https://www.openagentai.org](https://www.openagentai.org)**
 ## License
 
 [Apache 2.0](https://github.com/the-open-agent/openagent/blob/master/LICENSE)
+
+
+## FAQ
+
+### What is OpenAgent?
+
+OpenAgent is an open-source personal AI assistant that brings together powerful LLMs, your own knowledge base, and autonomous agent loops — all in one self-hostable platform. Connect any model provider, build a RAG knowledge base from your documents, and let agents browse the web, run code, and call any MCP-compatible tool.
+
+| Feature | Description |
+|---------|-------------|
+| **Single Binary** | Ships as one executable, no installation needed |
+| **LLM Support** | Connect OpenAI, Anthropic, Google, local models |
+| **RAG Knowledge Base** | Build KB from your documents |
+| **Browser Use** | Agents can browse the web |
+| **Computer Use** | Control your computer via agent |
+| **Coding Agent** | Run code and scripts |
+| **MCP Tools** | Call any MCP-compatible tool |
+| **Self-Hosted** | Full control over your data |
+
+### Getting Started
+
+Download the latest release: [GitHub Releases](https://github.com/the-open-agent/openagent/releases/latest)
+
+Or use Docker:
+
+```sh
+docker pull casbin/openagent
+docker run -p 8080:8080 casbin/openagent
+```
+
+### Key Concepts
+
+| Concept | Description |
+|---------|-------------|
+| **LLM Providers** | OpenAI, Anthropic, Google, Azure, local models |
+| **RAG KB** | Upload documents → search in prompts |
+| **Agent Loops** | Autonomous multi-step workflows |
+| **Browser Use** | Web browsing via Playwright |
+| **Computer Use** | Control desktop via automation |
+| **MCP Tools** | Model Context Protocol tool integration |
+
+### Supported Use Cases
+
+- **Personal Assistant** — Chat with your knowledge base
+- **Web Research** — Agents browse and summarize
+- **Code Execution** — Run scripts safely
+- **Document Search** — RAG over your files
+- **Automation** — Multi-step autonomous tasks
+
+### License
+
+Apache 2.0 License.
+
+### Help & Resources
+
+- [Live Demo](https://demo.openagentai.org)
+- [Playground](https://try.openagentai.org)
+- [Documentation](https://www.openagentai.org)
+- [Discord](https://discord.gg/5rPsrAzK7S)
