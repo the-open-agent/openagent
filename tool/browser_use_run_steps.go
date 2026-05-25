@@ -43,7 +43,7 @@ func (b *browserUseRunStepsBuiltin) GetInputSchema() interface{} {
 	return map[string]interface{}{
 		"type": "object", "additionalProperties": false,
 		"properties": map[string]interface{}{
-			"steps": map[string]interface{}{"type": "array", "description": "Ordered browser steps.", "items": map[string]interface{}{"type": "object", "additionalProperties": true, "properties": stepProps, "required": []string{"op"}}},
+			"steps":             map[string]interface{}{"type": "array", "description": "Ordered browser steps.", "items": map[string]interface{}{"type": "object", "additionalProperties": true, "properties": stepProps, "required": []string{"op"}}},
 			"snapshot_on_error": map[string]interface{}{"type": "boolean", "description": "Capture snapshot when a step fails.", "default": true},
 		},
 		"required": []string{"steps"},

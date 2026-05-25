@@ -405,11 +405,11 @@ func browserUseTargetDescription(target browserUseTarget) string {
 
 func browserUsePositionSchemaProperties() map[string]interface{} {
 	return map[string]interface{}{
-		"docX": map[string]interface{}{"type": "number", "description": "Document X coordinate."},
-		"docY": map[string]interface{}{"type": "number", "description": "Document Y coordinate."},
-		"x":    map[string]interface{}{"type": "number", "description": "Viewport X fallback."},
-		"y":    map[string]interface{}{"type": "number", "description": "Viewport Y fallback."},
-		"width": map[string]interface{}{"type": "number", "description": "Optional element width."},
+		"docX":   map[string]interface{}{"type": "number", "description": "Document X coordinate."},
+		"docY":   map[string]interface{}{"type": "number", "description": "Document Y coordinate."},
+		"x":      map[string]interface{}{"type": "number", "description": "Viewport X fallback."},
+		"y":      map[string]interface{}{"type": "number", "description": "Viewport Y fallback."},
+		"width":  map[string]interface{}{"type": "number", "description": "Optional element width."},
 		"height": map[string]interface{}{"type": "number", "description": "Optional element height."},
 	}
 }

@@ -46,9 +46,9 @@ type toolCallTextBlock struct {
 }
 
 type ParsedSnapshotElement struct {
-	Index                         int
+	Index                                         int
 	Tag, Role, Href, Placeholder, AriaLabel, Text string
-	X, Y, W, H, DocX, DocY        float64
+	X, Y, W, H, DocX, DocY                        float64
 }
 
 func normalizeToolCallTextContent(content string) string {
@@ -870,10 +870,20 @@ func mergeWebsiteElement(existing, next WebsiteElement) WebsiteElement {
 	if existing.Name == "" {
 		return next
 	}
-	for _, pair := range []struct{ dst *string; src string }{
-		{&existing.Role, next.Role}, {&existing.Label, next.Label}, {&existing.Text, next.Text}, {&existing.Tag, next.Tag},
-		{&existing.Page, next.Page}, {&existing.Description, next.Description}, {&existing.AriaLabel, next.AriaLabel},
-		{&existing.Placeholder, next.Placeholder}, {&existing.Href, next.Href}, {&existing.ParamVar, next.ParamVar},
+	for _, pair := range []struct {
+		dst *string
+		src string
+	}{
+		{&existing.Role, next.Role},
+		{&existing.Label, next.Label},
+		{&existing.Text, next.Text},
+		{&existing.Tag, next.Tag},
+		{&existing.Page, next.Page},
+		{&existing.Description, next.Description},
+		{&existing.AriaLabel, next.AriaLabel},
+		{&existing.Placeholder, next.Placeholder},
+		{&existing.Href, next.Href},
+		{&existing.ParamVar, next.ParamVar},
 	} {
 		if strings.TrimSpace(*pair.dst) == "" {
 			*pair.dst = pair.src

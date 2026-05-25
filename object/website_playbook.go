@@ -22,14 +22,14 @@ import (
 const WebsitePlaybookVersionV4 = 4
 
 type WebsitePlaybook struct {
-	SiteId     string                    `json:"siteId"`
-	BaseUrl    string                    `json:"baseUrl"`
-	Version    int                       `json:"version"`
-	UpdatedAt  string                    `json:"updatedAt,omitempty"`
-	Source     PlaybookSource            `json:"source,omitempty"`
-	Sources    []PlaybookSource          `json:"sources,omitempty"`
-	Pages      map[string]WebsitePage    `json:"pages,omitempty"`
-	Elements   map[string]WebsiteElement `json:"elements,omitempty"`
+	SiteId    string                    `json:"siteId"`
+	BaseUrl   string                    `json:"baseUrl"`
+	Version   int                       `json:"version"`
+	UpdatedAt string                    `json:"updatedAt,omitempty"`
+	Source    PlaybookSource            `json:"source,omitempty"`
+	Sources   []PlaybookSource          `json:"sources,omitempty"`
+	Pages     map[string]WebsitePage    `json:"pages,omitempty"`
+	Elements  map[string]WebsiteElement `json:"elements,omitempty"`
 }
 
 type PlaybookSource struct {
