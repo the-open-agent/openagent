@@ -17,9 +17,30 @@ package model
 import (
 	"fmt"
 	"io"
+	"net/http"
 
+	"github.com/sashabaranov/go-openai"
 	"github.com/the-open-agent/openagent/i18n"
+	"github.com/the-open-agent/openagent/proxy"
 )
+
+const (
+	kimiCodingBaseURL   = "https://api.kimi.com/coding/v1"
+	kimiCodingUserAgent = "KimiCLI/1.44.0"
+)
+
+// kimiCodingTransport wraps an underlying RoundTripper and overrides the
+// User-Agent header to "KimiCLI/1.44.0". The Kimi coding API requires this
+// UA string; without it the endpoint rejects non-code-related requests.
+type kimiCodingTransport struct {
+	base http.RoundTripper
+}
+
+func (t *kimiCodingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req = req.Clone(req.Context())
+	req.Header.Set("User-Agent", kimiCodingUserAgent)
+	return t.base.RoundTrip(req)
+}
 
 type MoonshotModelProvider struct {
 	temperature float32
@@ -38,9 +59,26 @@ func NewMoonshotModelProvider(subType string, secretKey string, temperature floa
 	return client, nil
 }
 
+func getKimiCodingClientFromToken(authToken string) *openai.Client {
+	config := openai.DefaultConfig(authToken)
+	config.BaseURL = kimiCodingBaseURL
+
+	baseTransport := proxy.ProxyHttpClient.Transport
+	if baseTransport == nil {
+		baseTransport = http.DefaultTransport
+	}
+
+	transport := &kimiCodingTransport{base: baseTransport}
+	httpClient := &http.Client{Transport: transport}
+	config.HTTPClient = httpClient
+
+	c := openai.NewClientWithConfig(config)
+	return c
+}
+
 func (p *MoonshotModelProvider) GetPricing() string {
-	return `URL: 
-https://platform.moonshot.cn/docs/pricing/chat
+	return `URL:
+	https://platform.moonshot.cn/docs/pricing/chat
 
 Model
 
@@ -55,6 +93,7 @@ Model
 | kimi-k2-thinking       | 1M tokens      | 4 yuan      | 16 yuan      |
 | kimi-k2-thinking-turbo | 1M tokens      | 8 yuan      | 58 yuan      |
 | kimi-latest            | 1M tokens      | Auto (Tier) | Auto (Tier)  |
+| kimi-for-coding        | 1M tokens      | Auto (Tier) | Auto (Tier)  |
 `
 }
 
@@ -76,7 +115,7 @@ func (p *MoonshotModelProvider) calculatePrice(modelResult *ModelResult, lang st
 	var priceItem [2]float64
 	var ok bool
 
-	if p.subType == "kimi-latest" {
+	if p.subType == "kimi-latest" || p.subType == "kimi-for-coding" {
 		if modelResult.TotalTokenCount <= 8192 {
 			priceItem = [2]float64{0.002, 0.010}
 		} else if modelResult.TotalTokenCount <= 32768 {
@@ -103,11 +142,21 @@ func (p *MoonshotModelProvider) calculatePrice(modelResult *ModelResult, lang st
 }
 
 func (p *MoonshotModelProvider) QueryText(question string, writer io.Writer, history []*RawMessage, prompt string, knowledgeMessages []*RawMessage, toolSession *ToolSession, lang string) (*ModelResult, error) {
-	const BaseUrl = "https://api.moonshot.cn/v1"
+	var localProvider *LocalModelProvider
+	var err error
 
-	localProvider, err := NewLocalModelProvider("Custom-think", "custom-model", p.secretKey, p.temperature, p.topP, 0, 0, BaseUrl, p.subType, 0, 0, "CNY")
-	if err != nil {
-		return nil, err
+	if p.subType == "kimi-for-coding" {
+		localProvider, err = NewLocalModelProvider("Custom-think", "custom-model", p.secretKey, p.temperature, p.topP, 0, 0, kimiCodingBaseURL, p.subType, 0, 0, "CNY")
+		if err != nil {
+			return nil, err
+		}
+		localProvider.customClient = getKimiCodingClientFromToken(p.secretKey)
+	} else {
+		const BaseUrl = "https://api.moonshot.cn/v1"
+		localProvider, err = NewLocalModelProvider("Custom-think", "custom-model", p.secretKey, p.temperature, p.topP, 0, 0, BaseUrl, p.subType, 0, 0, "CNY")
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	modelResult, err := localProvider.QueryText(question, writer, history, prompt, knowledgeMessages, toolSession, lang)

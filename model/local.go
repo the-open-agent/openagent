@@ -44,6 +44,7 @@ type LocalModelProvider struct {
 	inputPricePerThousandTokens  float64
 	outputPricePerThousandTokens float64
 	currency                     string
+	customClient                 *openai.Client
 }
 
 func NewLocalModelProvider(typ string, subType string, secretKey string, temperature float32, topP float32, frequencyPenalty float32, presencePenalty float32, providerUrl string, compatibleProvider string, inputPricePerThousandTokens float64, outputPricePerThousandTokens float64, Currency string) (*LocalModelProvider, error) {
@@ -165,7 +166,10 @@ func (p *LocalModelProvider) QueryText(question string, writer io.Writer, histor
 	var client *openai.Client
 	var flushData interface{} // Can be either flushData or flushDataThink
 
-	if p.typ == "Local" {
+	if p.customClient != nil {
+		client = p.customClient
+		flushData = flushDataThink
+	} else if p.typ == "Local" {
 		client = getLocalClientFromUrl(p.secretKey, p.providerUrl)
 		flushData = flushDataThink
 	} else if p.typ == "Azure" {

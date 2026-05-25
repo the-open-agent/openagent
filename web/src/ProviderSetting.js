@@ -979,6 +979,7 @@ export function getModelSubTypeOptions(type) {
       {id: "kimi-k2-thinking", name: "kimi-k2-thinking"},
       {id: "kimi-k2-thinking-turbo", name: "kimi-k2-thinking-turbo"},
       {id: "kimi-latest", name: "kimi-latest (Auto Tier)"},
+      {id: "kimi-for-coding", name: "kimi-for-coding (Kimi Coding Plan)"},
       {id: "moonshot-v1-128k", name: "moonshot-v1-128k"},
       {id: "moonshot-v1-32k", name: "moonshot-v1-32k"},
       {id: "moonshot-v1-8k", name: "moonshot-v1-8k"},
