@@ -56,7 +56,7 @@ func (t *loadSkillBuiltin) GetName() string {
 }
 
 func (t *loadSkillBuiltin) GetDescription() string {
-	return "Load the full instructions for one available skill, and optionally one specific reference file from that skill. Use this after consulting the skills catalog when a skill appears relevant."
+	return "Load the full instructions for one available skill, and optionally one specific reference file from that skill. For website-type skills, load automatically when the target URL/domain matches and reuse stored element positions from the skill content."
 }
 
 func (t *loadSkillBuiltin) GetInputSchema() interface{} {

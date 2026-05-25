@@ -407,6 +407,7 @@ func GetSkillsCatalog(owner string, skillNames []string) (string, error) {
 	}
 
 	var items []string
+	var websiteItems []string
 	for _, s := range skills {
 		if s == nil || s.State != "Active" {
 			continue
@@ -432,20 +433,80 @@ func GetSkillsCatalog(owner string, skillNames []string) (string, error) {
 		}
 
 		items = append(items, strings.Join(parts, " | "))
+		if s.Type == "website" {
+			if websiteSummary := formatWebsiteCatalogSummary(s); websiteSummary != "" {
+				websiteItems = append(websiteItems, websiteSummary)
+			}
+		}
 	}
 
 	if len(items) == 0 {
 		return "", nil
 	}
 
-	return "## Skills Usage Rules\n" +
+	catalog := "## Skills Usage Rules\n" +
 		"- If the user explicitly mentions a skill by name, you MUST call load_skill for that skill before answering.\n" +
 		"- If the user's request is clearly about a listed skill's domain, you MUST load that skill before giving procedural, policy, workflow, or step-by-step guidance.\n" +
+		"- For website-type skills, match by site/domain/homepage/URL, even when the user does not mention the skill name. Before operating on a matching site, load the website skill automatically.\n" +
+		"- After loading a website skill, reuse stored element docX/docY/selectors from the Elements section when a similar control appears on the current page. Fall back to normal browser_use_open/snapshot/click/type when memory is missing, stale, or the click fails.\n" +
 		"- Do not answer from general memory when a relevant listed skill exists but has not been loaded.\n" +
 		"- If the user asks what skills are available, answer from the catalog below instead of giving a generic summary of your broad abilities.\n\n" +
 		"## Skills Catalog\n" +
 		"You have access to the following skills. Do not assume all details are already loaded. If a skill looks relevant, call the load_skill tool to load its full instructions before relying on it.\n\n" +
-		strings.Join(items, "\n"), nil
+		strings.Join(items, "\n")
+
+	if len(websiteItems) > 0 {
+		catalog += "\n\n## Website Knowledge Reuse\nAuto-load matching website skills and reuse stored element positions before taking a fresh snapshot.\n\n" + strings.Join(websiteItems, "\n\n")
+	}
+
+	return catalog, nil
+}
+
+func formatWebsiteCatalogSummary(s *Skill) string {
+	if s == nil || strings.TrimSpace(s.Metadata) == "" {
+		return ""
+	}
+	playbook, err := ParseWebsitePlaybook(s.Metadata)
+	if err != nil || playbook.SiteId == "" || len(playbook.Elements) == 0 {
+		return ""
+	}
+	lines := []string{
+		fmt.Sprintf("### Website site memory: %s", playbook.SiteId),
+		fmt.Sprintf("- Match: `%s` / `%s`", playbook.SiteId, playbook.BaseUrl),
+		fmt.Sprintf("- Stored elements: %d; known pages: %d", len(playbook.Elements), len(playbook.Pages)),
+	}
+	pageElements := map[string][]string{}
+	for _, elementName := range sortedWebsiteElementNames(playbook.Elements) {
+		element := playbook.Elements[elementName]
+		page := strings.TrimSpace(element.Page)
+		if page == "" {
+			page = "unknown_page"
+		}
+		summary := "`" + elementName + "`"
+		if len(element.Selectors) > 0 {
+			summary += " selectors: " + strings.Join(element.Selectors, ", ")
+		}
+		if element.Position != nil {
+			summary += fmt.Sprintf(" position: x=%.0f y=%.0f", element.Position.X, element.Position.Y)
+			if element.Position.DocumentX != 0 || element.Position.DocumentY != 0 {
+				summary += fmt.Sprintf(" docX=%.0f docY=%.0f", element.Position.DocumentX, element.Position.DocumentY)
+			}
+		}
+		pageElements[page] = append(pageElements[page], summary)
+	}
+	pages := make([]string, 0, len(pageElements))
+	for page := range pageElements {
+		pages = append(pages, page)
+	}
+	sort.Strings(pages)
+	for _, page := range pages {
+		lines = append(lines, "- Page `"+page+"`:")
+		for _, item := range pageElements[page] {
+			lines = append(lines, "  - "+item)
+		}
+	}
+	lines = append(lines, "- Usage: reuse docX/docY for matching elements; fall back to normal browser steps when stale.")
+	return strings.Join(lines, "\n")
 }
 
 func LoadSkillPromptContent(owner string, skillName string, referenceName string) (string, error) {
@@ -462,6 +523,16 @@ func LoadSkillPromptContent(owner string, skillName string, referenceName string
 
 	buf := strings.TrimSpace(s.Content)
 	if referenceName == "" {
+		if s.Type == "website" {
+			execGuide := buildWebsiteSkillExecutionGuide(s)
+			if execGuide != "" {
+				if buf != "" {
+					buf += "\n\n"
+				}
+				buf += execGuide
+			}
+		}
+
 		if len(s.References) > 0 {
 			refNames := make([]string, 0, len(s.References))
 			for _, ref := range s.References {
@@ -494,6 +565,25 @@ func LoadSkillPromptContent(owner string, skillName string, referenceName string
 	}
 
 	return "", fmt.Errorf("reference not found: %s", referenceName)
+}
+
+func buildWebsiteSkillExecutionGuide(s *Skill) string {
+	if s == nil || strings.TrimSpace(s.Metadata) == "" {
+		return ""
+	}
+
+	playbook, err := ParseWebsitePlaybook(s.Metadata)
+	if err != nil {
+		return ""
+	}
+	if len(playbook.Elements) == 0 {
+		return ""
+	}
+
+	return "## Execution\n" +
+		"1. Match the current URL to Pages/Elements and reuse stored docX/docY or selectors for similar controls.\n" +
+		"2. Do not replay a fixed workflow; pick only elements that fit the current request.\n" +
+		"3. Fall back to browser_use_open/snapshot/click/type when memory is stale, then save a fresh trace to refresh this memory.\n"
 }
 
 type skillLoader struct{}
