@@ -126,7 +126,7 @@ class WebsiteKnowledgeEditPage extends React.Component {
             {title: i18next.t("websiteKnowledge:Element role"), dataIndex: "role", width: 90},
             {title: i18next.t("websiteKnowledge:Page"), dataIndex: "page", width: 140},
             {title: i18next.t("general:Label"), dataIndex: "label", width: 140, render: (text, record) => text || record.text || "-"},
-            {title: i18next.t("websiteKnowledge:Position"), dataIndex: "position", width: 180, render: formatPosition},
+            {title: i18next.t("form:Position"), dataIndex: "position", width: 180, render: formatPosition},
             {title: i18next.t("websiteKnowledge:Param variable"), dataIndex: "paramVar", width: 140, render: (text, record) => text ? <Tag>{record.paramHint ? `${text}=${record.paramHint}` : text}</Tag> : "-"},
             {title: i18next.t("websiteKnowledge:Selectors"), dataIndex: "selectors", render: selectors => (selectors || []).slice(0, 2).map(selector => <Tag key={selector}>{selector}</Tag>)},
           ]} dataSource={elementRows} pagination={false} bordered size="small" scroll={{x: "max-content"}} />
