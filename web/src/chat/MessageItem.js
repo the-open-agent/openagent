@@ -16,7 +16,7 @@ import React, {useEffect, useMemo, useState} from "react";
 import {useHistory} from "react-router-dom";
 import {Bubble} from "@ant-design/x";
 import {Alert, Avatar, Button, Collapse, Space} from "antd";
-import {FileTextOutlined, GlobalOutlined, InfoCircleOutlined} from "@ant-design/icons";
+import {BookOutlined, FileTextOutlined, GlobalOutlined, InfoCircleOutlined} from "@ant-design/icons";
 import moment from "moment";
 import * as Setting from "../Setting";
 import i18next from "i18next";
@@ -28,8 +28,20 @@ import {MessageCarrier} from "./MessageCarrier";
 import SearchSourcesDrawer from "./SearchSourcesDrawer";
 import KnowledgeSourcesDrawer from "./KnowledgeSourcesDrawer";
 import ToolCallSection from "./ToolCallSection";
+import SaveWebsiteKnowledgeModal from "./SaveWebsiteKnowledgeModal";
 
 const {Panel} = Collapse;
+
+const canSaveWebsiteKnowledge = (message) => {
+  if (!message?.toolCalls?.length) {
+    return false;
+  }
+  const browserUseCalls = message.toolCalls.filter(tc => tc.name?.startsWith("browser_use_"));
+  if (browserUseCalls.length === 0) {
+    return false;
+  }
+  return browserUseCalls.every(tc => tc.content);
+};
 
 const MessageItem = ({
   message,
@@ -56,6 +68,7 @@ const MessageItem = ({
   const [reasonExpanded, setReasonExpanded] = useState(["reason"]);
   const [searchDrawerVisible, setSearchDrawerVisible] = useState(false);
   const [knowledgeDrawerVisible, setKnowledgeDrawerVisible] = useState(false);
+  const [saveWebsiteKnowledgeVisible, setSaveWebsiteKnowledgeVisible] = useState(false);
   const themeColor = Setting.getThemeColor();
 
   const mergedSearchResults = useMemo(() => {
@@ -433,6 +446,22 @@ const MessageItem = ({
                       {message.vectorScores.length} {i18next.t("chat:Knowledge sources")}
                     </Button>
                   )}
+                  {canSaveWebsiteKnowledge(message) && (
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<BookOutlined />}
+                      onClick={() => setSaveWebsiteKnowledgeVisible(true)}
+                      style={{
+                        fontSize: "12px",
+                        color: themeColor,
+                        padding: "0 8px",
+                        height: "24px",
+                      }}
+                    >
+                      {i18next.t("websiteKnowledge:Save to website memory")}
+                    </Button>
+                  )}
                 </div>
               )}
               {message.author === "AI" && isLastMessage && (
@@ -503,6 +532,18 @@ const MessageItem = ({
         onClose={() => setKnowledgeDrawerVisible(false)}
         vectorScores={message.vectorScores}
         account={account}
+      />
+
+      <SaveWebsiteKnowledgeModal
+        open={saveWebsiteKnowledgeVisible}
+        message={message}
+        onClose={() => setSaveWebsiteKnowledgeVisible(false)}
+        onSaved={(data) => {
+          const skill = data?.skill || data;
+          if (skill?.name) {
+            history.push(`/website-knowledges/${skill.name}`);
+          }
+        }}
       />
     </>
   );
