@@ -198,6 +198,17 @@ func TestTool(t *Tool, lang string) (string, error) {
 	return testToolWithLoader(t, lang, getTool)
 }
 
+func ExecuteBuiltinTool(owner string, toolName string, builtinName string, arguments map[string]interface{}, lang string) (string, bool, error) {
+	t, err := GetToolByOwnerAndName(owner, toolName)
+	if err != nil {
+		return "", false, err
+	}
+	if t == nil {
+		return "", false, fmt.Errorf("tool not found: %s/%s", owner, toolName)
+	}
+	return executeBuiltinToolWithConfig(t, builtinName, arguments, lang)
+}
+
 func testToolWithLoader(t *Tool, lang string, loadTool func(owner string, name string) (*Tool, error)) (string, error) {
 	if t.ClientSecret == "***" {
 		if strings.TrimSpace(t.Owner) == "" || strings.TrimSpace(t.Name) == "" {
@@ -230,32 +241,43 @@ func testToolWithLoader(t *Tool, lang string, loadTool func(owner string, name s
 		payload.Arguments = map[string]interface{}{}
 	}
 
+	output, isError, err := executeBuiltinToolWithConfig(t, payload.Tool, payload.Arguments, lang)
+	if err != nil {
+		return "", err
+	}
+	if isError {
+		return "", fmt.Errorf("%s", output)
+	}
+	return output, nil
+}
+
+func executeBuiltinToolWithConfig(t *Tool, builtinName string, arguments map[string]interface{}, lang string) (string, bool, error) {
 	owner := strings.TrimSpace(t.Owner)
 	if owner == "" {
-		return "", fmt.Errorf("tool owner is required")
+		return "", false, fmt.Errorf("tool owner is required")
 	}
 
 	tp, err := tool.New(getToolConfig(t), lang)
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 
 	var foundTool interface {
 		Execute(ctx context.Context, arguments map[string]interface{}) (*protocol.CallToolResult, error)
 	}
 	for _, bt := range tp.BuiltinTools() {
-		if bt.GetName() == payload.Tool {
+		if bt.GetName() == builtinName {
 			foundTool = wrapSnapshotBuiltin(owner, bt)
 			break
 		}
 	}
 	if foundTool == nil {
-		return "", fmt.Errorf("tool not found: %s", payload.Tool)
+		return "", false, fmt.Errorf("tool not found: %s", builtinName)
 	}
 
-	result, err := foundTool.Execute(context.Background(), payload.Arguments)
+	result, err := foundTool.Execute(context.Background(), arguments)
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 
 	var texts []string
@@ -265,8 +287,5 @@ func testToolWithLoader(t *Tool, lang string, loadTool func(owner string, name s
 		}
 	}
 	output := strings.Join(texts, "\n")
-	if result.IsError {
-		return "", fmt.Errorf("%s", output)
-	}
-	return output, nil
+	return output, result.IsError, nil
 }

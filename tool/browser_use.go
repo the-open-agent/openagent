@@ -79,6 +79,7 @@ func (p *BrowserUseTool) BuiltinTools() []BuiltinTool {
 		&browserUseSnapshotBuiltin{provider: p},
 		&browserUseClickBuiltin{provider: p},
 		&browserUseTypeBuiltin{provider: p},
+		&browserUseRunStepsBuiltin{provider: p},
 		&browserUsePressBuiltin{provider: p},
 		&browserUsePlayMediaBuiltin{provider: p},
 		&browserUseTabsBuiltin{provider: p},
@@ -635,6 +636,8 @@ type browserUseElement struct {
 	Y           float64  `json:"y"`
 	Width       float64  `json:"width"`
 	Height      float64  `json:"height"`
+	DocX        float64  `json:"docX"`
+	DocY        float64  `json:"docY"`
 }
 
 type browserUseTab struct {
@@ -1000,6 +1003,8 @@ func browserUseSnapshotScript() string {
     const ref = String(index + 1);
     el.setAttribute('data-openagent-browser-use-ref', ref);
     const rect = el.getBoundingClientRect();
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
     return {
       index: index + 1,
       tag: el.tagName.toLowerCase(),
@@ -1015,7 +1020,9 @@ func browserUseSnapshotScript() string {
       x: Math.round(rect.x),
       y: Math.round(rect.y),
       width: Math.round(rect.width),
-      height: Math.round(rect.height)
+      height: Math.round(rect.height),
+      docX: Math.round(rect.left + scrollX),
+      docY: Math.round(rect.top + scrollY)
     };
   });
 })()`, browserUseMaxElements)
@@ -1097,9 +1104,9 @@ func browserUseSetTextValueScript(selector, text string, clear bool) string {
 })()`, browserUseJSONLiteral(selector), clear, browserUseJSONLiteral(text))
 }
 
-func browserUseFormatSnapshot(rawURL, title, visibleText string, elements []browserUseElement) string {
+func browserUseFormatSnapshot(rawURL, title, visibleText string, scrollX, scrollY float64, elements []browserUseElement) string {
 	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("URL: %s\nTitle: %s\n\n", rawURL, title))
+	builder.WriteString(fmt.Sprintf("URL: %s\nTitle: %s\nScroll: x=%.0f y=%.0f\n\n", rawURL, title, scrollX, scrollY))
 	if strings.TrimSpace(visibleText) != "" {
 		builder.WriteString("Visible text:\n")
 		builder.WriteString(visibleText)
@@ -1128,11 +1135,17 @@ func browserUseFormatSnapshot(rawURL, title, visibleText string, elements []brow
 		if element.Href != "" {
 			line += fmt.Sprintf(` href=%q`, element.Href)
 		}
+		if element.Placeholder != "" {
+			line += fmt.Sprintf(` placeholder=%q`, element.Placeholder)
+		}
+		if element.AriaLabel != "" {
+			line += fmt.Sprintf(` aria-label=%q`, element.AriaLabel)
+		}
 		line += fmt.Sprintf("> %s", label)
 		if len(element.Options) > 0 {
 			line += fmt.Sprintf(" options=%q", element.Options)
 		}
-		line += fmt.Sprintf(" (x=%.0f y=%.0f w=%.0f h=%.0f)", element.X, element.Y, element.Width, element.Height)
+		line += fmt.Sprintf(" (x=%.0f y=%.0f w=%.0f h=%.0f docX=%.0f docY=%.0f)", element.X, element.Y, element.Width, element.Height, element.DocX, element.DocY)
 		builder.WriteString(line)
 		builder.WriteString("\n")
 	}
@@ -1142,16 +1155,18 @@ func browserUseFormatSnapshot(rawURL, title, visibleText string, elements []brow
 func browserUseSnapshot(provider *BrowserUseTool) (string, error) {
 	var elements []browserUseElement
 	var title, rawURL, visibleText string
+	var scroll browserUseViewportPoint
 	err := provider.run(
 		chromedp.Title(&title),
 		chromedp.Location(&rawURL),
 		chromedp.Evaluate(browserUseVisibleTextScript(), &visibleText),
+		chromedp.Evaluate(`({x: window.scrollX, y: window.scrollY})`, &scroll),
 		chromedp.Evaluate(browserUseSnapshotScript(), &elements),
 	)
 	if err != nil {
 		return "", err
 	}
-	return browserUseFormatSnapshot(rawURL, title, visibleText, elements), nil
+	return browserUseFormatSnapshot(rawURL, title, visibleText, scroll.X, scroll.Y, elements), nil
 }
 
 // ---------------------------------------------------------------------------
@@ -1163,7 +1178,7 @@ type browserUseOpenBuiltin struct{ provider *BrowserUseTool }
 func (b *browserUseOpenBuiltin) GetName() string { return "browser_use_open" }
 
 func (b *browserUseOpenBuiltin) GetDescription() string {
-	return "Open or reuse the managed visible browser and navigate the Browser Use controlled tab to a URL. In extension mode, OpenAgent UI tabs are protected and Browser Use uses a separate controlled tab. Use this for real browser tasks only; do not claim a page was opened unless this tool succeeds. The browser keeps tabs, cookies, and media state across related user requests. This tool returns a fresh snapshot plus current browser state; use the returned element indexes only until the next page-changing action."
+	return "Open or reuse the managed visible browser and navigate the Browser Use controlled tab to a URL. If a website memory matches this URL/domain, load that skill and reuse stored element docX/docY when appropriate. Returns a snapshot by default; set include_snapshot=false to skip element scanning when coordinates are already known."
 }
 
 func (b *browserUseOpenBuiltin) GetInputSchema() interface{} {
@@ -1174,6 +1189,11 @@ func (b *browserUseOpenBuiltin) GetInputSchema() interface{} {
 			"url": map[string]interface{}{
 				"type":        "string",
 				"description": "The URL to open in the visible browser.",
+			},
+			"include_snapshot": map[string]interface{}{
+				"type":        "boolean",
+				"description": "Whether to scan interactive elements after navigation. Default true for standalone open; use false with website memory positions.",
+				"default":     true,
 			},
 		},
 		"required": []string{"url"},
@@ -1190,11 +1210,22 @@ func (b *browserUseOpenBuiltin) Execute(ctx context.Context, arguments map[strin
 	if err := b.provider.run(chromedp.Navigate(rawURL), chromedp.WaitReady("body", chromedp.ByQuery)); err != nil {
 		return browserUseErrorWithState(b.provider, fmt.Sprintf("browser use open failed for %s: %s", rawURL, err.Error())), nil
 	}
-	snapshot, err := browserUseSnapshot(b.provider)
-	if err != nil {
-		return browserUseErrorWithState(b.provider, fmt.Sprintf("browser use snapshot failed after opening %s: %s", rawURL, err.Error())), nil
+	includeSnapshot := true
+	if value, ok := arguments["include_snapshot"].(bool); ok {
+		includeSnapshot = value
 	}
-	return browserUseTextWithState(b.provider, snapshot), nil
+	if includeSnapshot {
+		snapshot, err := browserUseSnapshot(b.provider)
+		if err != nil {
+			return browserUseErrorWithState(b.provider, fmt.Sprintf("browser use snapshot failed after opening %s: %s", rawURL, err.Error())), nil
+		}
+		return browserUseTextWithState(b.provider, snapshot), nil
+	}
+	summary, err := browserUseMinimalOpenSummary(b.provider)
+	if err != nil {
+		return browserUseErrorWithState(b.provider, fmt.Sprintf("browser use open failed for %s: %s", rawURL, err.Error())), nil
+	}
+	return browserUseTextWithState(b.provider, summary), nil
 }
 
 // ---------------------------------------------------------------------------
@@ -1206,7 +1237,7 @@ type browserUseSnapshotBuiltin struct{ provider *BrowserUseTool }
 func (b *browserUseSnapshotBuiltin) GetName() string { return "browser_use_snapshot" }
 
 func (b *browserUseSnapshotBuiltin) GetDescription() string {
-	return "Read the Browser Use controlled tab in the existing managed browser and return visible text, indexed interactive elements, URL, title, controlled tab index, tab count, and media state. Treat this as the source of truth before acting. Use it at the start of a follow-up request and after every navigation, click, type, or key press before reusing element indexes. Do not invent page contents or completed browser actions that are not visible in this tool result."
+	return "Read the Browser Use controlled tab in the existing managed browser and return visible text, indexed interactive elements, URL, title, controlled tab index, tab count, and media state. Use this as the fallback when website-memory browser_use_run_steps fails, the page changed, or no matching memory exists."
 }
 
 func (b *browserUseSnapshotBuiltin) GetInputSchema() interface{} {
@@ -1234,67 +1265,41 @@ type browserUseClickBuiltin struct{ provider *BrowserUseTool }
 func (b *browserUseClickBuiltin) GetName() string { return "browser_use_click" }
 
 func (b *browserUseClickBuiltin) GetDescription() string {
-	return "Click an indexed element from the latest browser_use_snapshot, or a CSS selector when no index is available. The click may navigate, open a new tab, or change the DOM, so old indexes must be considered stale afterward. This tool reports the current browser state after the click; call browser_use_snapshot before the next indexed action."
+	return "Click by CSS selector, website-memory docX/docY (or x/y), or snapshot index. For matching website memory, prefer stored docX/docY from the loaded skill when the control matches; fall back to snapshot when memory is stale or the click fails."
 }
 
 func (b *browserUseClickBuiltin) GetInputSchema() interface{} {
+	properties := browserUsePositionSchemaProperties()
+	properties["index"] = map[string]interface{}{
+		"type":        "integer",
+		"description": "Element index from the latest browser_use_snapshot.",
+	}
+	properties["selector"] = map[string]interface{}{
+		"type":        "string",
+		"description": "Optional CSS selector. Preferred when stable; otherwise use docX/docY from website memory.",
+	}
 	return map[string]interface{}{
 		"type":                 "object",
 		"additionalProperties": false,
-		"properties": map[string]interface{}{
-			"index": map[string]interface{}{
-				"type":        "integer",
-				"description": "Element index from the latest browser_use_snapshot.",
-			},
-			"selector": map[string]interface{}{
-				"type":        "string",
-				"description": "Optional CSS selector. Use only when an index is not available.",
-			},
-		},
+		"properties":           properties,
 	}
 }
 
 func (b *browserUseClickBuiltin) Execute(ctx context.Context, arguments map[string]interface{}) (*protocol.CallToolResult, error) {
-	selector, err := browserUseSelector(arguments)
+	target, err := browserUseResolveTarget(arguments)
 	if err != nil {
 		return browserToolError(err.Error()), nil
 	}
-	switchedTab := false
-	err = b.provider.runSession(func(session *browserUseSession) error {
-		var previousURL string
-		beforeTargets, targetErr := session.pageTargetsLocked()
-		if targetErr != nil {
-			return targetErr
-		}
-		before := map[target.ID]bool{}
-		for _, item := range beforeTargets {
-			before[item.TargetID] = true
-			if item.TargetID == session.currentTargetIDLocked() {
-				previousURL = item.URL
-			}
-		}
-
-		timeoutCtx, cancel := context.WithTimeout(session.ctx, browserUseDefaultTimeout)
-		defer cancel()
-		if runErr := chromedp.Run(timeoutCtx,
-			chromedp.ScrollIntoView(selector, chromedp.ByQuery),
-			chromedp.Click(selector, chromedp.ByQuery),
-			chromedp.Sleep(800*time.Millisecond),
-		); runErr != nil {
-			return runErr
-		}
-
-		var switchErr error
-		switchedTab, switchErr = session.switchToNewTargetLocked(before, previousURL)
-		return switchErr
+	switchedTab, err := browserUseClickWithTabSwitch(b.provider, func(session *browserUseSession) error {
+		return browserUsePerformClick(session, target)
 	})
 	if err != nil {
-		return browserUseErrorWithState(b.provider, fmt.Sprintf("browser use click failed for %s: %s", selector, err.Error())), nil
+		return browserUseErrorWithState(b.provider, fmt.Sprintf("browser use click failed for %s: %s", browserUseTargetDescription(target), err.Error())), nil
 	}
 	if switchedTab {
-		return browserUseTextWithState(b.provider, "Clicked and switched to the new tab. Call browser_use_snapshot before the next indexed action."), nil
+		return browserUseTextWithState(b.provider, "Clicked and switched to the new tab."), nil
 	}
-	return browserUseTextWithState(b.provider, "Clicked. Call browser_use_snapshot before the next indexed action."), nil
+	return browserUseTextWithState(b.provider, "Clicked."), nil
 }
 
 // ---------------------------------------------------------------------------
@@ -1306,38 +1311,38 @@ type browserUseTypeBuiltin struct{ provider *BrowserUseTool }
 func (b *browserUseTypeBuiltin) GetName() string { return "browser_use_type" }
 
 func (b *browserUseTypeBuiltin) GetDescription() string {
-	return "Type text into an indexed input-like element, select dropdown, or web code editor from the latest browser_use_snapshot, or a CSS selector when no index is available. For select elements, pass one of the option labels or values shown in the snapshot as text. Set clear=true to replace the focused field or editor content. This tool uses real focus, select-all, delete, and text insertion so it should be preferred over repeated key presses for multi-line text. Typing can open suggestions or change the DOM, so verify with browser_use_snapshot before relying on indexes or claiming the input was accepted."
+	return "Type into an element by CSS selector, website-memory docX/docY (or x/y), or snapshot index. For matching website memory, prefer stored docX/docY from the loaded skill when the control matches; fall back to snapshot when memory is stale or typing fails."
 }
 
 func (b *browserUseTypeBuiltin) GetInputSchema() interface{} {
+	properties := browserUsePositionSchemaProperties()
+	properties["index"] = map[string]interface{}{
+		"type":        "integer",
+		"description": "Element index from the latest browser_use_snapshot.",
+	}
+	properties["selector"] = map[string]interface{}{
+		"type":        "string",
+		"description": "Optional CSS selector. Preferred when stable; otherwise use docX/docY from website memory.",
+	}
+	properties["text"] = map[string]interface{}{
+		"type":        "string",
+		"description": "Text to type.",
+	}
+	properties["clear"] = map[string]interface{}{
+		"type":        "boolean",
+		"description": "Whether to clear the current field value before typing.",
+		"default":     true,
+	}
 	return map[string]interface{}{
 		"type":                 "object",
 		"additionalProperties": false,
-		"properties": map[string]interface{}{
-			"index": map[string]interface{}{
-				"type":        "integer",
-				"description": "Element index from the latest browser_use_snapshot.",
-			},
-			"selector": map[string]interface{}{
-				"type":        "string",
-				"description": "Optional CSS selector. Use only when an index is not available.",
-			},
-			"text": map[string]interface{}{
-				"type":        "string",
-				"description": "Text to type.",
-			},
-			"clear": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether to clear the current field value before typing.",
-				"default":     true,
-			},
-		},
-		"required": []string{"text"},
+		"properties":           properties,
+		"required":             []string{"text"},
 	}
 }
 
 func (b *browserUseTypeBuiltin) Execute(ctx context.Context, arguments map[string]interface{}) (*protocol.CallToolResult, error) {
-	selector, err := browserUseSelector(arguments)
+	target, err := browserUseResolveTarget(arguments)
 	if err != nil {
 		return browserToolError(err.Error()), nil
 	}
@@ -1350,52 +1355,12 @@ func (b *browserUseTypeBuiltin) Execute(ctx context.Context, arguments map[strin
 		clear = value
 	}
 
-	actions := []chromedp.Action{
-		chromedp.ScrollIntoView(selector, chromedp.ByQuery),
-		chromedp.Click(selector, chromedp.ByQuery),
-		chromedp.Sleep(100 * time.Millisecond),
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			var tag string
-			if err := chromedp.Evaluate(browserUseElementTagScript(selector), &tag).Do(ctx); err != nil {
-				return err
-			}
-			if tag == "select" {
-				var result string
-				if err := chromedp.Evaluate(browserUseSelectOptionScript(selector, text), &result).Do(ctx); err != nil {
-					return err
-				}
-				if strings.HasPrefix(result, "select option not found") {
-					return fmt.Errorf("%s", result)
-				}
-				return nil
-			}
-			var setValueResult string
-			if err := chromedp.Evaluate(browserUseSetTextValueScript(selector, text, clear), &setValueResult).Do(ctx); err != nil {
-				return err
-			}
-			if setValueResult != "fallback" {
-				if strings.HasPrefix(setValueResult, "element not found") {
-					return fmt.Errorf("%s", setValueResult)
-				}
-				return nil
-			}
-			if clear {
-				if err := chromedp.KeyEvent("a", chromedp.KeyModifiers(browserUseSelectAllModifier())).Do(ctx); err != nil {
-					return err
-				}
-				if err := chromedp.KeyEvent(kb.Backspace).Do(ctx); err != nil {
-					return err
-				}
-			}
-			return cdpinput.InsertText(text).Do(ctx)
-		}),
-		chromedp.Sleep(300 * time.Millisecond),
+	if err = b.provider.runSession(func(session *browserUseSession) error {
+		return browserUsePerformType(session, target, text, clear)
+	}); err != nil {
+		return browserUseErrorWithState(b.provider, fmt.Sprintf("browser use type failed for %s: %s", browserUseTargetDescription(target), err.Error())), nil
 	}
-
-	if err = b.provider.run(actions...); err != nil {
-		return browserUseErrorWithState(b.provider, fmt.Sprintf("browser use type failed for %s: %s", selector, err.Error())), nil
-	}
-	return browserUseTextWithState(b.provider, "Typed. Call browser_use_snapshot before the next indexed action or before claiming the page accepted the input."), nil
+	return browserUseTextWithState(b.provider, "Typed."), nil
 }
 
 // ---------------------------------------------------------------------------

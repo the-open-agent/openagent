@@ -94,6 +94,8 @@ type browserUseChromeExtSnapshotResult struct {
 	Title       string                 `json:"title"`
 	VisibleText string                 `json:"visibleText"`
 	MediaState  string                 `json:"mediaState"`
+	ScrollX     float64                `json:"scrollX"`
+	ScrollY     float64                `json:"scrollY"`
 	Elements    []browserUseElement    `json:"elements"`
 }
 
@@ -386,7 +388,7 @@ func browserUseChromeExtSnapshot(ctx context.Context) (string, error) {
 	if snapshot.Title == "" {
 		snapshot.Title = snapshot.Tab.Title
 	}
-	return browserUseFormatSnapshot(snapshot.URL, snapshot.Title, snapshot.VisibleText, snapshot.Elements), nil
+	return browserUseFormatSnapshot(snapshot.URL, snapshot.Title, snapshot.VisibleText, snapshot.ScrollX, snapshot.ScrollY, snapshot.Elements), nil
 }
 
 func browserUseChromeExtCurrentState(ctx context.Context) (string, error) {
