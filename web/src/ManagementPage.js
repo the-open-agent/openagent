@@ -20,6 +20,7 @@ import {
   ApiOutlined,
   AppstoreOutlined,
   BarsOutlined,
+  BookOutlined,
   BulbOutlined,
   CommentOutlined,
   DashboardOutlined,
@@ -70,6 +71,8 @@ import PipeListPage from "./PipeListPage";
 import PipeEditPage from "./PipeEditPage";
 import SkillListPage from "./SkillListPage";
 import SkillEditPage from "./SkillEditPage";
+import WebsiteKnowledgeListPage from "./WebsiteKnowledgeListPage";
+import WebsiteKnowledgeEditPage from "./WebsiteKnowledgeEditPage";
 import ToolListPage from "./ToolListPage";
 import ToolEditPage from "./ToolEditPage";
 import ServerListPage from "./ServerListPage";
@@ -108,7 +111,7 @@ const {Header, Footer, Content, Sider} = Layout;
 function getMenuParentKey(uri) {
   if (!uri) {return null;}
   if (uri.includes("/chats") || uri.includes("/messages") || uri.includes("/stores")) {return "/basic";}
-  if (uri.includes("/providers") || uri.includes("/pipes") || uri.includes("/tools") || uri.includes("/servers")) {return "/connectors";}
+  if (uri.includes("/providers") || uri.includes("/pipes") || uri.includes("/skills") || uri.includes("/website-knowledges") || uri.includes("/tools") || uri.includes("/servers")) {return "/connectors";}
   if (uri.includes("/files") || uri.includes("/vectors") || uri.includes("/resources")) {return "/knowledge-base";}
   if (uri.includes("/tasks") || uri.includes("/scales") || uri.includes("/forms")) {return "/multimedia";}
   if (uri.includes("/sessions") || uri.includes("/records") || uri.includes("/snapshots")) {return "/logs";}
@@ -438,6 +441,7 @@ function ManagementPage(props) {
         Setting.getItem(<Link to="/providers">{i18next.t("general:Providers")}</Link>, "/providers", <ThunderboltOutlined />),
         Setting.getItem(<Link to="/pipes">{i18next.t("general:Pipes")}</Link>, "/pipes", <MessageOutlined />),
         Setting.getItem(<Link to="/skills">{i18next.t("general:Skills")}</Link>, "/skills", <RocketOutlined />),
+        Setting.getItem(<Link to="/website-knowledges">{i18next.t("websiteKnowledge:Website Knowledge")}</Link>, "/website-knowledges", <BookOutlined />),
         Setting.getItem(<Link to="/tools">{i18next.t("general:Tools")}</Link>, "/tools", <ToolOutlined />),
         Setting.getItem(<Link to="/servers">{i18next.t("general:MCP Servers")}</Link>, "/servers", <ApiOutlined />),
       ]));
@@ -544,6 +548,8 @@ function ManagementPage(props) {
         <Route exact path="/pipes/:pipeName" render={(props) => renderSigninIfNotSignedIn(<PipeEditPage account={account} {...props} />)} />
         <Route exact path="/skills" render={(props) => renderSigninIfNotSignedIn(<SkillListPage account={account} {...props} />)} />
         <Route exact path="/skills/:skillName" render={(props) => renderSigninIfNotSignedIn(<SkillEditPage account={account} {...props} />)} />
+        <Route exact path="/website-knowledges" render={(props) => renderSigninIfNotSignedIn(<WebsiteKnowledgeListPage account={account} {...props} />)} />
+        <Route exact path="/website-knowledges/:skillName" render={(props) => renderSigninIfNotSignedIn(<WebsiteKnowledgeEditPage account={account} {...props} />)} />
         <Route exact path="/tools" render={(props) => renderSigninIfNotSignedIn(<ToolListPage account={account} {...props} />)} />
         <Route exact path="/tools/:toolName" render={(props) => renderSigninIfNotSignedIn(<ToolEditPage account={account} {...props} />)} />
         <Route exact path="/servers" render={(props) => renderSigninIfNotSignedIn(<ServerListPage account={account} {...props} />)} />
