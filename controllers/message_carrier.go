@@ -112,6 +112,8 @@ func isReasonModel(typ string) bool {
 		return true
 	} else if strings.Contains(typ, "reasoner") {
 		return true
+	} else if strings.Contains(typ, "kimi-for-coding") {
+		return true
 	}
 	return false
 }

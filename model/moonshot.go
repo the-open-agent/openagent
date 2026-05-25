@@ -15,9 +15,11 @@
 package model
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/the-open-agent/openagent/i18n"
@@ -29,6 +31,45 @@ const (
 	kimiCodingUserAgent = "KimiCLI/1.44.0"
 )
 
+// sseFixReadCloser fixes the SSE format from kimi-for-coding API which sends
+// "data:{...}" (no space after colon) instead of standard "data: {...}".
+// go-openai's stream reader strictly expects "data: " prefix.
+type sseFixReadCloser struct {
+	pr io.ReadCloser
+}
+
+func newSSEFixReadCloser(rc io.ReadCloser) io.ReadCloser {
+	pr, pw := io.Pipe()
+	go func() {
+		defer rc.Close()
+		scanner := bufio.NewScanner(rc)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if strings.HasPrefix(line, "data:") && !strings.HasPrefix(line, "data: ") {
+				line = "data: " + line[5:]
+			}
+			if _, err := fmt.Fprintln(pw, line); err != nil {
+				pw.CloseWithError(err)
+				return
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			pw.CloseWithError(err)
+		} else {
+			pw.Close()
+		}
+	}()
+	return &sseFixReadCloser{pr: pr}
+}
+
+func (r *sseFixReadCloser) Read(p []byte) (int, error) {
+	return r.pr.Read(p)
+}
+
+func (r *sseFixReadCloser) Close() error {
+	return r.pr.Close()
+}
+
 // kimiCodingTransport wraps an underlying RoundTripper and overrides the
 // User-Agent header to "KimiCLI/1.44.0". The Kimi coding API requires this
 // UA string; without it the endpoint rejects non-code-related requests.
@@ -39,7 +80,12 @@ type kimiCodingTransport struct {
 func (t *kimiCodingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req = req.Clone(req.Context())
 	req.Header.Set("User-Agent", kimiCodingUserAgent)
-	return t.base.RoundTrip(req)
+	resp, err := t.base.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+	resp.Body = newSSEFixReadCloser(resp.Body)
+	return resp, nil
 }
 
 type MoonshotModelProvider struct {

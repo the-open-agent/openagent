@@ -119,6 +119,31 @@ func getOpenAiModelType(model string) string {
 	return "Unknown"
 }
 
+// mergeAdjacentAssistantToolCalls merges consecutive assistant messages that each
+// carry a single tool_call into one assistant message carrying all tool_calls.
+// Kimi's coding endpoint requires all tool_calls from the same turn to live in
+// a single assistant message, with their tool responses immediately following.
+func mergeAdjacentAssistantToolCalls(msgs []openai.ChatCompletionMessage) []openai.ChatCompletionMessage {
+	if len(msgs) == 0 {
+		return msgs
+	}
+	res := make([]openai.ChatCompletionMessage, 0, len(msgs))
+	for _, m := range msgs {
+		if m.Role == openai.ChatMessageRoleAssistant && len(m.ToolCalls) > 0 {
+			last := len(res) - 1
+			if last >= 0 && res[last].Role == openai.ChatMessageRoleAssistant && len(res[last].ToolCalls) > 0 {
+				res[last].ToolCalls = append(res[last].ToolCalls, m.ToolCalls...)
+				if m.ReasoningContent != "" {
+					res[last].ReasoningContent = m.ReasoningContent
+				}
+				continue
+			}
+		}
+		res = append(res, m)
+	}
+	return res
+}
+
 func OpenaiRawMessagesToMessages(messages []*RawMessage) []openai.ChatCompletionMessage {
 	res := []openai.ChatCompletionMessage{}
 	for _, message := range messages {
@@ -155,6 +180,7 @@ func OpenaiRawMessagesToMessages(messages []*RawMessage) []openai.ChatCompletion
 
 		res = append(res, item)
 	}
+	res = mergeAdjacentAssistantToolCalls(res)
 	return res
 }
 
