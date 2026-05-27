@@ -94,6 +94,17 @@ func TestProcessFiles(t *testing.T) {
 	t.Log("All files processed")
 }
 
+func TestGetParsedTextFromUrl_UnsupportedType(t *testing.T) {
+	_, err := GetParsedTextFromUrl("dummy.txt", ".exe", "en")
+	if err == nil {
+		t.Fatal("expected error for unsupported file type, got nil")
+	}
+	expected := "unsupported file type: .exe"
+	if err.Error() != expected {
+		t.Fatalf("expected error %q, got %q", expected, err.Error())
+	}
+}
+
 func contains(slice []string, item string) bool {
 	for _, s := range slice {
 		if s == item {
