@@ -152,7 +152,11 @@ export function getOtherProviderInfo() {
       },
       "Writer": {
         logo: `${StaticBaseUrl}/img/social_writer.png`,
-        url: "https://writer.com/",
+        url: "https://writer.com",
+      },
+      "OpenCode": {
+        logo: `${StaticBaseUrl}/img/social_opencode.png`,
+        url: "https://opencode.ai",
       },
     },
     Embedding: {
@@ -600,6 +604,7 @@ export function getProviderTypeOptions(category) {
         {id: "Silicon Flow", name: "Silicon Flow"},
         {id: "GitHub", name: "GitHub"},
         {id: "Writer", name: "Writer"},
+        {id: "OpenCode", name: "OpenCode"},
       ]
     );
   } else if (category === "Embedding") {
@@ -1348,7 +1353,7 @@ export function getProviderAzureApiVersionOptions() {
 }
 
 export function getQuickSetupModelTypes() {
-  return ["OpenAI", "Claude", "Gemini", "DeepSeek", "Grok", "Ollama", "OpenRouter", "Mistral", "Azure", "OpenAI Compatible", "Alibaba Cloud", "Moonshot", "Silicon Flow", "Volcano Engine", "Baidu Cloud", "Amazon Bedrock"];
+  return ["OpenAI", "Claude", "Gemini", "DeepSeek", "Grok", "Ollama", "OpenRouter", "Mistral", "Azure", "OpenAI Compatible", "Alibaba Cloud", "Moonshot", "Silicon Flow", "Volcano Engine", "Baidu Cloud", "Amazon Bedrock", "OpenCode"];
 }
 
 export function getModelProviderMetadata(type) {
@@ -1369,6 +1374,7 @@ export function getModelProviderMetadata(type) {
     "Volcano Engine": {desc: "ByteDance AI platform", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "doubao-seed-2-0-pro-260215"},
     "Baidu Cloud": {desc: "ERNIE Bot models", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "ernie-5.0"},
     "Amazon Bedrock": {desc: "Claude, Llama on AWS", needsApiKey: true, needsUrl: false, needsClientId: true, needsRegion: true, defaultSubType: "claude"},
+    "OpenCode": {desc: "Delegate coding to OpenCode agent", needsApiKey: false, needsUrl: true, needsClientId: false, needsRegion: false, defaultSubType: "", urlPlaceholder: "http://localhost:4096", defaultUrl: "http://localhost:4096"},
   };
   return metadata[type] || {desc: "", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: ""};
 }

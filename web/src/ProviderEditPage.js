@@ -130,7 +130,7 @@ class ProviderEditPage extends React.Component {
   }
 
   modelCategoryShowsProviderUrlInput(type) {
-    return ["Local", "Ollama", "Azure", "Volcano Engine", "Tencent Cloud"].includes(type);
+    return ["Local", "Ollama", "Azure", "Volcano Engine", "Tencent Cloud", "OpenCode"].includes(type);
   }
 
   getRegionLabel(provider) {
@@ -436,6 +436,8 @@ class ProviderEditPage extends React.Component {
                     this.updateProviderField("subType", "gpt-4o");
                   } else if (value === "Writer") {
                     this.updateProviderField("subType", "palmyra-x5");
+                  } else if (value === "OpenCode") {
+                    this.updateProviderField("subType", "");
                   }
                 } else if (provider.category === "Embedding") {
                   if (value === "OpenAI") {
@@ -498,7 +500,7 @@ class ProviderEditPage extends React.Component {
                         virtual={false}
                         style={{flex: 1}}
                         value={provider.subType}
-                        disabled={isRemote}
+                        disabled={isRemote || provider.type === "OpenCode"}
                         onChange={(value) => {
                           this.updateProviderField("subType", value);
                         }}

@@ -47,7 +47,7 @@ func getModelProviderFromName(owner string, providerName string, lang string) (*
 	if provider.Category != "Model" {
 		return nil, nil, fmt.Errorf(i18n.Translate(lang, "object:The model provider: %s is expected to be \")Model\" category, got: \"%s\""), provider.GetId(), provider.Category)
 	}
-	if provider.ClientSecret == "" && provider.Type != "Ollama" {
+	if provider.ClientSecret == "" && provider.Type != "Ollama" && provider.Type != "OpenCode" {
 		return nil, nil, fmt.Errorf(i18n.Translate(lang, "object:The model provider: %s's client secret should not be empty"), provider.GetId())
 	}
 
