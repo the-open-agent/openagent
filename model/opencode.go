@@ -74,6 +74,14 @@ func (p *OpenCodeProvider) QueryText(question string, writer io.Writer, history 
 		return &ModelResult{}, nil
 	}
 
+	// NOTE: OpenCode is a self-contained agent that executes tools internally
+	// on the server side. It does not expose a "function calling" API where
+	// the LLM returns tool calls for the client to execute. This means
+	// OpenAgent's MCP tools cannot be mapped to OpenCode's execution model.
+	// When toolSession is non-nil, tools are silently unavailable and the
+	// LLM will produce a text-only response.
+	_ = toolSession
+
 	sessionID, err := p.createSession()
 	if err != nil {
 		return nil, fmt.Errorf("OpenCode: failed to create session at %s: %v.\n\nMake sure 'opencode serve' is running. You can change the server URL in provider settings.", p.serverUrl, err)
@@ -104,21 +112,27 @@ func (p *OpenCodeProvider) QueryText(question string, writer io.Writer, history 
 	}
 	messageText.WriteString(question)
 
-	// Open SSE stream first so it subscribes to events before any are published
+	// Shared context so SSE goroutine can be cancelled if sendMessageAsync fails
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	type sseResult struct {
 		result *ModelResult
 		err    error
 	}
 	resultCh := make(chan sseResult, 1)
+	readyCh := make(chan struct{})
 	go func() {
-		r, e := p.readSSEStream(sessionID, question, writer, flusher)
+		r, e := p.readSSEStream(ctx, sessionID, question, writer, flusher, readyCh)
 		resultCh <- sseResult{r, e}
 	}()
 
-	// Give SSE connection a moment to establish before triggering events
-	time.Sleep(100 * time.Millisecond)
+	// Wait for SSE connection to be established before sending prompt
+	<-readyCh
 
 	if err := p.sendMessageAsync(sessionID, prompt, messageText.String()); err != nil {
+		cancel()      // signal SSE goroutine to stop
+		<-resultCh    // wait for goroutine to clean up
 		return nil, err
 	}
 
@@ -131,7 +145,10 @@ func (p *OpenCodeProvider) ListModels() ([]string, error) {
 }
 
 func (p *OpenCodeProvider) createSession() (string, error) {
-	req, err := http.NewRequest("POST", p.serverUrl+"/session", bytes.NewReader([]byte("{}")))
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "POST", p.serverUrl+"/session", bytes.NewReader([]byte("{}")))
 	if err != nil {
 		return "", err
 	}
@@ -214,10 +231,15 @@ func (p *OpenCodeProvider) sendMessageAsync(sessionID string, systemPrompt strin
 		return fmt.Errorf("OpenCode: HTTP %d: %s", resp.StatusCode, string(respBody))
 	}
 
+	io.Copy(io.Discard, resp.Body)
 	return nil
 }
 
-func (p *OpenCodeProvider) readSSEStream(sessionID string, question string, writer io.Writer, flusher http.Flusher) (*ModelResult, error) {
+func (p *OpenCodeProvider) readSSEStream(ctx context.Context, sessionID string, question string, writer io.Writer, flusher http.Flusher, ready chan<- struct{}) (*ModelResult, error) {
+	// OpenCode only exposes global SSE endpoints (/event and /global/event).
+	// There is no session-scoped SSE endpoint, so we filter by sessionID
+	// client-side. This is the intended design — events include a sessionID
+	// field for this purpose.
 	req, err := http.NewRequest("GET", p.serverUrl+"/event", nil)
 	if err != nil {
 		return nil, err
@@ -227,15 +249,18 @@ func (p *OpenCodeProvider) readSSEStream(sessionID string, question string, writ
 	req.Header.Set("Accept", "text/event-stream")
 	req.Header.Set("Cache-Control", "no-cache")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1200*time.Second)
+	sseCtx, cancel := context.WithTimeout(ctx, 1200*time.Second)
 	defer cancel()
-	req = req.WithContext(ctx)
+	req = req.WithContext(sseCtx)
 
 	resp, err := p.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("OpenCode: failed to connect to SSE stream: %v", err)
 	}
 	defer resp.Body.Close()
+
+	// Signal caller that SSE connection is established
+	close(ready)
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
@@ -348,7 +373,7 @@ func (p *OpenCodeProvider) readSSEStream(sessionID string, question string, writ
 	if err := scanner.Err(); err != nil {
 		if done {
 			// already completed, ignore scanner error (likely from closing connection)
-		} else if ctx.Err() == context.DeadlineExceeded {
+		} else if sseCtx.Err() == context.DeadlineExceeded {
 			return nil, fmt.Errorf("OpenCode: request timed out after 20 minutes")
 		} else {
 			return nil, fmt.Errorf("OpenCode: SSE stream error: %v", err)
