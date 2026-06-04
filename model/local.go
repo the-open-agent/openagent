@@ -85,7 +85,7 @@ func (p *LocalModelProvider) GetPricing() string {
 func (p *LocalModelProvider) ListModels() ([]string, error) {
 	url := p.providerUrl
 	if url == "" {
-		if p.typ == "Ollama" {
+		if p.typ == "Custom-think" {
 			url = "http://localhost:11434"
 		} else {
 			return []string{}, fmt.Errorf("local: ListModels() error: provider URL is empty")
@@ -97,7 +97,7 @@ func (p *LocalModelProvider) ListModels() ([]string, error) {
 	}
 
 	var models []string
-	if p.typ == "Ollama" {
+	if p.typ == "Custom-think" {
 		url += "api/tags"
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
