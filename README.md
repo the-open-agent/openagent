@@ -69,6 +69,9 @@ Open [http://localhost:14000](http://localhost:14000) and you're in.
 > Optional env vars: `OPENAGENT_VERSION`, `INSTALL_DIR`, `BIN_DIR`
 
 **Build from source**
+
+Requires Go 1.25.0+ for the backend, matching `go.mod`.
+
 ```bash
 # Backend
 go build
