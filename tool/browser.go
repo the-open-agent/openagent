@@ -31,6 +31,7 @@ const (
 	browserDefaultTimeout = 60 * time.Second
 	browserMaxTimeout     = 120 * time.Second
 	browserMaxContentLen  = 50000
+	browserFetchWait      = 10 * time.Second
 )
 
 // BrowserTool is the Tool Type "web_browser".
@@ -64,9 +65,14 @@ func newBrowserCtx(parent context.Context, timeoutSecs float64, enableProxy bool
 		chromedp.Flag("no-sandbox", true),
 		chromedp.Flag("disable-gpu", true),
 		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("enable-automation", false),
+		chromedp.Flag("disable-blink-features", "AutomationControlled"),
+		chromedp.Flag("lang", "zh-CN"),
+		chromedp.UserAgent(webFetchUserAgent),
+		chromedp.WindowSize(1280, 900),
 	)
 	if enableProxy {
-		if socks5Addr := proxy.GetSocks5ProxyAddress(); socks5Addr != "" {
+		if socks5Addr := proxy.GetActiveSocks5ProxyAddress(); socks5Addr != "" {
 			opts = append(opts, chromedp.Flag("proxy-server", "socks5://"+socks5Addr))
 		}
 	}
@@ -112,6 +118,29 @@ func extractTextFromHTML(rawHTML string) string {
 		text = text[:browserMaxContentLen] + fmt.Sprintf("\n\n[Content truncated at %d characters]", browserMaxContentLen)
 	}
 	return text
+}
+
+func fetchBrowserPageContent(ctx context.Context, rawURL string, timeoutSecs float64, enableProxy bool) (string, string, error) {
+	bCtx, cancel := newBrowserCtx(ctx, timeoutSecs, enableProxy)
+	defer cancel()
+
+	var outerHTML, title string
+
+	actions := []chromedp.Action{
+		chromedp.Navigate(rawURL),
+		chromedp.WaitReady("body", chromedp.ByQuery),
+		chromedp.Sleep(browserFetchWait),
+	}
+	actions = append(actions,
+		chromedp.Title(&title),
+		chromedp.OuterHTML("html", &outerHTML),
+	)
+
+	if err := chromedp.Run(bCtx, actions...); err != nil {
+		return "", "", err
+	}
+
+	return extractTextFromHTML(outerHTML), title, nil
 }
 
 // ---------------------------------------------------------------------------
@@ -165,11 +194,7 @@ func (b *browserNavigateBuiltin) Execute(ctx context.Context, arguments map[stri
 
 	waitSelector, _ := arguments["wait_selector"].(string)
 
-	bCtx, cancel := newBrowserCtx(ctx, timeout, b.enableProxy)
-	defer cancel()
-
 	var outerHTML, title string
-
 	actions := []chromedp.Action{
 		chromedp.Navigate(rawURL),
 	}
@@ -184,6 +209,9 @@ func (b *browserNavigateBuiltin) Execute(ctx context.Context, arguments map[stri
 		chromedp.Title(&title),
 		chromedp.OuterHTML("html", &outerHTML),
 	)
+
+	bCtx, cancel := newBrowserCtx(ctx, timeout, b.enableProxy)
+	defer cancel()
 
 	if err := chromedp.Run(bCtx, actions...); err != nil {
 		return browserToolError(fmt.Sprintf("browser navigation failed for %s: %s", rawURL, err.Error())), nil

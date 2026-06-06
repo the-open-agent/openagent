@@ -82,6 +82,14 @@ func GetSocks5ProxyAddress() string {
 	return conf.GetConfigString("socks5Proxy")
 }
 
+func GetActiveSocks5ProxyAddress() string {
+	socks5Proxy := GetSocks5ProxyAddress()
+	if socks5Proxy == "" || !isAddressOpen(socks5Proxy) {
+		return ""
+	}
+	return socks5Proxy
+}
+
 func GetHttpClient(url string) *http.Client {
 	if strings.Contains(url, "githubusercontent.com") || strings.Contains(url, "googleusercontent.com") || strings.Contains(url, "github.com") {
 		return ProxyHttpClient

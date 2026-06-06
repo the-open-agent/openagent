@@ -16,6 +16,7 @@ package tool
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -37,7 +38,8 @@ const (
 
 // WebFetchTool is the Tool Type "web_fetch".
 type WebFetchTool struct {
-	httpClient *http.Client
+	httpClient  *http.Client
+	enableProxy bool
 }
 
 func NewWebFetchTool(config Config) (*WebFetchTool, error) {
@@ -50,15 +52,25 @@ func NewWebFetchTool(config Config) (*WebFetchTool, error) {
 	} else {
 		httpClient = &http.Client{Timeout: webFetchDefaultTimeout}
 	}
-	return &WebFetchTool{httpClient: httpClient}, nil
+	return &WebFetchTool{httpClient: httpClient, enableProxy: config.EnableProxy}, nil
 }
 
 func (p *WebFetchTool) BuiltinTools() []BuiltinTool {
-	return []BuiltinTool{&webFetchBuiltin{httpClient: p.httpClient}}
+	return []BuiltinTool{&webFetchBuiltin{httpClient: p.httpClient, enableProxy: p.enableProxy}}
 }
 
 type webFetchBuiltin struct {
-	httpClient *http.Client
+	httpClient  *http.Client
+	enableProxy bool
+}
+
+type webFetchHTTPStatusError struct {
+	code   int
+	status string
+}
+
+func (e *webFetchHTTPStatusError) Error() string {
+	return fmt.Sprintf("HTTP %d: %s", e.code, e.status)
 }
 
 func (b *webFetchBuiltin) GetName() string {
@@ -131,7 +143,16 @@ func (b *webFetchBuiltin) Execute(ctx context.Context, arguments map[string]inte
 
 	content, title, err := fetchWebPageContent(fetchCtx, rawURL, b.httpClient)
 	if err != nil {
-		return webFetchToolError(fmt.Sprintf("failed to fetch URL %s: %s", rawURL, err.Error())), nil
+		var statusErr *webFetchHTTPStatusError
+		if errors.As(err, &statusErr) && statusErr.code == http.StatusForbidden {
+			var fallbackErr error
+			content, title, fallbackErr = fetchBrowserPageContent(fetchCtx, rawURL, timeoutSecs, b.enableProxy)
+			if fallbackErr != nil {
+				return webFetchToolError(fmt.Sprintf("failed to fetch URL %s: %s; browser fallback failed: %s", rawURL, err.Error(), fallbackErr.Error())), nil
+			}
+		} else {
+			return webFetchToolError(fmt.Sprintf("failed to fetch URL %s: %s", rawURL, err.Error())), nil
+		}
 	}
 
 	if len(content) > maxLength {
@@ -158,7 +179,7 @@ func fetchWebPageContent(ctx context.Context, rawURL string, client *http.Client
 	defer resp.Body.Close()
 
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-		return "", "", fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
+		return "", "", &webFetchHTTPStatusError{code: resp.StatusCode, status: resp.Status}
 	}
 
 	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, webFetchMaxResponseSize+1))
