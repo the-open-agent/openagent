@@ -15,6 +15,7 @@
 package controllers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -120,8 +121,10 @@ func (m *messageAnswerJobManager) remove(id string, job *messageAnswerJob) {
 }
 
 type messageAnswerJob struct {
-	id     string
-	writer *messageAnswerJobWriter
+	id         string
+	writer     *messageAnswerJobWriter
+	ctx        context.Context
+	cancelFunc context.CancelFunc
 
 	mu          sync.Mutex
 	chunks      [][]byte
@@ -131,8 +134,11 @@ type messageAnswerJob struct {
 }
 
 func newMessageAnswerJob(id string) *messageAnswerJob {
+	ctx, cancel := context.WithCancel(context.Background())
 	job := &messageAnswerJob{
 		id:          id,
+		ctx:         ctx,
+		cancelFunc:  cancel,
 		subscribers: map[chan []byte]struct{}{},
 	}
 	job.writer = &messageAnswerJobWriter{
@@ -193,6 +199,7 @@ func (j *messageAnswerJob) finish() {
 	}
 
 	j.done = true
+	j.cancelFunc()
 	for ch := range j.subscribers {
 		close(ch)
 		delete(j.subscribers, ch)
@@ -211,6 +218,7 @@ func (j *messageAnswerJob) cancel() {
 		return
 	}
 	j.canceled = true
+	j.cancelFunc()
 	j.mu.Unlock()
 
 	j.appendChunk([]byte("event: end\ndata: canceled\n\n"))
@@ -245,3 +253,10 @@ func (w *messageAnswerJobWriter) Write(p []byte) (int, error) {
 }
 
 func (w *messageAnswerJobWriter) Flush() {}
+
+func (w *messageAnswerJobWriter) Context() context.Context {
+	if w.job == nil || w.job.ctx == nil {
+		return context.Background()
+	}
+	return w.job.ctx
+}

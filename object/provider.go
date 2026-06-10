@@ -26,6 +26,7 @@ import (
 	"github.com/the-open-agent/openagent/stt"
 	"github.com/the-open-agent/openagent/tts"
 	"github.com/the-open-agent/openagent/util"
+	"github.com/the-open-agent/openagent/video"
 	"xorm.io/core"
 	"xorm.io/xorm"
 )
@@ -331,6 +332,19 @@ func (p *Provider) GetModelProvider(lang string) (model.ModelProvider, error) {
 
 	if pProvider == nil {
 		return nil, fmt.Errorf(i18n.Translate(lang, "object:the model provider type: %s is not supported"), p.Type)
+	}
+
+	return pProvider, nil
+}
+
+func (p *Provider) GetVideoProvider(lang string) (video.VideoProvider, error) {
+	pProvider, err := video.GetVideoProvider(p.Type, p.SubType, p.ClientSecret, p.ProviderUrl, p.InputPricePerThousandTokens, p.OutputPricePerThousandTokens, p.Currency)
+	if err != nil {
+		return nil, err
+	}
+
+	if pProvider == nil {
+		return nil, fmt.Errorf(i18n.Translate(lang, "object:the video provider type: %s is not supported"), p.Type)
 	}
 
 	return pProvider, nil

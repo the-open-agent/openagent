@@ -30,6 +30,7 @@ import (
 	"github.com/the-open-agent/openagent/model"
 	"github.com/the-open-agent/openagent/object"
 	"github.com/the-open-agent/openagent/util"
+	"github.com/the-open-agent/openagent/video"
 )
 
 // GetMessageAnswer
@@ -277,7 +278,28 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 		modelProviderName = chat.ModelProvider
 	}
 
-	modelProvider, modelProviderObj, err := object.GetModelProviderFromContext(store.Owner, modelProviderName, lang)
+	modelProvider, err := object.GetModelCategoryProviderFromName(store.Owner, modelProviderName, lang)
+	if err != nil {
+		responseErrorStream(message, err.Error())
+		return
+	}
+
+	if video.IsVideoModel(modelProvider.Type, modelProvider.SubType) {
+		videoProvider, err := modelProvider.GetVideoProvider(lang)
+		if err != nil {
+			responseErrorStream(message, err.Error())
+			return
+		}
+		if err = handleVideoMessageAnswer(responseWriter, message, chat, modelProvider, videoProvider, questionMessage, question, host, lang); err != nil {
+			if errors.Is(err, errMessageAnswerCanceled) {
+				return
+			}
+			responseErrorStream(message, err.Error())
+		}
+		return
+	}
+
+	modelProviderObj, err := modelProvider.GetModelProvider(lang)
 	if err != nil {
 		responseErrorStream(message, err.Error())
 		return

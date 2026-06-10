@@ -153,6 +153,19 @@ func IsVisionModel(subType string) bool {
 	return false
 }
 
+func ExtractFirstImageDataURL(message string) (string, string, error) {
+	urls, messageText := extractImagesURL(message)
+	if len(urls) == 0 {
+		return "", messageText, nil
+	}
+
+	imageText, err := getImageRefinedText(urls[0])
+	if err != nil {
+		return "", "", err
+	}
+	return imageText, messageText, nil
+}
+
 func OpenaiRawMessagesToGptVisionMessages(messages []*RawMessage) ([]openai.ChatCompletionMessage, error) {
 	res := []openai.ChatCompletionMessage{}
 	for _, message := range messages {

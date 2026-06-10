@@ -23,7 +23,7 @@ import (
 	"github.com/the-open-agent/openagent/util"
 )
 
-func getModelProviderFromName(owner string, providerName string, lang string) (*Provider, model.ModelProvider, error) {
+func GetModelCategoryProviderFromName(owner string, providerName string, lang string) (*Provider, error) {
 	var provider *Provider
 	var err error
 	if providerName != "" {
@@ -32,23 +32,32 @@ func getModelProviderFromName(owner string, providerName string, lang string) (*
 		provider, err = GetDefaultModelProvider()
 	}
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	if provider == nil {
 		provider, err = GetDefaultModelProvider()
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 	if provider == nil {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "object:Please add a model provider first"))
+		return nil, fmt.Errorf(i18n.Translate(lang, "object:Please add a model provider first"))
 	}
 
 	if provider.Category != "Model" {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "object:The model provider: %s is expected to be \")Model\" category, got: \"%s\""), provider.GetId(), provider.Category)
+		return nil, fmt.Errorf(i18n.Translate(lang, "object:The model provider: %s is expected to be \")Model\" category, got: \"%s\""), provider.GetId(), provider.Category)
 	}
 	if provider.ClientSecret == "" && provider.Type != "Ollama" && provider.Type != "OpenCode" {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "object:The model provider: %s's client secret should not be empty"), provider.GetId())
+		return nil, fmt.Errorf(i18n.Translate(lang, "object:The model provider: %s's client secret should not be empty"), provider.GetId())
+	}
+
+	return provider, nil
+}
+
+func getModelProviderFromName(owner string, providerName string, lang string) (*Provider, model.ModelProvider, error) {
+	provider, err := GetModelCategoryProviderFromName(owner, providerName, lang)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	providerObj, err := provider.GetModelProvider(lang)

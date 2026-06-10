@@ -19,6 +19,7 @@ import (
 
 	"github.com/the-open-agent/openagent/model"
 	"github.com/the-open-agent/openagent/object"
+	"github.com/the-open-agent/openagent/video"
 )
 
 // dryRunWriter is a dummy writer that implements both io.Writer and http.Flusher
@@ -36,7 +37,7 @@ func (w *dryRunWriter) Flush() {}
 // - Reason models (they have different execution paths)
 // - Queries with agent clients (agent-based workflows)
 func shouldPerformDryRun(providerType string, modelSubType string, hasMcpTools bool) bool {
-	return !isReasonModel(modelSubType) && !hasMcpTools
+	return !isReasonModel(modelSubType) && !video.IsVideoModel(providerType, modelSubType) && !hasMcpTools
 }
 
 // validateTransactionBeforeAIGeneration performs a dry run to estimate cost and validates
