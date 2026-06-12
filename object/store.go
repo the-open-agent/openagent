@@ -155,19 +155,57 @@ func GetStores(owner string) ([]*Store, error) {
 	return stores, nil
 }
 
+func GetMaskedStore(store *Store) *Store {
+	if store == nil {
+		return nil
+	}
+
+	maskedStore := *store
+	if maskedStore.ApiKey != "" {
+		maskedStore.ApiKey = "***"
+	}
+	return &maskedStore
+}
+
+func GetMaskedStores(stores []*Store) []*Store {
+	maskedStores := make([]*Store, 0, len(stores))
+	for _, store := range stores {
+		maskedStores = append(maskedStores, GetMaskedStore(store))
+	}
+	return maskedStores
+}
+
 func GetStoreByApiKey(apiKey string) (*Store, error) {
 	if apiKey == "" {
 		return nil, nil
 	}
-	store := &Store{}
-	existed, err := adapter.engine.Where("api_key = ?", apiKey).Get(store)
+	stores := []*Store{}
+	err := adapter.engine.Where("api_key = ?", apiKey).Limit(2).Find(&stores)
 	if err != nil {
 		return nil, err
 	}
-	if !existed {
+	if len(stores) == 0 {
 		return nil, nil
 	}
-	return store, nil
+	if len(stores) > 1 {
+		return nil, fmt.Errorf("multiple stores use the same API key")
+	}
+	return stores[0], nil
+}
+
+func ValidateStoreApiKey(apiKey, storeId string) error {
+	if apiKey == "" {
+		return nil
+	}
+
+	store, err := GetStoreByApiKey(apiKey)
+	if err != nil {
+		return err
+	}
+	if store != nil && store.GetId() != storeId {
+		return fmt.Errorf("the store API key is already in use")
+	}
+	return nil
 }
 
 func GetDefaultStore(owner string) (*Store, error) {

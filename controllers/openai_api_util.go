@@ -65,9 +65,22 @@ func newOpenAIWriter(rw *context.Response, request openai.ChatCompletionRequest,
 	}
 }
 
-// createApiChatSession inserts a Chat, a user Message, and a placeholder AI Message into the DB.
-func createApiChatSession(store *object.Store, modelProviderName, question, requestId string) (*object.Chat, *object.Message, *object.Message, error) {
-	now := util.GetCurrentTime()
+func getOpenAIMessageAuthor(role string) string {
+	switch role {
+	case "system":
+		return "System"
+	case "user":
+		return "Human"
+	case "assistant":
+		return "AI"
+	default:
+		return role
+	}
+}
+
+// createApiChatSession inserts a Chat, all incoming API messages, and a placeholder AI Message into the DB.
+func createApiChatSession(store *object.Store, modelProviderName string, requestMessages []openai.ChatCompletionMessage, requestId string) (*object.Chat, *object.Message, *object.Message, error) {
+	now := util.GetCurrentTimeWithMilli()
 
 	chat := &object.Chat{
 		Owner:         store.Owner,
@@ -82,29 +95,52 @@ func createApiChatSession(store *object.Store, modelProviderName, question, requ
 		return nil, nil, nil, err
 	}
 
-	userMsg := &object.Message{
-		Owner:         store.Owner,
-		Name:          "msg_user_" + requestId,
-		CreatedTime:   now,
-		Store:         store.Name,
-		Chat:          chat.Name,
-		Author:        "Human",
-		Text:          question,
-		ModelProvider: modelProviderName,
-		User:          "api",
+	var lastUserMsg *object.Message
+	lastMessageTime := now
+	var lastUserMessageName string
+	for i, msg := range requestMessages {
+		if msg.Content == "" {
+			continue
+		}
+
+		messageTime := util.GetCurrentTimeBasedOnLastMilli(lastMessageTime)
+		lastMessageTime = messageTime
+
+		message := &object.Message{
+			Owner:         store.Owner,
+			Name:          fmt.Sprintf("msg_api_%s_%03d", requestId, i),
+			CreatedTime:   messageTime,
+			Store:         store.Name,
+			Chat:          chat.Name,
+			Author:        getOpenAIMessageAuthor(msg.Role),
+			Text:          msg.Content,
+			ModelProvider: modelProviderName,
+			User:          "api",
+		}
+		if msg.Role == "assistant" && lastUserMessageName != "" {
+			message.ReplyTo = lastUserMessageName
+		}
+		if _, err := object.AddMessage(message); err != nil {
+			return nil, nil, nil, err
+		}
+		if msg.Role == "user" {
+			lastUserMsg = message
+			lastUserMessageName = message.Name
+		}
 	}
-	if _, err := object.AddMessage(userMsg); err != nil {
-		return nil, nil, nil, err
+
+	if lastUserMsg == nil {
+		return nil, nil, nil, fmt.Errorf("no user message found in the request")
 	}
 
 	aiMsg := &object.Message{
 		Owner:         store.Owner,
 		Name:          "msg_ai_" + requestId,
-		CreatedTime:   util.GetCurrentTime(),
+		CreatedTime:   util.GetCurrentTimeBasedOnLastMilli(lastMessageTime),
 		Store:         store.Name,
 		Chat:          chat.Name,
 		Author:        "AI",
-		ReplyTo:       userMsg.Name,
+		ReplyTo:       lastUserMsg.Name,
 		ModelProvider: modelProviderName,
 		User:          "api",
 	}
@@ -112,7 +148,7 @@ func createApiChatSession(store *object.Store, modelProviderName, question, requ
 		return nil, nil, nil, err
 	}
 
-	return chat, userMsg, aiMsg, nil
+	return chat, lastUserMsg, aiMsg, nil
 }
 
 // applyResultToApiSession writes the AI answer and token counts back to the DB.

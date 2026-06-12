@@ -401,6 +401,13 @@ class StoreEditPage extends React.Component {
               8
             )}
             {this.renderStoreField(
+              Setting.getLabel(i18next.t("store:Store API key"), i18next.t("store:Store API key - Tooltip")),
+              <Input.Password value={store.apiKey} onChange={e => {
+                this.updateStoreField("apiKey", e.target.value);
+              }} />,
+              8
+            )}
+            {this.renderStoreField(
               Setting.getLabel(i18next.t("general:State"), i18next.t("general:State - Tooltip")),
               <Select virtual={false} style={{width: "100%"}} value={store.state} onChange={value => {
                 this.updateStoreField("state", value);

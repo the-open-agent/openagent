@@ -91,7 +91,7 @@ func (c *ApiController) chatCompletionsViaStore(store *object.Store, request ope
 		prompt = systemPrompt
 	}
 
-	chat, _, aiMsg, err := createApiChatSession(store, modelProviderRecord.Name, question, requestId)
+	chat, _, aiMsg, err := createApiChatSession(store, modelProviderRecord.Name, request.Messages, requestId)
 	if err != nil {
 		c.ResponseError(err.Error())
 		return

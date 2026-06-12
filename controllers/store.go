@@ -37,7 +37,7 @@ func (c *ApiController) GetHubStores() {
 		c.ResponseError(err.Error())
 		return
 	}
-	c.ResponseOk(stores)
+	c.ResponseOk(object.GetMaskedStores(stores))
 }
 
 // GetGlobalStores
@@ -62,7 +62,7 @@ func (c *ApiController) GetGlobalStores() {
 			return
 		}
 
-		c.ResponseOk(stores)
+		c.ResponseOk(object.GetMaskedStores(stores))
 	} else {
 		if !c.RequireAdmin() {
 			return
@@ -112,7 +112,7 @@ func (c *ApiController) GetGlobalStores() {
 			object.SortStoresInMemory(stores, sortField, sortOrder)
 		}
 
-		c.ResponseOk(stores, count)
+		c.ResponseOk(object.GetMaskedStores(stores), count)
 	}
 }
 
@@ -138,7 +138,7 @@ func (c *ApiController) GetStores() {
 		return
 	}
 
-	c.ResponseOk(stores)
+	c.ResponseOk(object.GetMaskedStores(stores))
 }
 
 // GetStore
@@ -168,12 +168,12 @@ func (c *ApiController) GetStore() {
 		origin := getOriginFromHost(host)
 		err = store.Populate(origin, c.GetAcceptLanguage())
 		if err != nil {
-			c.ResponseOk(store, err.Error())
+			c.ResponseOk(object.GetMaskedStore(store), err.Error())
 			return
 		}
 	}
 
-	c.ResponseOk(store)
+	c.ResponseOk(object.GetMaskedStore(store))
 }
 
 // UpdateStore
@@ -212,6 +212,13 @@ func (c *ApiController) UpdateStore() {
 	}
 
 	store.SharedBy = oldStore.SharedBy
+	if store.ApiKey == "***" {
+		store.ApiKey = oldStore.ApiKey
+	}
+	if err = object.ValidateStoreApiKey(store.ApiKey, oldStore.GetId()); err != nil {
+		c.ResponseError(err.Error())
+		return
+	}
 
 	// Store admin cannot change the Owner field
 	if !c.IsGlobalAdmin() && c.IsStoreAdmin() {
@@ -298,6 +305,11 @@ func (c *ApiController) AddStore() {
 		}
 	}
 
+	if err = object.ValidateStoreApiKey(store.ApiKey, store.GetId()); err != nil {
+		c.ResponseError(err.Error())
+		return
+	}
+
 	success, err := object.AddStore(&store)
 	if err != nil {
 		c.ResponseError(err.Error())
@@ -382,7 +394,7 @@ func (c *ApiController) ClaimStore() {
 		return
 	}
 
-	c.ResponseOk(store)
+	c.ResponseOk(object.GetMaskedStore(store))
 }
 
 // RefreshStoreVectors
@@ -493,5 +505,5 @@ func (c *ApiController) AddSharedStore() {
 		return
 	}
 
-	c.ResponseOk(newStore)
+	c.ResponseOk(object.GetMaskedStore(newStore))
 }

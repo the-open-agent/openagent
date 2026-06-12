@@ -120,6 +120,7 @@ func ShareStore(srcOwner, srcName, targetUserName, sharedByUserName string) (*St
 	newStore.ChatCount = 0
 	newStore.MessageCount = 0
 	newStore.VectorCount = 0
+	newStore.ApiKey = ""
 	// Always use share moment as created time (do not keep source store's createdTime).
 	newStore.CreatedTime = util.GetCurrentTimeWithMilli()
 

@@ -798,6 +798,8 @@
     "Storage provider - Tooltip": "数据持久化服务提供商",
     "Storage subpath": "存储子路径",
     "Storage subpath - Tooltip": "存储位置的子路径，可为一级或多级文件夹",
+    "Store API key": "数据仓库 API 密钥",
+    "Store API key - Tooltip": "用于将请求路由到当前数据仓库的 Bearer 密钥。",
     "Store shared successfully": "已成功分享数据仓库",
     "Subject": "学科",
     "Subject - Tooltip": "所属学科或领域",

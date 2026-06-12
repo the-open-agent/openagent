@@ -798,6 +798,8 @@
     "Storage provider - Tooltip": "Storage service provider for data persistence",
     "Storage subpath": "Storage subpath",
     "Storage subpath - Tooltip": "Subpath of the storage location, which can be a single-level or multi-level folder",
+    "Store API key": "Store API key",
+    "Store API key - Tooltip": "Bearer key for routing requests to this store.",
     "Store shared successfully": "Agent shared successfully",
     "Subject": "Subject",
     "Subject - Tooltip": "Academic subject or domain of this agent",
