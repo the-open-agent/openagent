@@ -29,6 +29,10 @@ func MixColor(c1 color.RGBA, c2 color.RGBA, t float64) color.RGBA {
 		R: mixChannel(c1.R, c2.R, t),
 		G: mixChannel(c1.G, c2.G, t),
 		B: mixChannel(c1.B, c2.B, t),
+		// Alpha is linear (not gamma-encoded), so blend it linearly. Without
+		// setting A the result defaulted to 0, making every mixed color fully
+		// transparent.
+		A: uint8(math.Round((1-t)*float64(c1.A) + t*float64(c2.A))),
 	}
 	return res
 }
