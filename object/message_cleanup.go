@@ -86,7 +86,7 @@ func cleanupChats() error {
 		if chat.MessageCount == 0 || len(chatMessages) == 0 {
 			needDelete = true
 		} else if chat.MessageCount == 1 {
-			if chatMessages[0].Author == "AI" {
+			if len(chatMessages) == 1 && chatMessages[0].Author == "AI" {
 				needDelete = true
 			}
 		} else if chat.MessageCount == 2 {

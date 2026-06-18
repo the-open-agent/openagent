@@ -373,48 +373,50 @@ func (c *ApiController) AddMessage() {
 
 	if success && addMessageAfterSuccess {
 		chatId := util.GetId(message.Owner, message.Chat)
+		modelProvider := chat.ModelProvider
+		if modelProvider == "" {
+			// Fallback to store's model provider if chat doesn't have one
+			store, storeErr := object.ResolveStoreForChat(chat)
+			if storeErr == nil && store != nil {
+				modelProvider = store.ModelProvider
+			}
+		}
+		answerMessage := &object.Message{
+			Owner:         message.Owner,
+			Name:          fmt.Sprintf("message_%s", util.GetRandomName()),
+			CreatedTime:   util.GetCurrentTimeEx(message.CreatedTime),
+			Organization:  message.Organization,
+			Store:         chat.Store,
+			User:          message.User,
+			Chat:          message.Chat,
+			ReplyTo:       message.Name,
+			Author:        "AI",
+			Text:          "",
+			FileName:      message.FileName,
+			VectorScores:  []object.VectorScore{},
+			ModelProvider: modelProvider,
+		}
+		_, err = object.AddMessage(answerMessage)
+		if err != nil {
+			c.ResponseError(err.Error())
+			return
+		}
+
 		chat, err = object.GetChat(chatId)
 		if err != nil {
 			c.ResponseError(err.Error())
 			return
 		}
-		if chat != nil {
-			modelProvider := chat.ModelProvider
-			if modelProvider == "" {
-				// Fallback to store's model provider if chat doesn't have one
-				store, storeErr := object.ResolveStoreForChat(chat)
-				if storeErr == nil && store != nil {
-					modelProvider = store.ModelProvider
-				}
-			}
-			answerMessage := &object.Message{
-				Owner:         message.Owner,
-				Name:          fmt.Sprintf("message_%s", util.GetRandomName()),
-				CreatedTime:   util.GetCurrentTimeEx(message.CreatedTime),
-				Organization:  message.Organization,
-				Store:         chat.Store,
-				User:          message.User,
-				Chat:          message.Chat,
-				ReplyTo:       message.Name,
-				Author:        "AI",
-				Text:          "",
-				FileName:      message.FileName,
-				VectorScores:  []object.VectorScore{},
-				ModelProvider: modelProvider,
-			}
-			_, err = object.AddMessage(answerMessage)
-			if err != nil {
-				c.ResponseError(err.Error())
-				return
-			}
-
-			chat.IsUnread = true
-			chat.IsGenerating = true
-			_, err = object.UpdateChat(chatId, chat)
-			if err != nil {
-				c.ResponseError(err.Error())
-				return
-			}
+		if chat == nil {
+			c.ResponseError(fmt.Sprintf("chat:The chat: %s is not found", chatId))
+			return
+		}
+		chat.IsUnread = true
+		chat.IsGenerating = true
+		_, err = object.UpdateChat(chatId, chat)
+		if err != nil {
+			c.ResponseError(err.Error())
+			return
 		}
 	}
 
