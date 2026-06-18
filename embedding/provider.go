@@ -31,7 +31,7 @@ type EmbeddingProvider interface {
 	QueryVector(text string, ctx context.Context, lang string) ([]float32, *EmbeddingResult, error)
 }
 
-func GetEmbeddingProvider(typ string, subType string, clientId string, clientSecret string, providerUrl string, apiVersion string, pricePerThousandTokens float64, currency string, lang string) (EmbeddingProvider, error) {
+func GetEmbeddingProvider(typ string, subType string, clientId string, clientSecret string, providerUrl string, apiVersion string, compatibleProvider string, pricePerThousandTokens float64, currency string, lang string) (EmbeddingProvider, error) {
 	var p EmbeddingProvider
 	var err error
 	if typ == "OpenAI" {
@@ -47,7 +47,7 @@ func GetEmbeddingProvider(typ string, subType string, clientId string, clientSec
 	} else if typ == "Ollama" {
 		p, err = NewLocalEmbeddingProvider("Custom", "custom-embedding", "randomString", providerUrl, subType, pricePerThousandTokens, currency)
 	} else if typ == "Local" {
-		p, err = NewLocalEmbeddingProvider(typ, subType, clientSecret, providerUrl, subType, pricePerThousandTokens, currency)
+		p, err = NewLocalEmbeddingProvider(typ, subType, clientSecret, providerUrl, compatibleProvider, pricePerThousandTokens, currency)
 	} else if typ == "Azure" {
 		p, err = NewAzureEmbeddingProvider(typ, subType, clientId, clientSecret, providerUrl, apiVersion)
 	} else if typ == "MiniMax" {

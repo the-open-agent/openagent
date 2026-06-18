@@ -351,7 +351,7 @@ func (p *Provider) GetVideoProvider(lang string) (video.VideoProvider, error) {
 }
 
 func (p *Provider) GetEmbeddingProvider(lang string) (embedding.EmbeddingProvider, error) {
-	pProvider, err := embedding.GetEmbeddingProvider(p.Type, p.SubType, p.ClientId, p.ClientSecret, p.ProviderUrl, p.ApiVersion, p.InputPricePerThousandTokens, p.Currency, lang)
+	pProvider, err := embedding.GetEmbeddingProvider(p.Type, p.SubType, p.ClientId, p.ClientSecret, p.ProviderUrl, p.ApiVersion, p.CompatibleProvider, p.InputPricePerThousandTokens, p.Currency, lang)
 	if err != nil {
 		return nil, err
 	}
