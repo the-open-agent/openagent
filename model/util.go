@@ -178,8 +178,20 @@ func getSystemMessages(prompt string, knowledgeMessages []*RawMessage) []*RawMes
 	}
 
 	combined := prompt
+	hasImageKnowledge := false
 	for i, message := range knowledgeMessages {
 		combined += fmt.Sprintf("\n\n%s %d: %s", knowledgeTag, i+1, message.Text)
+		if strings.Contains(message.Text, "![](") {
+			hasImageKnowledge = true
+		}
+	}
+
+	if hasImageKnowledge {
+		if containsZh(prompt) {
+			combined += "\n\n若上述知识中包含与问题相关的图片，请在回答中用 Markdown 语法 ![](url) 原样引用对应图片链接。"
+		} else {
+			combined += "\n\nIf any of the knowledge above contains an image relevant to the question, include the image in your answer using its original markdown link ![](url)."
+		}
 	}
 
 	return []*RawMessage{{Text: combined, Author: "System"}}

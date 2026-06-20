@@ -761,7 +761,14 @@ func openaiRawMessagesToGptVisionMessages(messages []*RawMessage) (responses.Res
 			role = responses.EasyInputMessageRoleUser
 		}
 
-		urls, messageText := extractImagesURL(message.Text)
+		// OpenAI's Responses API rejects `input_image` on system messages
+		// (only `input_text` is allowed there). Keep any URLs inline as text
+		// for the system role so the model still sees them.
+		var urls []string
+		messageText := message.Text
+		if role != responses.EasyInputMessageRoleSystem {
+			urls, messageText = extractImagesURL(message.Text)
+		}
 
 		var itemContentList responses.ResponseInputMessageContentListParam
 		if len(messageText) > 0 {

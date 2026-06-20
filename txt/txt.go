@@ -27,6 +27,10 @@ func GetSupportedFileTypes() []string {
 	return []string{".txt", ".md", ".yaml", ".csv", ".pdf", ".docx", ".xlsx", ".pptx"}
 }
 
+func GetSupportedImageTypes() []string {
+	return []string{".jpg", ".jpeg", ".png", ".webp", ".gif"}
+}
+
 func GetParsedTextFromUrl(url string, ext string, lang string) (string, error) {
 	var path string
 	var err error

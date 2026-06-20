@@ -34,9 +34,11 @@ import (
 )
 
 func filterTextFiles(files []*storage.Object) []*storage.Object {
-	fileTypes := txt.GetSupportedFileTypes()
 	fileTypeMap := map[string]bool{}
-	for _, fileType := range fileTypes {
+	for _, fileType := range txt.GetSupportedFileTypes() {
+		fileTypeMap[fileType] = true
+	}
+	for _, fileType := range txt.GetSupportedImageTypes() {
 		fileTypeMap[fileType] = true
 	}
 
@@ -50,7 +52,7 @@ func filterTextFiles(files []*storage.Object) []*storage.Object {
 	return res
 }
 
-func addEmbeddedVector(embeddingProviderObj embedding.EmbeddingProvider, text string, storeName string, fileName string, index int, embeddingProviderName string, modelSubType string, lang string) (bool, int, error) {
+func addEmbeddedVector(embeddingProviderObj embedding.EmbeddingProvider, text string, imageUrl string, storeName string, fileName string, index int, embeddingProviderName string, modelSubType string, lang string) (bool, int, error) {
 	data, embeddingResult, err := queryVectorSafe(embeddingProviderObj, text, embeddingProviderName, lang)
 	if err != nil {
 		return false, 0, err
@@ -95,6 +97,7 @@ func addEmbeddedVector(embeddingProviderObj embedding.EmbeddingProvider, text st
 		File:        fileName,
 		Index:       index,
 		Text:        text,
+		ImageUrl:    imageUrl,
 		TokenCount:  tokenCount,
 		Price:       price,
 		Currency:    currency,
@@ -105,13 +108,18 @@ func addEmbeddedVector(embeddingProviderObj embedding.EmbeddingProvider, text st
 	return affected, tokenCount, err
 }
 
-func addVectorsForFile(embeddingProviderObj embedding.EmbeddingProvider, storeName string, fileKey string, fileUrl string, splitProviderName string, embeddingProviderName string, modelSubType string, lang string) (bool, int, error) {
+func addVectorsForFile(embeddingProviderObj embedding.EmbeddingProvider, modelProviderObj model.ModelProvider, storeName string, fileKey string, fileUrl string, splitProviderName string, embeddingProviderName string, modelSubType string, lang string) (bool, int, error) {
+	fileExt := filepath.Ext(fileKey)
+
+	if isImageExtension(fileExt) {
+		return addVectorForImageFile(embeddingProviderObj, modelProviderObj, storeName, fileKey, fileUrl, fileExt, embeddingProviderName, modelSubType, lang)
+	}
+
 	var (
 		affected        bool
 		totalTokenCount int
 	)
 
-	fileExt := filepath.Ext(fileKey)
 	text, err := txt.GetParsedTextFromUrl(fileUrl, fileExt, lang)
 	if err != nil {
 		return false, 0, err
@@ -149,7 +157,7 @@ func addVectorsForFile(embeddingProviderObj embedding.EmbeddingProvider, storeNa
 		)
 		operation := func() error {
 			var opErr error
-			sectionAffected, sectionTokenCount, opErr = addEmbeddedVector(embeddingProviderObj, textSection, storeName, fileKey, i, embeddingProviderName, modelSubType, lang)
+			sectionAffected, sectionTokenCount, opErr = addEmbeddedVector(embeddingProviderObj, textSection, "", storeName, fileKey, i, embeddingProviderName, modelSubType, lang)
 			if opErr != nil {
 				if isRetryableError(opErr) {
 					return opErr
@@ -169,6 +177,40 @@ func addVectorsForFile(embeddingProviderObj embedding.EmbeddingProvider, storeNa
 	}
 
 	return affected, totalTokenCount, nil
+}
+
+func addVectorForImageFile(embeddingProviderObj embedding.EmbeddingProvider, modelProviderObj model.ModelProvider, storeName string, fileKey string, fileUrl string, fileExt string, embeddingProviderName string, modelSubType string, lang string) (bool, int, error) {
+	logs.Info("Generating caption for image, store: [%s], file: [%s]", storeName, fileKey)
+
+	caption, err := generateImageCaption(modelProviderObj, fileUrl, fileExt, lang)
+	if err != nil {
+		return false, 0, err
+	}
+
+	logs.Info("Embedding caption for store: [%s], file: [%s]: %s", storeName, fileKey, caption)
+
+	var (
+		affected   bool
+		tokenCount int
+	)
+	operation := func() error {
+		var opErr error
+		affected, tokenCount, opErr = addEmbeddedVector(embeddingProviderObj, caption, fileUrl, storeName, fileKey, 0, embeddingProviderName, modelSubType, lang)
+		if opErr != nil {
+			if isRetryableError(opErr) {
+				return opErr
+			}
+			return backoff.Permanent(opErr)
+		}
+		return nil
+	}
+	err = backoff.Retry(operation, backoff.NewExponentialBackOff())
+	if err != nil {
+		logs.Error("Failed to embed image caption after retries: %v", err)
+		return affected, tokenCount, err
+	}
+
+	return affected, tokenCount, nil
 }
 
 func withFileStatus(owner string, storeName string, fileKey string, op func() (bool, int, error)) (bool, error) {
@@ -196,7 +238,7 @@ func withFileStatus(owner string, storeName string, fileKey string, op func() (b
 	return affected, opErr
 }
 
-func addVectorsForStore(storageProviderObj storage.StorageProvider, embeddingProviderObj embedding.EmbeddingProvider, prefix string, owner string, storeName string, splitProviderName string, embeddingProviderName string, modelSubType string, lang string) (bool, error) {
+func addVectorsForStore(storageProviderObj storage.StorageProvider, embeddingProviderObj embedding.EmbeddingProvider, modelProviderObj model.ModelProvider, prefix string, owner string, storeName string, splitProviderName string, embeddingProviderName string, modelSubType string, lang string) (bool, error) {
 	var (
 		affected bool
 		fileErr  error
@@ -211,7 +253,7 @@ func addVectorsForStore(storageProviderObj storage.StorageProvider, embeddingPro
 
 	for _, file := range files {
 		fileAffected, err := withFileStatus(owner, storeName, file.Key, func() (bool, int, error) {
-			return addVectorsForFile(embeddingProviderObj, storeName, file.Key, file.Url, splitProviderName, embeddingProviderName, modelSubType, lang)
+			return addVectorsForFile(embeddingProviderObj, modelProviderObj, storeName, file.Key, file.Url, splitProviderName, embeddingProviderName, modelSubType, lang)
 		})
 		if err != nil {
 			logs.Error("Failed to add vectors for store: [%s], file: [%s]: %v", storeName, file.Key, err)
@@ -294,8 +336,17 @@ func GetNearestKnowledge(storeName string, vectorStores []string, searchProvider
 			Vector: vector.Name,
 			Score:  vector.Score,
 		})
+
+		// Image vectors carry both a caption and the original URL. Surface the URL
+		// in markdown so the model can echo it back into the answer and the chat
+		// renderer displays the image to the user.
+		knowledgeText := vector.Text
+		if vector.ImageUrl != "" {
+			knowledgeText = fmt.Sprintf("%s\n\n![](%s)", vector.Text, vector.ImageUrl)
+		}
+
 		knowledge = append(knowledge, &model.RawMessage{
-			Text:           vector.Text,
+			Text:           knowledgeText,
 			Author:         "System",
 			TextTokenCount: vector.TokenCount,
 		})

@@ -463,6 +463,11 @@ func RefreshStoreVectors(store *Store, lang string) (bool, error) {
 		return false, err
 	}
 
+	modelProviderObj, err := modelProvider.GetModelProvider(lang)
+	if err != nil {
+		return false, err
+	}
+
 	err = UpdateFilesStatusByStore(store.Owner, store.Name, FileStatusPending)
 	if err != nil {
 		return false, err
@@ -473,7 +478,7 @@ func RefreshStoreVectors(store *Store, lang string) (bool, error) {
 		return false, err
 	}
 
-	ok, err := addVectorsForStore(storageProviderObj, embeddingProviderObj, "", store.Owner, store.Name, store.SplitProvider, embeddingProvider.Name, modelProvider.SubType, lang)
+	ok, err := addVectorsForStore(storageProviderObj, embeddingProviderObj, modelProviderObj, "", store.Owner, store.Name, store.SplitProvider, embeddingProvider.Name, modelProvider.SubType, lang)
 	return ok, err
 }
 
@@ -499,8 +504,13 @@ func AddVectorsForFile(store *Store, fileName string, fileUrl string, lang strin
 		return false, err
 	}
 
+	modelProviderObj, err := modelProvider.GetModelProvider(lang)
+	if err != nil {
+		return false, err
+	}
+
 	ok, err := withFileStatus(store.Owner, store.Name, fileName, func() (bool, int, error) {
-		return addVectorsForFile(embeddingProviderObj, store.Name, fileName, fileUrl, store.SplitProvider, embeddingProvider.Name, modelProvider.SubType, lang)
+		return addVectorsForFile(embeddingProviderObj, modelProviderObj, store.Name, fileName, fileUrl, store.SplitProvider, embeddingProvider.Name, modelProvider.SubType, lang)
 	})
 
 	return ok, err
