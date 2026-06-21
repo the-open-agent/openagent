@@ -27,7 +27,17 @@ import (
 	"github.com/the-open-agent/openagent/txt"
 )
 
-const imageCaptionPrompt = "Describe the image in detail for retrieval indexing. Cover the main subject, scene, any visible text, colors, and distinctive features. Reply with the description only, no preamble."
+var (
+	imageCaptionPromptEn = "Describe the image in detail for retrieval indexing. Cover the main subject, scene, any visible text, colors, and distinctive features. Reply with the description only, no preamble."
+	imageCaptionPromptZh = "请详细描述这张图片，用于检索索引。覆盖主体、场景、画面中可见的文字、颜色和独特特征。仅输出描述本身，不要前缀或寒暄。"
+)
+
+func getImageCaptionPrompt(lang string) string {
+	if strings.HasPrefix(strings.ToLower(lang), "zh") {
+		return imageCaptionPromptZh
+	}
+	return imageCaptionPromptEn
+}
 
 // sseCaptureWriter satisfies io.Writer + http.Flusher (every streaming model
 // provider requires the latter) and decodes the `event: message\ndata: ...\n\n`
@@ -113,7 +123,7 @@ func generateImageCaption(modelProviderObj model.ModelProvider, fileUrl string, 
 	}
 
 	buf := &sseCaptureWriter{}
-	_, err = modelProviderObj.QueryText(imageCaptionPrompt, buf, history, "", nil, nil, lang)
+	_, err = modelProviderObj.QueryText(getImageCaptionPrompt(lang), buf, history, "", nil, nil, lang)
 	if err != nil {
 		return "", err
 	}
