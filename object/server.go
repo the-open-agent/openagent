@@ -79,7 +79,7 @@ func (s *Server) processServerParams(oldServer *Server) {
 	if oldServer == nil {
 		return
 	}
-	if s.Token == "" || s.Token == "***" {
+	if s.Token == "***" {
 		s.Token = oldServer.Token
 	}
 }
@@ -311,7 +311,7 @@ func TestMcpServer(s *Server, lang string) (string, error) {
 	if s.Url == "" {
 		return "", fmt.Errorf(i18n.Translate(lang, "object:Server URL is empty"))
 	}
-	if s.Token == "" || s.Token == "***" {
+	if s.Token == "***" {
 		if s.Owner != "" && s.Name != "" {
 			oldServer, err := getServer(s.Owner, s.Name)
 			if err != nil {
