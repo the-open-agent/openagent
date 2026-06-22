@@ -23,7 +23,7 @@ class BrowserSpeechToTextProvider {
     this.lastCallback = null;  // Store the callback for use when stopping
   }
 
-  initBrowserRecognition(resultCallback) {
+  initBrowserRecognition(resultCallback, onEndCallback) {
     // Initialize Web Speech API recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -44,6 +44,7 @@ class BrowserSpeechToTextProvider {
 
     // Store the callback for use when stopping
     this.lastCallback = resultCallback;
+    this.onEndCallback = onEndCallback;
 
     this.recognition.onresult = (event) => {
       if (resultCallback && typeof resultCallback === "function") {
@@ -65,6 +66,18 @@ class BrowserSpeechToTextProvider {
     this.recognition.onerror = (event) => {
       if (event.error !== "aborted") {
         Setting.showMessage("error", `${i18next.t("chat:Failed to recognize speech")}: ${event.error}`);
+      }
+    };
+
+    // Browsers end recognition on their own (silence timeout, network drop,
+    // tab switch, mobile Safari ~60s cap) even when continuous is true. Without
+    // surfacing onend, callers can't reset their "recording" UI state and the
+    // mic button stays stuck.
+    this.recognition.onend = () => {
+      if (typeof this.onEndCallback === "function") {
+        const cb = this.onEndCallback;
+        this.onEndCallback = null;
+        cb();
       }
     };
 
@@ -102,6 +115,10 @@ class BrowserSpeechToTextProvider {
             this.lastCallback = null;
           }
         }
+
+        // User-initiated stop already updates UI in stopVoiceInput; suppress
+        // the onend callback so we don't double-fire setState.
+        this.onEndCallback = null;
 
         // Now abort the recognition
         this.recognition.abort();

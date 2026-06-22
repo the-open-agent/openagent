@@ -279,8 +279,13 @@ class ChatBox extends React.Component {
           this.setState({isVoiceInput: false});
         });
     } else {
-      // Using browser builtin recognition
-      const recognition = this.sttHelper.initBrowserRecognition(this.processVoiceResult());
+      // Using browser builtin recognition. The second callback fires when the
+      // browser ends recognition on its own (silence timeout, network drop,
+      // tab switch, mobile Safari time cap) so the mic button can reset.
+      const recognition = this.sttHelper.initBrowserRecognition(
+        this.processVoiceResult(),
+        () => this.setState({isVoiceInput: false})
+      );
 
       if (!recognition) {
         Setting.showMessage("error", i18next.t("chat:Speech recognition not supported in this browser"));
