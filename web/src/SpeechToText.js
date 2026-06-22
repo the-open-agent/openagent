@@ -28,8 +28,8 @@ class SpeechToTextHelper {
     this.remoteProvider = new RemoteSpeechToTextProvider(this);
   }
 
-  initBrowserRecognition(resultCallback) {
-    return this.browserProvider.initBrowserRecognition(resultCallback);
+  initBrowserRecognition(resultCallback, onEndCallback) {
+    return this.browserProvider.initBrowserRecognition(resultCallback, onEndCallback);
   }
 
   startRecording() {

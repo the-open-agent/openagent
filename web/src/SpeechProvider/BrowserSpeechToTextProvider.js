@@ -16,14 +16,45 @@ import * as Setting from "../Setting";
 import {showMessage} from "../Setting";
 import i18next from "i18next";
 
+// How long the recognition session can sit without producing any result
+// (interim or final) before we treat the user as "done speaking" and stop
+// the session. Reset by every onresult event.
+const SILENCE_TIMEOUT_MS = 6000;
+
 class BrowserSpeechToTextProvider {
   constructor(parent) {
     this.parent = parent;
     this.recognition = null;
     this.lastCallback = null;  // Store the callback for use when stopping
+    this.onEndCallback = null;
+    this.silenceTimer = null;
   }
 
-  initBrowserRecognition(resultCallback) {
+  _resetSilenceTimer() {
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+    }
+    this.silenceTimer = setTimeout(() => {
+      this.silenceTimer = null;
+      if (this.recognition) {
+        // graceful stop → triggers onend → triggers onEndCallback → UI resets
+        try {
+          this.recognition.stop();
+        } catch (e) {
+          // stop() can throw if already stopping; safe to ignore.
+        }
+      }
+    }, SILENCE_TIMEOUT_MS);
+  }
+
+  _clearSilenceTimer() {
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+      this.silenceTimer = null;
+    }
+  }
+
+  initBrowserRecognition(resultCallback, onEndCallback) {
     // Initialize Web Speech API recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -38,14 +69,23 @@ class BrowserSpeechToTextProvider {
     }
 
     this.recognition = new SpeechRecognition();
+    // continuous=true keeps the mic open across short pauses, so the user
+    // can string several sentences together. The silence timer below is
+    // what ultimately ends the session — after SILENCE_TIMEOUT_MS of no
+    // results, recognition.stop() fires onend and the UI resets.
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
     this.recognition.lang = Setting.getLanguage();
 
     // Store the callback for use when stopping
     this.lastCallback = resultCallback;
+    this.onEndCallback = onEndCallback;
 
     this.recognition.onresult = (event) => {
+      // Any result (interim or final) means the user is still actively
+      // speaking, so push the silence deadline forward.
+      this._resetSilenceTimer();
+
       if (resultCallback && typeof resultCallback === "function") {
         // Check if the last result is final
         const results = event.results;
@@ -68,8 +108,24 @@ class BrowserSpeechToTextProvider {
       }
     };
 
+    // Browsers end recognition on their own (our silence timer, network
+    // drop, tab switch, mobile Safari ~60s cap) even when continuous is true.
+    // Without surfacing onend, callers can't reset their "recording" UI state
+    // and the mic button stays stuck.
+    this.recognition.onend = () => {
+      this._clearSilenceTimer();
+      if (typeof this.onEndCallback === "function") {
+        const cb = this.onEndCallback;
+        this.onEndCallback = null;
+        cb();
+      }
+    };
+
     try {
       this.recognition.start();
+      // Arm the silence timer right away so that if the user clicks the mic
+      // but never speaks, the session still self-terminates.
+      this._resetSilenceTimer();
       return this.recognition;
     } catch (error) {
       Setting.showMessage("error", `${i18next.t("chat:Failed to recognize speech")}: ${error.message}`);
@@ -102,6 +158,12 @@ class BrowserSpeechToTextProvider {
             this.lastCallback = null;
           }
         }
+
+        // User-initiated stop already updates UI in stopVoiceInput; suppress
+        // the onend callback so we don't double-fire setState. Also cancel
+        // any pending silence timer.
+        this.onEndCallback = null;
+        this._clearSilenceTimer();
 
         // Now abort the recognition
         this.recognition.abort();
