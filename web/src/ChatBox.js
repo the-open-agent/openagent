@@ -273,11 +273,25 @@ class ChatBox extends React.Component {
     const useCloudProvider = providerValue !== "" && providerValue !== "Browser Built-In";
 
     if (useCloudProvider) {
-      this.sttHelper.startRecording()
-        .catch(error => {
-          Setting.showMessage("error", `${i18next.t("general:Failed to start recording")}: ${error.message}`);
-          this.setState({isVoiceInput: false});
-        });
+      // End-to-end streaming via websocket. processVoiceResult handles
+      // each transcript event the same way the browser-builtin path does;
+      // the onEnd callback resets the mic button when the server-side
+      // session ends (final result, paraformer completed, or error) and
+      // auto-sends the accumulated text, matching the old batch behavior.
+      this.sttHelper.startStreaming(
+        this.props.store,
+        this.processVoiceResult(),
+        () => {
+          this.setState({isVoiceInput: false}, () => {
+            if (this.state.value && this.state.value.trim() !== "") {
+              this.handleSend();
+            }
+          });
+        }
+      ).catch(error => {
+        Setting.showMessage("error", `${i18next.t("general:Failed to start recording")}: ${error.message}`);
+        this.setState({isVoiceInput: false});
+      });
     } else {
       // Using browser builtin recognition. The second callback fires when the
       // browser ends recognition on its own (silence timeout, network drop,
@@ -300,10 +314,10 @@ class ChatBox extends React.Component {
     const useCloudProvider = providerValue !== "" && providerValue !== "Browser Built-In";
 
     if (useCloudProvider) {
-      if (this.sttHelper.stopRecording()) {
-        const audioBlob = new Blob(this.sttHelper.audioChunks, {type: "audio/webm"});
-        this.sttHelper.processAudioFile(audioBlob, this.props.store, this.processVoiceResult(true));
-      }
+      // Send the end-of-stream marker; the streaming provider's onEnd
+      // callback (registered in startVoiceInput) will flip isVoiceInput
+      // off once the server has finalized the transcript.
+      this.sttHelper.stopStreaming();
     } else {
       this.sttHelper.stopRecognition();
 

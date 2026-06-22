@@ -33,6 +33,22 @@ type AlibabacloudSpeechToTextProvider struct {
 	typ       string
 	subType   string
 	secretKey string
+
+	// streamCh is non-nil when the caller wants live transcripts (set by
+	// ProcessAudioStream). The provider then emits a StreamEvent every
+	// time paraformer pushes a "result-generated" event. The instance is
+	// per-request (see GetSpeechToTextProvider in object/provider.go),
+	// so this field is safe to mutate without a lock.
+	streamCh chan<- *StreamEvent
+}
+
+// StreamEvent is one transcript update from the upstream STT service.
+// Text is the cumulative transcript so far (completed segments + current
+// in-progress segment), so the consumer can simply replace its input
+// each time without managing diffs.
+type StreamEvent struct {
+	Text    string `json:"text"`
+	IsFinal bool   `json:"isFinal"`
 }
 
 // SpeechSegment represents a single segment of transcribed speech
@@ -194,7 +210,20 @@ func (p *AlibabacloudSpeechToTextProvider) ProcessAudio(audioReader io.Reader, c
 					IsComplete: false,
 				}
 			}
+			cumulative := getFullTranscript(completedSegments, currentSegment)
 			mutex.Unlock()
+
+			// Streaming consumers get every transcript update live.
+			// Batch consumers leave streamCh nil and only get the final
+			// aggregated text via the ProcessAudio return value.
+			if p.streamCh != nil {
+				select {
+				case p.streamCh <- &StreamEvent{Text: cumulative, IsFinal: hasEndTime}:
+				default:
+					// Slow consumer: drop the interim update. The next
+					// event (or the final return value) will catch them up.
+				}
+			}
 
 			select {
 			case resultUpdated <- struct{}{}:
@@ -253,10 +282,18 @@ func (p *AlibabacloudSpeechToTextProvider) ProcessAudio(audioReader io.Reader, c
 		Action:    "run-task",
 	}
 
+	// Batch callers upload a full WAV blob; streaming callers feed raw
+	// 16-bit PCM bytes from an AudioWorklet, so the format header sent
+	// upstream has to match.
+	audioFormat := "wav"
+	if p.streamCh != nil {
+		audioFormat = "pcm"
+	}
+
 	payload := paraformer.PayloadIn{
 		Parameters: paraformer.Parameters{
 			SampleRate: 16000,
-			Format:     "wav", // May need adjustment based on actual input
+			Format:     audioFormat,
 		},
 		Input:     map[string]interface{}{},
 		Task:      "asr",
@@ -370,4 +407,15 @@ func (p *AlibabacloudSpeechToTextProvider) ProcessAudio(audioReader io.Reader, c
 			return "", res, fmt.Errorf(i18n.Translate(lang, "stt:speech recognition timed out after %v seconds"), timeout.Seconds())
 		}
 	}
+}
+
+// ProcessAudioStream is the streaming variant of ProcessAudio. It calls
+// the same engine but pushes each transcript update onto eventCh as soon
+// as paraformer emits it. The returned text is still the final aggregate,
+// so callers that want both per-event UI updates and the final text can
+// use this one method. eventCh is left open; the caller closes it.
+func (p *AlibabacloudSpeechToTextProvider) ProcessAudioStream(audioReader io.Reader, eventCh chan<- *StreamEvent, ctx context.Context, lang string) (string, *SpeechToTextResult, error) {
+	p.streamCh = eventCh
+	defer func() { p.streamCh = nil }()
+	return p.ProcessAudio(audioReader, ctx, lang)
 }

@@ -96,6 +96,7 @@ p, anonymous, *, /api/query-record-second
 p, anonymous, *, /api/generate-text-to-speech-audio
 p, anonymous, *, /api/generate-text-to-speech-audio-stream
 p, anonymous, *, /api/process-speech-to-text
+p, anonymous, *, /api/speech-stream
 p, anonymous, *, /api/analyze-task
 p, anonymous, *, /api/claim-store
 p, anonymous, *, /api/is-session-duplicated

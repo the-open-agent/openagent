@@ -15,6 +15,7 @@
 import * as Setting from "./Setting";
 import BrowserSpeechToTextProvider from "./SpeechProvider/BrowserSpeechToTextProvider";
 import RemoteSpeechToTextProvider from "./SpeechProvider/RemoteSpeechToTextProvider";
+import StreamingSpeechToTextProvider from "./SpeechProvider/StreamingSpeechToTextProvider";
 import {bufferToWav} from "./SpeechProvider/AudioUtils";
 import i18next from "i18next";
 
@@ -26,10 +27,23 @@ class SpeechToTextHelper {
 
     this.browserProvider = new BrowserSpeechToTextProvider(this);
     this.remoteProvider = new RemoteSpeechToTextProvider(this);
+    this.streamingProvider = new StreamingSpeechToTextProvider(this);
   }
 
   initBrowserRecognition(resultCallback, onEndCallback) {
     return this.browserProvider.initBrowserRecognition(resultCallback, onEndCallback);
+  }
+
+  // Start an end-to-end streaming cloud STT session. Resolves once the
+  // microphone is captured and the websocket has been opened; transcript
+  // events arrive on resultCallback over time, and onEndCallback fires
+  // when the session ends (server-side completion, user stop, or error).
+  startStreaming(store, resultCallback, onEndCallback) {
+    return this.streamingProvider.start(store, resultCallback, onEndCallback);
+  }
+
+  stopStreaming() {
+    this.streamingProvider.stop();
   }
 
   startRecording() {
@@ -43,6 +57,7 @@ class SpeechToTextHelper {
   stopRecognition() {
     this.browserProvider.stopRecognition();
     this.remoteProvider.stopRecording();
+    this.streamingProvider.stop();
   }
 
   // Convert audio to WAV format
@@ -109,6 +124,7 @@ class SpeechToTextHelper {
   cleanup() {
     this.browserProvider.cleanup();
     this.remoteProvider.cleanup();
+    this.streamingProvider.cleanup();
     this.audioChunks = [];
   }
 }

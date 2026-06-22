@@ -30,6 +30,15 @@ type SpeechToTextProvider interface {
 	ProcessAudio(audioData io.Reader, ctx context.Context, lang string) (string, *SpeechToTextResult, error)
 }
 
+// StreamingSpeechToTextProvider is an optional capability for providers
+// that can emit interim transcripts while audio is still arriving. The
+// websocket controller type-asserts onto this interface so providers
+// that only support batch mode keep working unchanged.
+type StreamingSpeechToTextProvider interface {
+	SpeechToTextProvider
+	ProcessAudioStream(audioReader io.Reader, eventCh chan<- *StreamEvent, ctx context.Context, lang string) (string, *SpeechToTextResult, error)
+}
+
 // GetSpeechToTextProvider creates a new provider instance based on the provider type
 func GetSpeechToTextProvider(typ string, subType string, clientSecret string, providerUrl string) (SpeechToTextProvider, error) {
 	var p SpeechToTextProvider
