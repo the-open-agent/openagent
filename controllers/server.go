@@ -48,7 +48,7 @@ func (c *ApiController) GetServers() {
 			c.ResponseError(err.Error())
 			return
 		}
-		c.ResponseOk(servers)
+		c.ResponseOk(object.GetMaskedServers(servers, true))
 	} else {
 		if !c.RequireAdmin() {
 			return
@@ -67,7 +67,7 @@ func (c *ApiController) GetServers() {
 			return
 		}
 
-		c.ResponseOk(servers, paginator.Nums())
+		c.ResponseOk(object.GetMaskedServers(servers, true), paginator.Nums())
 	}
 }
 
@@ -87,7 +87,7 @@ func (c *ApiController) GetServer() {
 		return
 	}
 
-	c.ResponseOk(server)
+	c.ResponseOk(object.GetMaskedServer(server, true))
 }
 
 // UpdateServer

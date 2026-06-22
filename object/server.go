@@ -45,7 +45,7 @@ type Server struct {
 	DisplayName string `xorm:"varchar(100)" json:"displayName"`
 
 	Url         string     `xorm:"varchar(500)" json:"url"`
-	Token       string     `xorm:"varchar(500)" json:"-"`
+	Token       string     `xorm:"varchar(500)" json:"token"`
 	Tools       []*McpTool `xorm:"mediumtext" json:"tools"`
 	TestContent string     `xorm:"varchar(500)" json:"testContent"`
 	IsDefault   bool       `json:"isDefault"`
@@ -53,6 +53,35 @@ type Server struct {
 
 func (s *Server) GetId() string {
 	return fmt.Sprintf("%s/%s", s.Owner, s.Name)
+}
+
+func GetMaskedServer(server *Server, isMaskEnabled bool) *Server {
+	if !isMaskEnabled || server == nil {
+		return server
+	}
+	if server.Token != "" {
+		server.Token = "***"
+	}
+	return server
+}
+
+func GetMaskedServers(servers []*Server, isMaskEnabled bool) []*Server {
+	if !isMaskEnabled {
+		return servers
+	}
+	for _, server := range servers {
+		server = GetMaskedServer(server, isMaskEnabled)
+	}
+	return servers
+}
+
+func (s *Server) processServerParams(oldServer *Server) {
+	if oldServer == nil {
+		return
+	}
+	if s.Token == "" || s.Token == "***" {
+		s.Token = oldServer.Token
+	}
 }
 
 func GetServers(owner string) ([]*Server, error) {
@@ -125,9 +154,7 @@ func UpdateServer(id string, server *Server) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if oldServer != nil && server.Token == "" {
-		server.Token = oldServer.Token
-	}
+	server.processServerParams(oldServer)
 
 	_, err = adapter.engine.ID(core.PK{owner, name}).AllCols().Update(server)
 	if err != nil {
@@ -158,9 +185,7 @@ func SyncMcpTool(id string, server *Server, isCleared bool) (bool, error) {
 	if oldServer == nil {
 		return false, nil
 	}
-	if server.Token == "" {
-		server.Token = oldServer.Token
-	}
+	server.processServerParams(oldServer)
 
 	if err = syncServerTools(server); err != nil {
 		return false, err
@@ -285,6 +310,15 @@ func GetServerMcpToolSet(owner, serverName, lang string) (*mcp.ToolSet, error) {
 func TestMcpServer(s *Server, lang string) (string, error) {
 	if s.Url == "" {
 		return "", fmt.Errorf(i18n.Translate(lang, "object:Server URL is empty"))
+	}
+	if s.Token == "" || s.Token == "***" {
+		if s.Owner != "" && s.Name != "" {
+			oldServer, err := getServer(s.Owner, s.Name)
+			if err != nil {
+				return "", err
+			}
+			s.processServerParams(oldServer)
+		}
 	}
 	var payload struct {
 		Tool      string                 `json:"tool"`
