@@ -458,8 +458,8 @@ export function getHtmlTitle(storeHtmlTitle) {
 }
 
 export function getFaviconUrl(themes, storeFaviconUrl) {
-  const defaultFaviconUrl = "https://cdn.casibase.com/static/favicon.png";
-  let faviconUrl = Conf.FaviconUrl;
+  const defaultFaviconUrl = `${Conf.StaticBaseUrl}/img/openagent.png`;
+  let faviconUrl = Conf.FaviconUrl || defaultFaviconUrl;
   if (storeFaviconUrl && storeFaviconUrl !== defaultFaviconUrl) {
     faviconUrl = storeFaviconUrl;
   }
@@ -478,13 +478,10 @@ export function getStoreIconUrl(store) {
 }
 
 export function getLogo(themes, storeLogoUrl) {
-  const defaultLogoUrl = "https://cdn.openagentai.org/img/openagent-logo_1900x450.png";
+  const defaultLogoUrl = `${Conf.StaticBaseUrl}/img/openagent-logo_1900x450.png`;
   let logoUrl = Conf.LogoUrl || defaultLogoUrl;
   if (storeLogoUrl && storeLogoUrl !== defaultLogoUrl) {
     logoUrl = storeLogoUrl;
-  }
-  if (Conf.StaticBaseUrl) {
-    logoUrl = logoUrl.replace("https://cdn.openagentai.org", Conf.StaticBaseUrl);
   }
   if (themes.includes("dark")) {
     return logoUrl.replace(/\.png$/, "_white.png");
@@ -498,7 +495,6 @@ export function getNavbarHtml(themes, storeNavbarHtml) {
   if (storeNavbarHtml) {
     navbarHtml = storeNavbarHtml;
   }
-  navbarHtml = navbarHtml.replace("https://cdn.openagentai.org", Conf.StaticBaseUrl);
   if (themes.includes("dark")) {
     return navbarHtml.replace(/(\.png)/g, "_white$1");
   } else {
@@ -510,8 +506,7 @@ export function getFooterHtml(themes, storeFooterHtml, site) {
   const logoUrl = getLogo("", site?.logoUrl);
   const defaultFooterHtml = `<a target="_blank" href="https://github.com/the-open-agent/openagent" rel="noreferrer"><img style="padding-bottom: 3px;" height="30" alt="OpenAgent" src="${logoUrl}" /></a>`;
   const isDefaultFooter = !storeFooterHtml || storeFooterHtml.includes("/img/openagent-logo_1900x450.png");
-  let footerHtml = isDefaultFooter ? (Conf.FooterHtml || defaultFooterHtml) : storeFooterHtml;
-  footerHtml = footerHtml.replace("https://cdn.openagentai.org", Conf.StaticBaseUrl);
+  const footerHtml = isDefaultFooter ? (Conf.FooterHtml || defaultFooterHtml) : storeFooterHtml;
   if (themes.includes("dark")) {
     return footerHtml.replace(/(\.png)/g, "_white$1");
   } else {

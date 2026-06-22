@@ -170,7 +170,7 @@ const MessageItem = ({
   }, [message.author, avatar, account, message]);
 
   const handleAvatarError = () => {
-    setAvatarSrc("https://cdn.openagentai.org/gravatar/error.png");
+    setAvatarSrc(null);
   };
 
   const renderMessageContent = () => {

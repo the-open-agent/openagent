@@ -30,16 +30,99 @@ func InitDb() {
 	// Load the built-in site first so that site.ParentDbName overrides
 	// app.conf before any other initialization reads conf or uses providerAdapter.
 	initBuiltInSite()
+	normalizeBuiltInSiteStaticAssets()
 	if site, err := GetBuiltInSiteWithSecret(); err == nil && site != nil {
 		SyncSiteToConf(site)
 		RefreshProviderAdapter()
 	}
 	modelProviderName, embeddingProviderName, ttsProviderName, sttProviderName, imageProviderName := initBuiltInProviders()
 	initBuiltInStore(modelProviderName, embeddingProviderName, ttsProviderName, sttProviderName, imageProviderName)
+	normalizeBuiltInStoreStaticAssets()
 	initSkillsFromFolder()
 	initBuiltInTools()
 	InitUsers()
 	go printStartupStats()
+}
+
+var oldDefaultStaticAssetUrls = map[string]string{
+	"https://cdn.openagentai.org":                                 "",
+	"https://cdn.openagentai.org/img/openagent.png":               "/img/openagent.png",
+	"https://cdn.openagentai.org/img/openagent-logo_1900x450.png": "/img/openagent-logo_1900x450.png",
+	"https://cdn.casibase.com/img/casibase.png":                   "/img/openagent.png",
+	"https://cdn.casibase.org/img/casibase-logo_1200x256.png":     "/img/openagent-logo_1900x450.png",
+}
+
+func normalizeDefaultStaticAssetUrl(url string) (string, bool) {
+	res, ok := oldDefaultStaticAssetUrls[url]
+	return res, ok
+}
+
+func normalizeDefaultStaticAssetHtml(html string) (string, bool) {
+	res := html
+	for oldUrl, newUrl := range oldDefaultStaticAssetUrls {
+		if oldUrl == "" {
+			continue
+		}
+		res = strings.ReplaceAll(res, oldUrl, newUrl)
+	}
+	return res, res != html
+}
+
+func normalizeBuiltInSiteStaticAssets() {
+	site := &Site{Owner: "admin", Name: "site-built-in"}
+	existed, err := adapter.engine.Get(site)
+	if err != nil {
+		panic(err)
+	}
+	if !existed {
+		return
+	}
+
+	cols := []string{}
+	if faviconUrl, ok := normalizeDefaultStaticAssetUrl(site.FaviconUrl); ok {
+		site.FaviconUrl = faviconUrl
+		cols = append(cols, "favicon_url")
+	}
+	if logoUrl, ok := normalizeDefaultStaticAssetUrl(site.LogoUrl); ok {
+		site.LogoUrl = logoUrl
+		cols = append(cols, "logo_url")
+	}
+	if footerHtml, ok := normalizeDefaultStaticAssetHtml(site.FooterHtml); ok {
+		site.FooterHtml = footerHtml
+		cols = append(cols, "footer_html")
+	}
+	if staticBaseUrl, ok := normalizeDefaultStaticAssetUrl(site.StaticBaseUrl); ok {
+		site.StaticBaseUrl = staticBaseUrl
+		cols = append(cols, "static_base_url")
+	}
+	if len(cols) == 0 {
+		return
+	}
+
+	_, err = adapter.engine.Where("owner = ? AND name = ?", site.Owner, site.Name).Cols(cols...).Update(site)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func normalizeBuiltInStoreStaticAssets() {
+	stores := []*Store{}
+	err := adapter.engine.Where("avatar in (?, ?)", "https://cdn.openagentai.org/img/openagent.png", "https://cdn.casibase.com/img/casibase.png").Find(&stores)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, store := range stores {
+		avatar, ok := normalizeDefaultStaticAssetUrl(store.Avatar)
+		if !ok {
+			continue
+		}
+		store.Avatar = avatar
+		_, err = adapter.engine.Where("owner = ? AND name = ?", store.Owner, store.Name).Cols("avatar").Update(store)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func printStartupStats() {
@@ -100,7 +183,7 @@ func initBuiltInStore(modelProviderName string, embeddingProviderName string, tt
 		CreatedTime:          util.GetCurrentTime(),
 		DisplayName:          "Built-in Store",
 		Title:                "AI Assistant",
-		Avatar:               "https://cdn.openagentai.org/img/openagent.png",
+		Avatar:               "/img/openagent.png",
 		StorageProvider:      "provider-storage-built-in",
 		StorageSubpath:       "store-built-in",
 		ImageProvider:        imageProviderName,
@@ -657,11 +740,11 @@ func initBuiltInSite() {
 		DisplayName:   "Built-in Site",
 		ThemeColor:    "#404040",
 		HtmlTitle:     "OpenAgent",
-		FaviconUrl:    "https://cdn.openagentai.org/img/openagent.png",
-		LogoUrl:       "https://cdn.openagentai.org/img/openagent-logo_1900x450.png",
+		FaviconUrl:    "/img/openagent.png",
+		LogoUrl:       "/img/openagent-logo_1900x450.png",
 		NavbarHtml:    "",
-		FooterHtml:    `<a target="_blank" href="https://github.com/the-open-agent/openagent" rel="noreferrer"><img style="padding-bottom: 3px;" height="30" alt="OpenAgent" src="https://cdn.openagentai.org/img/openagent-logo_1900x450.png" /></a>`,
-		StaticBaseUrl: "https://cdn.openagentai.org",
+		FooterHtml:    `<a target="_blank" href="https://github.com/the-open-agent/openagent" rel="noreferrer"><img style="padding-bottom: 3px;" height="30" alt="OpenAgent" src="/img/openagent-logo_1900x450.png" /></a>`,
+		StaticBaseUrl: "",
 		NavItems:      builtInNavItems,
 
 		CasdoorEndpoint:     conf.GetConfigString("casdoorEndpoint"),

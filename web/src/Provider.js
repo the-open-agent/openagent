@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import React, {useState} from "react";
+import React from "react";
 import {Tooltip} from "antd";
 import * as Setting from "./Setting";
 
@@ -29,47 +29,13 @@ export function getProviderUrl(provider) {
   return "";
 }
 
-function getDefaultLogoURL(provider) {
-  const otherProviderInfo = Setting.getOtherProviderInfo();
-  if (!provider || !otherProviderInfo[provider.category] || !otherProviderInfo[provider.category][provider.type]) {
-    return "";
-  }
-
-  const logoPath = otherProviderInfo[provider.category][provider.type].logo;
-  if (!logoPath) {
-    return "";
-  }
-
-  // Extract the path after StaticBaseUrl and prepend the default CDN URL
-  const defaultCdnUrl = "https://cdn.openagentai.org";
-  const pathMatch = logoPath.match(/\/img\/.+$/);
-  if (pathMatch) {
-    return `${defaultCdnUrl}${pathMatch[0]}`;
-  }
-  return "";
-}
-
 export function ProviderLogo({provider, width = 36, height = 36}) {
-  const [imgSrc, setImgSrc] = useState(Setting.getProviderLogoURL(provider));
-  const [hasError, setHasError] = useState(false);
-
-  const handleError = () => {
-    if (!hasError) {
-      const fallbackUrl = getDefaultLogoURL(provider);
-      if (fallbackUrl && fallbackUrl !== imgSrc) {
-        setImgSrc(fallbackUrl);
-        setHasError(true);
-      }
-    }
-  };
-
   return (
     <img
       width={width}
       height={height}
-      src={imgSrc}
+      src={Setting.getProviderLogoURL(provider)}
       alt={provider.type}
-      onError={handleError}
     />
   );
 }

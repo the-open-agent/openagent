@@ -102,16 +102,8 @@ func GetConfigString(key string) string {
 
 	res := beego.AppConfig.String(key)
 	if res == "" {
-		if key == "staticBaseUrl" {
-			res = "https://cdn.openagentai.org"
-		} else if key == "logConfig" {
+		if key == "logConfig" {
 			res = "{\"filename\": \"logs/openagent.log\", \"maxdays\":99999, \"perm\":\"0770\"}"
-		}
-	}
-
-	if key == "staticBaseUrl" {
-		if strings.HasSuffix(beego.AppConfig.String("casdoorEndpoint"), ".casdoor.net") && res == "https://cdn.openagentai.org" {
-			res = "https://cdn.casibase.com"
 		}
 	}
 
