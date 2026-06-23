@@ -26,13 +26,15 @@ import (
 // @Tag STT API
 // @Description convert speech to text
 // @Param audio formData file true "The audio file to convert to text"
-// @Param storeId formData string true "The store ID"
+// @Param storeId formData string false "The store ID (one of storeId or providerId is required)"
+// @Param providerId formData string false "The provider ID (one of storeId or providerId is required)"
 // @Success 200 {object} controllers.SpeechToTextResponse The transcribed text
 // @router /process-speech-to-text [post]
 func (c *ApiController) ProcessSpeechToText() {
 	// Get parameters from form data
 	storeId := c.GetString("storeId")
-	if storeId == "" {
+	providerId := c.GetString("providerId")
+	if storeId == "" && providerId == "" {
 		c.ResponseError(c.T("stt:Missing required parameter: storeId"))
 		return
 	}
@@ -45,25 +47,37 @@ func (c *ApiController) ProcessSpeechToText() {
 	}
 	defer audioFile.Close()
 
-	store, err := object.ResolveStoreFromId(storeId)
-	if err != nil {
-		c.ResponseError(err.Error())
-		return
-	}
-	if store == nil {
-		c.ResponseError(fmt.Sprintf("The store: %s is not found", storeId))
-		return
-	}
+	var provider *object.Provider
+	if providerId != "" {
+		provider, err = object.GetProvider(providerId)
+		if err != nil {
+			c.ResponseError(err.Error())
+			return
+		}
+		if provider == nil {
+			c.ResponseError(fmt.Sprintf("The provider: %s is not found", providerId))
+			return
+		}
+	} else {
+		store, err := object.ResolveStoreFromId(storeId)
+		if err != nil {
+			c.ResponseError(err.Error())
+			return
+		}
+		if store == nil {
+			c.ResponseError(fmt.Sprintf("The store: %s is not found", storeId))
+			return
+		}
 
-	// Get STT provider
-	provider, err := store.GetSpeechToTextProvider()
-	if err != nil {
-		c.ResponseError(err.Error())
-		return
-	}
-	if provider == nil {
-		c.ResponseError(fmt.Sprintf("The speech-to-text provider for store: %s is not found", store.GetId()))
-		return
+		provider, err = store.GetSpeechToTextProvider()
+		if err != nil {
+			c.ResponseError(err.Error())
+			return
+		}
+		if provider == nil {
+			c.ResponseError(fmt.Sprintf("The speech-to-text provider for store: %s is not found", store.GetId()))
+			return
+		}
 	}
 
 	// Get provider implementation

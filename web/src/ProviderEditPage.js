@@ -23,6 +23,7 @@ import copy from "copy-to-clipboard";
 import FileSaver from "file-saver";
 import ModelTestWidget from "./common/TestModelWidget";
 import TtsTestWidget from "./common/TestTtsWidget";
+import SttTestWidget from "./common/TestSttWidget";
 import EmbedTestWidget from "./common/TestEmbedWidget";
 import TestMcpWidget from "./common/TestMcpWidget";
 
@@ -1231,6 +1232,11 @@ class ProviderEditPage extends React.Component {
             originalProvider={this.state.originalProvider}
             account={this.props.account}
             onUpdateProvider={this.updateProviderField.bind(this)}
+          />
+          <SttTestWidget
+            provider={this.state.provider}
+            originalProvider={this.state.originalProvider}
+            account={this.props.account}
           />
           <TestMcpWidget
             provider={this.state.provider}

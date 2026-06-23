@@ -35,3 +35,24 @@ export function processSpeechToText(storeId, audioBlob) {
       return data;
     });
 }
+
+export function testSpeechToTextProvider(providerId, audioBlob) {
+  const formData = new FormData();
+  formData.append("audio", audioBlob);
+  formData.append("providerId", providerId);
+
+  return fetch(`${Setting.ServerUrl}/api/process-speech-to-text`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Accept-Language": Setting.getAcceptLanguage(),
+    },
+    body: formData,
+  }).then(res => Setting.handleFetchResponse(res))
+    .then(data => {
+      if (data && data.status === "error") {
+        throw new Error(data.msg || "Speech-to-text request failed");
+      }
+      return data;
+    });
+}
