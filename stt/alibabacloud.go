@@ -23,8 +23,6 @@ import (
 	"sync"
 	"time"
 
-	dashscopego "github.com/casibase/dashscope-go-sdk"
-
 	"github.com/casibase/dashscope-go-sdk/paraformer"
 	"github.com/the-open-agent/openagent/i18n"
 )
@@ -116,7 +114,6 @@ func (p *AlibabacloudSpeechToTextProvider) ProcessAudio(audioReader io.Reader, c
 	if p.subType != "" {
 		model = p.subType
 	}
-	client := dashscopego.NewTongyiClient(model, p.secretKey)
 
 	var (
 		completedSegments []*SpeechSegment
@@ -296,6 +293,7 @@ func (p *AlibabacloudSpeechToTextProvider) ProcessAudio(audioReader io.Reader, c
 	}
 
 	payload := paraformer.PayloadIn{
+		Model: model,
 		Parameters: paraformer.Parameters{
 			SampleRate: 16000,
 			Format:     audioFormat,
@@ -317,9 +315,12 @@ func (p *AlibabacloudSpeechToTextProvider) ProcessAudio(audioReader io.Reader, c
 	// Create a non-blocking channel to signal when the API call is complete
 	apiCallDone := make(chan error, 1)
 
-	// Start the API call in a goroutine
+	// Start the API call in a goroutine. We talk to paraformer directly
+	// (see runParaformerStreamingASR) instead of the SDK's WsClient,
+	// which has a 1024-byte read limit and silently drops oversize
+	// frames — that caused long sessions to cut off mid-transcript.
 	go func() {
-		apiCallDone <- client.CreateSpeechToTextGeneration(ctx, req, reader)
+		apiCallDone <- runParaformerStreamingASR(ctx, req, p.secretKey, reader)
 	}()
 
 	// Configuration for timeouts
