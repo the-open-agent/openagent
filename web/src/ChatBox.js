@@ -45,6 +45,8 @@ class ChatBox extends React.Component {
     };
     this.synth = window.speechSynthesis;
     this.cursorPosition = undefined;
+    this.voiceInputBaseValue = "";
+    this.voiceInputBasePos = 0;
     this.copyFileName = null;
     this.messageListRef = React.createRef();
     this.inputRef = React.createRef();
@@ -116,6 +118,8 @@ class ChatBox extends React.Component {
       isVoiceInput: false,
     });
     this.cursorPosition = undefined;
+    this.voiceInputBaseValue = "";
+    this.voiceInputBasePos = 0;
   }
 
   addCursorPositionListener() {
@@ -266,6 +270,14 @@ class ChatBox extends React.Component {
 
   // Updated startVoiceInput method for ChatBox component
   startVoiceInput = () => {
+    // Snapshot the current input value and insert position so cumulative
+    // transcript events during this session insert at a stable spot. On a
+    // second mic click after a previous session, this makes new transcripts
+    // append after the existing text instead of overwriting it.
+    const base = this.state.value || "";
+    this.voiceInputBaseValue = base;
+    this.voiceInputBasePos = this.cursorPosition !== undefined ? this.cursorPosition : base.length;
+
     this.setState({isVoiceInput: true});
 
     // Check if using browser builtin or cloud provider
@@ -331,22 +343,20 @@ class ChatBox extends React.Component {
         return; // Skip empty transcripts
       }
 
-      // Update the input field with the transcript
-      if (this.cursorPosition === undefined) {
-        this.setState({value: transcript}, () => {
-          if (shouldSendAfterProcessing && this.state.value && this.state.value.trim() !== "") {
-            this.handleSend();
-          }
-        });
-      } else {
-        const oldValue = this.state.value || "";
-        const newValue = oldValue.slice(0, this.cursorPosition) + transcript + oldValue.slice(this.cursorPosition);
-        this.setState({value: newValue}, () => {
-          if (shouldSendAfterProcessing && this.state.value && this.state.value.trim() !== "") {
-            this.handleSend();
-          }
-        });
-      }
+      // Cumulative transcripts arrive during a single session, so always
+      // rebuild from the per-session baseline captured in startVoiceInput.
+      // This keeps any text the user had typed (or any transcript from a
+      // previous session) untouched while replacing only the portion this
+      // session is producing.
+      const base = this.voiceInputBaseValue ?? "";
+      const pos = this.voiceInputBasePos ?? base.length;
+      const newValue = base.slice(0, pos) + transcript + base.slice(pos);
+
+      this.setState({value: newValue}, () => {
+        if (shouldSendAfterProcessing && this.state.value && this.state.value.trim() !== "") {
+          this.handleSend();
+        }
+      });
     };
   };
 
