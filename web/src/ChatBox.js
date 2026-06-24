@@ -118,6 +118,28 @@ class ChatBox extends React.Component {
     this.cursorPosition = undefined;
   }
 
+  focusInputAtEnd = () => {
+    const value = this.state.value || "";
+    this.cursorPosition = value.length;
+    setTimeout(() => {
+      const el = document.querySelector(".cs-message-input__content-editor");
+      if (!el) {
+        return;
+      }
+      el.focus();
+      try {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } catch (_e) {
+        // ignore — focus alone is still useful
+      }
+    }, 0);
+  };
+
   addCursorPositionListener() {
     const inputElement = document.querySelector(".cs-message-input__content-editor");
     const updateCursorPosition = () => {
@@ -283,7 +305,9 @@ class ChatBox extends React.Component {
         this.props.store,
         this.processVoiceResult(),
         () => {
-          this.setState({isVoiceInput: false});
+          this.setState({isVoiceInput: false}, () => {
+            this.focusInputAtEnd();
+          });
         }
       ).catch(error => {
         Setting.showMessage("error", `${i18next.t("general:Failed to start recording")}: ${error.message}`);
@@ -295,7 +319,11 @@ class ChatBox extends React.Component {
       // tab switch, mobile Safari time cap) so the mic button can reset.
       const recognition = this.sttHelper.initBrowserRecognition(
         this.processVoiceResult(),
-        () => this.setState({isVoiceInput: false})
+        () => {
+          this.setState({isVoiceInput: false}, () => {
+            this.focusInputAtEnd();
+          });
+        }
       );
 
       if (!recognition) {
@@ -313,10 +341,14 @@ class ChatBox extends React.Component {
     if (useCloudProvider) {
       // Send the end-of-stream marker; the streaming provider's onEnd
       // callback (registered in startVoiceInput) will flip isVoiceInput
-      // off once the server has finalized the transcript.
+      // off and focus the input once the server has finalized the transcript.
       this.sttHelper.stopStreaming();
     } else {
       this.sttHelper.stopRecognition();
+      this.setState({isVoiceInput: false}, () => {
+        this.focusInputAtEnd();
+      });
+      return;
     }
 
     this.setState({isVoiceInput: false});
