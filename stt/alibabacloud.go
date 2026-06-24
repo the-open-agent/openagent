@@ -242,7 +242,10 @@ func (p *AlibabacloudSpeechToTextProvider) ProcessAudio(audioReader io.Reader, c
 				}
 			}
 
-		case "completed":
+		// Paraformer's actual completion event name is "task-finished".
+		// "completed" was a leftover that never matched anything; kept
+		// as a tolerated alias in case some model variant uses it.
+		case "task-finished", "completed":
 			mutex.Lock()
 			recognitionDone = true
 			res.AudioDurationSeconds = totalDuration
@@ -254,7 +257,9 @@ func (p *AlibabacloudSpeechToTextProvider) ProcessAudio(audioReader io.Reader, c
 				// Channel buffer full, ignore
 			}
 
-		case "error":
+		// Likewise paraformer's failure event is "task-failed"; keep
+		// "error" for compatibility with any older/other event shape.
+		case "task-failed", "error":
 			message := "unknown error"
 			if msg, hasMsg := header["message"].(string); hasMsg {
 				message = msg
