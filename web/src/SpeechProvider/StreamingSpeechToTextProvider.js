@@ -16,10 +16,14 @@ import * as Setting from "../Setting";
 import i18next from "i18next";
 
 // How long the websocket session may sit without a new transcript event
-// before we treat the user as "done speaking" and stop. Same idea as the
-// browser-builtin silence timer; needed here because the upstream SDK
-// does not send a finish-task to paraformer on its own, so without this
-// the session would only end on the server's 60s hard timeout.
+// before we treat the upstream as "done with this utterance" and stop.
+// This is the main exit mechanism for models with server-side VAD
+// (paraformer-realtime-v2, fun-asr-realtime, fun-asr-flash-8k-realtime):
+// once they finish a sentence they stop pushing transcript events even
+// though the websocket and microphone are still live. Without this timer
+// such sessions would idle until the 60s server-side hard timeout. v1
+// pushes interim transcripts continuously, so the timer never fires for
+// it and recording continues until the user clicks stop.
 const SILENCE_TIMEOUT_MS = 3000;
 
 // Bidirectional websocket STT: captures microphone via AudioWorklet,
@@ -48,7 +52,8 @@ class StreamingSpeechToTextProvider {
       this.silenceTimer = null;
       // Trigger the same path as a manual stop: send EOS upstream and
       // disconnect the mic. The websocket onclose handler then runs
-      // _teardown, which fires the onEndCallback so ChatBox auto-sends.
+      // _teardown, which fires the onEndCallback so the mic button
+      // resets and the user can click again to continue.
       this.stop();
     }, SILENCE_TIMEOUT_MS);
   }
@@ -132,8 +137,14 @@ class StreamingSpeechToTextProvider {
           return;
         }
         if (typeof msg.text === "string" && this.resultCallback) {
-          // Any transcript update means the user is still speaking, so
-          // push the silence deadline forward.
+          // Any transcript event resets the silence timer. For v1 this
+          // means the timer rarely fires (events keep flowing while audio
+          // arrives), so v1 sessions tend to end via explicit user stop
+          // or the 60s server hard timeout. For v2/fun-asr the upstream
+          // stops emitting after detecting end-of-utterance, so the timer
+          // fires naturally ~3s later. We don't try to distinguish "real"
+          // events from heartbeats here — it turned out we don't know v1
+          // well enough to filter correctly.
           this._resetSilenceTimer();
           // Match the synthetic event shape Browser/Remote providers use,
           // so ChatBox.processVoiceResult can stay unchanged.
