@@ -74,15 +74,25 @@ func (p *AlibabacloudSpeechToTextProvider) GetPricing() string {
 https://help.aliyun.com/zh/model-studio/paraformer-speech-recognition/
 ASR models:
 
-|     Models      |    Price          |
-|-----------------|-------------------|
-|    Paraformer   |   0.288 yuan/hour |
+|           Models           |    Price          |
+|----------------------------|-------------------|
+|        Paraformer          |   0.288 yuan/hour |
+|       fun-asr-realtime     |   1.188 yuan/hour |
+| fun-asr-flash-8k-realtime  |   0.792 yuan/hour |
 `
 }
 
-// calculatePrice calculates the price based on audio duration
+// calculatePrice calculates the price based on audio duration. Rates are
+// keyed on the upstream model name (subType); paraformer is the default
+// fallback for models we haven't explicitly priced.
 func (p *AlibabacloudSpeechToTextProvider) calculatePrice(res *SpeechToTextResult) error {
 	pricePerHour := 0.288
+	switch p.subType {
+	case "fun-asr-realtime":
+		pricePerHour = 1.188
+	case "fun-asr-flash-8k-realtime":
+		pricePerHour = 0.792
+	}
 	res.Price = getPrice(res.AudioDurationSeconds, pricePerHour)
 	res.Currency = "CNY"
 	return nil

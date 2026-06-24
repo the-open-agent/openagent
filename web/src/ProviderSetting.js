@@ -1337,6 +1337,9 @@ export function getProviderSubTypeOptions(category, type) {
   } else if (category === "Speech-to-Text") {
     if (type === "Alibaba Cloud") {
       return [
+        {id: "fun-asr-realtime", name: "fun-asr-realtime"},
+        {id: "fun-asr-flash-8k-realtime", name: "fun-asr-flash-8k-realtime"},
+        {id: "paraformer-realtime-v2", name: "paraformer-realtime-v2"},
         {id: "paraformer-realtime-v1", name: "paraformer-realtime-v1"},
       ];
     } else {
