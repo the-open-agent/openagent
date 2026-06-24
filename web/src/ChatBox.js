@@ -276,17 +276,14 @@ class ChatBox extends React.Component {
       // End-to-end streaming via websocket. processVoiceResult handles
       // each transcript event the same way the browser-builtin path does;
       // the onEnd callback resets the mic button when the server-side
-      // session ends (final result, paraformer completed, or error) and
-      // auto-sends the accumulated text, matching the old batch behavior.
+      // session ends (final result, paraformer completed, or error). The
+      // transcript stays in the input box so the user can review/edit
+      // it before deciding to send.
       this.sttHelper.startStreaming(
         this.props.store,
         this.processVoiceResult(),
         () => {
-          this.setState({isVoiceInput: false}, () => {
-            if (this.state.value && this.state.value.trim() !== "") {
-              this.handleSend();
-            }
-          });
+          this.setState({isVoiceInput: false});
         }
       ).catch(error => {
         Setting.showMessage("error", `${i18next.t("general:Failed to start recording")}: ${error.message}`);
@@ -320,13 +317,6 @@ class ChatBox extends React.Component {
       this.sttHelper.stopStreaming();
     } else {
       this.sttHelper.stopRecognition();
-
-      setTimeout(() => {
-        // Send the message after speech recognition is complete
-        if (this.state.value && this.state.value.trim() !== "") {
-          this.handleSend();
-        }
-      }, 300);
     }
 
     this.setState({isVoiceInput: false});
