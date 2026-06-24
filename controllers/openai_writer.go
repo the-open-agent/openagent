@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/beego/beego/context"
 	"github.com/sashabaranov/go-openai"
@@ -30,29 +31,55 @@ type OpenAIWriter struct {
 	Cleaner    Cleaner
 	Buffer     []byte
 	MessageBuf []byte
+	ToolBuf    []byte
 	RequestID  string
 	Stream     bool
 	StreamSent bool
 	Model      string
 }
 
+func getOpenAIEventData(p []byte, eventType string) string {
+	prefix := []byte(fmt.Sprintf("event: %s\ndata: ", eventType))
+	suffix := []byte("\n\n")
+	return string(bytes.TrimSuffix(bytes.TrimPrefix(p, prefix), suffix))
+}
+
 // Write processes incoming data chunks and formats them for OpenAI compatibility
 func (w *OpenAIWriter) Write(p []byte) (n int, err error) {
+	if len(p) > 0 && p[0] == ':' {
+		if !w.Stream {
+			return len(p), nil
+		}
+		n, err = w.ResponseWriter.Write(p)
+		if flusher, ok := w.ResponseWriter.(http.Flusher); ok {
+			flusher.Flush()
+		}
+		return n, err
+	}
+
+	// Always store the original bytes.
+	w.Buffer = append(w.Buffer, p...)
+
 	// Parse the incoming SSE message format
 	var content string
 
 	if bytes.HasPrefix(p, []byte("event: message\ndata: ")) {
-		prefix := []byte("event: message\ndata: ")
-		suffix := []byte("\n\n")
-		content = string(bytes.TrimSuffix(bytes.TrimPrefix(p, prefix), suffix))
+		content = getOpenAIEventData(p, "message")
 
 		// Add content to message buffer
 		w.MessageBuf = append(w.MessageBuf, []byte(content)...)
 	} else if bytes.HasPrefix(p, []byte("event: reason\ndata: ")) {
-		// We don't expose reason data in OpenAI format, but we'll store it
-		prefix := []byte("event: reason\ndata: ")
-		suffix := []byte("\n\n")
-		content = string(bytes.TrimSuffix(bytes.TrimPrefix(p, prefix), suffix))
+		return len(p), nil
+	} else if bytes.HasPrefix(p, []byte("event: tool-delta\ndata: ")) || bytes.HasPrefix(p, []byte("event: tool-start\ndata: ")) {
+		return len(p), nil
+	} else if bytes.HasPrefix(p, []byte("event: tool\ndata: ")) {
+		if len(w.ToolBuf) > 0 {
+			w.ToolBuf = append(w.ToolBuf, '\n')
+		}
+		w.ToolBuf = append(w.ToolBuf, []byte(getOpenAIEventData(p, "tool"))...)
+		return len(p), nil
+	} else if bytes.HasPrefix(p, []byte("event: search\ndata: ")) {
+		return len(p), nil
 	} else {
 		// If we can't parse, just store the raw bytes and attempt to clean
 		content = w.Cleaner.CleanString(string(p))
@@ -60,9 +87,6 @@ func (w *OpenAIWriter) Write(p []byte) (n int, err error) {
 			w.MessageBuf = append(w.MessageBuf, []byte(content)...)
 		}
 	}
-
-	// Always store the original bytes
-	w.Buffer = append(w.Buffer, p...)
 
 	// For non-streaming, just collect the data
 	if !w.Stream {
@@ -113,6 +137,10 @@ func (w *OpenAIWriter) MessageString() string {
 	return string(w.MessageBuf)
 }
 
+func (w *OpenAIWriter) ToolString() string {
+	return string(w.ToolBuf)
+}
+
 // Close finalizes the stream by sending completion message and DONE marker
 func (w *OpenAIWriter) Close(promptTokens, completionTokens, totalTokens int) error {
 	if !w.Stream {
@@ -145,16 +173,21 @@ func (w *OpenAIWriter) Close(promptTokens, completionTokens, totalTokens int) er
 			return err
 		}
 
-		// Send usage information as a custom message
-		usage := map[string]interface{}{
-			"usage": openai.Usage{
+		// Send usage information as an OpenAI-compatible stream chunk.
+		usageChunk := openai.ChatCompletionStreamResponse{
+			ID:      "chatcmpl-" + w.RequestID,
+			Object:  "chat.completion.chunk",
+			Created: util.GetCurrentUnixTime(),
+			Model:   w.Model,
+			Choices: []openai.ChatCompletionStreamChoice{},
+			Usage: &openai.Usage{
 				PromptTokens:     promptTokens,
 				CompletionTokens: completionTokens,
 				TotalTokens:      totalTokens,
 			},
 		}
 
-		usageData, err := json.Marshal(usage)
+		usageData, err := json.Marshal(usageChunk)
 		if err != nil {
 			return err
 		}

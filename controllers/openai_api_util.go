@@ -118,6 +118,7 @@ func createApiChatSession(store *object.Store, modelProviderName, question, requ
 // applyResultToApiSession writes the AI answer and token counts back to the DB.
 func applyResultToApiSession(aiMsg *object.Message, chat *object.Chat, writer *OpenAIWriter, modelResult *model.ModelResult) error {
 	aiMsg.Text = writer.MessageString()
+	aiMsg.ToolCalls = model.GetToolCallsFromWriter(writer.ToolString())
 	aiMsg.TokenCount = modelResult.TotalTokenCount
 	aiMsg.Price = modelResult.TotalPrice
 	aiMsg.Currency = modelResult.Currency

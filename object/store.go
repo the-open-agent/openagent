@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/the-open-agent/openagent/auth"
 	"github.com/the-open-agent/openagent/conf"
 	"github.com/the-open-agent/openagent/i18n"
 	"github.com/the-open-agent/openagent/storage"
@@ -159,21 +160,21 @@ func generateStoreApiKey() string {
 	return fmt.Sprintf("sk-%s", util.GetRandomString(24))
 }
 
-func GetMaskedStore(store *Store) *Store {
+func GetMaskedStore(store *Store, user *auth.User) *Store {
 	if store == nil {
 		return nil
 	}
 
-	if store.ApiKey != "" {
+	if store.ApiKey != "" && !util.IsGlobalAdmin(user) && (user == nil || user.Name != store.Owner) {
 		store.ApiKey = "***"
 	}
 
 	return store
 }
 
-func GetMaskedStores(stores []*Store) []*Store {
+func GetMaskedStores(stores []*Store, user *auth.User) []*Store {
 	for _, store := range stores {
-		store = GetMaskedStore(store)
+		GetMaskedStore(store, user)
 	}
 	return stores
 }

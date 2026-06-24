@@ -37,7 +37,7 @@ func (c *ApiController) GetHubStores() {
 		c.ResponseError(err.Error())
 		return
 	}
-	c.ResponseOk(stores)
+	c.ResponseOk(object.GetMaskedStores(stores, c.GetSessionUser()))
 }
 
 // GetGlobalStores
@@ -62,7 +62,7 @@ func (c *ApiController) GetGlobalStores() {
 			return
 		}
 
-		c.ResponseOk(stores)
+		c.ResponseOk(object.GetMaskedStores(stores, c.GetSessionUser()))
 	} else {
 		if !c.RequireAdmin() {
 			return
@@ -112,7 +112,7 @@ func (c *ApiController) GetGlobalStores() {
 			object.SortStoresInMemory(stores, sortField, sortOrder)
 		}
 
-		c.ResponseOk(stores, count)
+		c.ResponseOk(object.GetMaskedStores(stores, c.GetSessionUser()), count)
 	}
 }
 
@@ -138,7 +138,7 @@ func (c *ApiController) GetStores() {
 		return
 	}
 
-	c.ResponseOk(object.GetMaskedStores(stores))
+	c.ResponseOk(object.GetMaskedStores(stores, c.GetSessionUser()))
 }
 
 // GetStore
@@ -168,12 +168,12 @@ func (c *ApiController) GetStore() {
 		origin := getOriginFromHost(host)
 		err = store.Populate(origin, c.GetAcceptLanguage())
 		if err != nil {
-			c.ResponseOk(object.GetMaskedStore(store), err.Error())
+			c.ResponseOk(object.GetMaskedStore(store, c.GetSessionUser()), err.Error())
 			return
 		}
 	}
 
-	c.ResponseOk(object.GetMaskedStore(store))
+	c.ResponseOk(object.GetMaskedStore(store, c.GetSessionUser()))
 }
 
 // UpdateStore
@@ -386,7 +386,7 @@ func (c *ApiController) ClaimStore() {
 		return
 	}
 
-	c.ResponseOk(store)
+	c.ResponseOk(object.GetMaskedStore(store, c.GetSessionUser()))
 }
 
 // RefreshStoreVectors
@@ -497,5 +497,5 @@ func (c *ApiController) AddSharedStore() {
 		return
 	}
 
-	c.ResponseOk(newStore)
+	c.ResponseOk(object.GetMaskedStore(newStore, c.GetSessionUser()))
 }

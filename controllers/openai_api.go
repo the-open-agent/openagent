@@ -98,7 +98,29 @@ func (c *ApiController) chatCompletionsViaStore(store *object.Store, request ope
 	}
 
 	writer := newOpenAIWriter(c.Ctx.ResponseWriter, request, requestId)
-	modelResult, err := modelProviderObj.QueryText(question, writer, history, prompt, []*model.RawMessage{}, nil, lang)
+
+	mcpToolSet, err := object.GetServerMcpToolSet(store.Owner, store.McpServer, lang)
+	if err != nil {
+		c.ResponseError(err.Error())
+		return
+	}
+	origin := getOriginFromHost(c.Ctx.Request.Host)
+	mcpToolSet = object.MergeMcpTools(mcpToolSet, store, false, "api", origin, lang)
+
+	var modelResult *model.ModelResult
+	if mcpToolSet != nil && (len(mcpToolSet.Tools) > 0 || mcpToolSet.WebSearchEnabled) {
+		toolSession := &model.ToolSession{
+			McpToolSet: mcpToolSet,
+			ToolMessages: &model.ToolMessages{
+				Messages:  []*model.RawMessage{},
+				ToolCalls: nil,
+			},
+			IsVision: model.IsVisionModel(modelProviderRecord.SubType),
+		}
+		modelResult, err = model.QueryTextWithTools(modelProviderObj, question, writer, history, prompt, []*model.RawMessage{}, toolSession, lang)
+	} else {
+		modelResult, err = modelProviderObj.QueryText(question, writer, history, prompt, []*model.RawMessage{}, nil, lang)
+	}
 	if err != nil {
 		c.ResponseError(err.Error())
 		return

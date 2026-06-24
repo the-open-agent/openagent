@@ -25,6 +25,7 @@ import ModelTestWidget from "./common/TestModelWidget";
 import TtsTestWidget from "./common/TestTtsWidget";
 import EmbedTestWidget from "./common/TestEmbedWidget";
 import TestMcpWidget from "./common/TestMcpWidget";
+import OpenAiCompatibleConfig from "./OpenAiCompatibleConfig";
 
 const {Option} = Select;
 const {TextArea} = Input;
@@ -1053,20 +1054,15 @@ class ProviderEditPage extends React.Component {
           </Row>
           {
             this.state.provider.category === "Model" ? (
-              <Row style={{marginTop: "20px"}} >
-                <Col style={{marginTop: "5px"}} span={(Setting.isMobile()) ? 22 : 2}>
-                  {this.getProviderKeyLabel(this.state.provider)}
-                </Col>
-                <Col span={22} >
-                  <Input.Password
-                    value={this.state.provider.providerKey}
-                    disabled={!Setting.isAdminUser(this.props.account)}
-                    onChange={e => {
-                      this.updateProviderField("providerKey", e.target.value);
-                    }}
-                  />
-                </Col>
-              </Row>
+              <OpenAiCompatibleConfig
+                apiKey={this.state.provider.providerKey}
+                apiKeyLabel={this.getProviderKeyLabel(this.state.provider)}
+                apiKeyDisabled={!Setting.isAdminUser(this.props.account)}
+                onApiKeyChange={e => {
+                  this.updateProviderField("providerKey", e.target.value);
+                }}
+                hint={i18next.t("general:Provider API integration hint")}
+              />
             ) : null
           }
         </Card>
