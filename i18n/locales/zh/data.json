@@ -57,6 +57,11 @@
     "transaction failed to be mined: %v": "交易挖矿失败：%v",
     "transaction failed with status: %d, reason: %s": "交易失败，状态码：%d，原因：%s"
   },
+  "chat": {
+    "Generating answer with %s": "正在使用 %s 生成回答",
+    "Preparing": "准备中",
+    "Searching knowledge base": "正在搜索知识库"
+  },
   "controllers": {
     "No permission": "无权限",
     "No records to add": "没有要添加的记录",

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import i18next from "i18next";
 import * as Setting from "../Setting";
 
 export function getGlobalMessages(page = "", pageSize = "", field = "", value = "", sortField = "", sortOrder = "", store = "") {
@@ -46,11 +47,14 @@ export function getChatMessages(owner, chat) {
 
 const eventSourceMap = new Map();
 
-export function getMessageAnswer(owner, name, onMessage, onReason, onTool, onSearch, onVector, onError, onEnd, onInfo, onChat, onToolDelta) {
+export function getMessageAnswer(owner, name, onMessage, onReason, onTool, onSearch, onVector, onError, onEnd, onInfo, onChat, onToolDelta, onStatus) {
   if (eventSourceMap.has(`${owner}/${name}`)) {
     return;
   }
-  const eventSource = new EventSource(`${Setting.ServerUrl}/api/get-message-answer?id=${owner}/${encodeURIComponent(name)}`, {
+  // EventSource cannot set Accept-Language, so pass the UI language as a query
+  // param. Backend's GetAcceptLanguage() prefers this over the header.
+  const lang = i18next.language || "en";
+  const eventSource = new EventSource(`${Setting.ServerUrl}/api/get-message-answer?id=${owner}/${encodeURIComponent(name)}&language=${encodeURIComponent(lang)}`, {
     withCredentials: true,
   });
   eventSourceMap.set(`${owner}/${name}`, eventSource);
@@ -90,6 +94,12 @@ export function getMessageAnswer(owner, name, onMessage, onReason, onTool, onSea
   if (onInfo) {
     eventSource.addEventListener("myinfo", (e) => {
       onInfo(e.data);
+    });
+  }
+
+  if (onStatus) {
+    eventSource.addEventListener("status", (e) => {
+      onStatus(e.data);
     });
   }
 

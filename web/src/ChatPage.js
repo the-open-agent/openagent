@@ -736,6 +736,15 @@ class ChatPage extends BaseListPage {
               const jsonData = JSON.parse(data);
               applyToolDelta(toolCalls, jsonData);
               scheduleToolDeltaFlush();
+            }, (statusText) => {
+              if (!chat || (this.state.chat?.name !== chat.name)) {
+                return;
+              }
+              const currentMessage = res.data[res.data.length - 1];
+              const lastMessage2 = Setting.deepCopy(currentMessage);
+              lastMessage2.statusText = statusText;
+              res.data[res.data.length - 1] = lastMessage2;
+              this.setState({messages: [...res.data]});
             });
           } else {
             this.setState({

@@ -408,6 +408,7 @@ class ChatBox extends React.Component {
             onEditMessage={this.handleEditMessage}
             hideInput={this.props.hideInput}
             disableInput={this.props.disableInput}
+            isGenerating={this.props.loading}
             isReading={this.state.isReading}
             isLoadingTTS={this.state.isLoadingTTS}
             readingMessage={this.state.readingMessage}

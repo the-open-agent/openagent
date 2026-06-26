@@ -57,6 +57,11 @@
     "transaction failed to be mined: %v": "transaction failed to be mined: %v",
     "transaction failed with status: %d, reason: %s": "transaction failed with status: %d, reason: %s"
   },
+  "chat": {
+    "Generating answer with %s": "Generating answer with %s",
+    "Preparing": "Preparing",
+    "Searching knowledge base": "Searching knowledge base"
+  },
   "controllers": {
     "No permission": "No permission",
     "No records to add": "No records to add",

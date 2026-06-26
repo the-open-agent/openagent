@@ -29,6 +29,7 @@ import SearchSourcesDrawer from "./SearchSourcesDrawer";
 import KnowledgeSourcesDrawer from "./KnowledgeSourcesDrawer";
 import ToolCallSection from "./ToolCallSection";
 import ReasoningSection from "./ReasoningSection";
+import StatusStrip from "./StatusStrip";
 import GeneratedResourceList, {extractGeneratedResources} from "./GeneratedResourceList";
 
 const MessageItem = ({
@@ -49,6 +50,7 @@ const MessageItem = ({
   readingMessage,
   sendMessage,
   hideThinking,
+  isGenerating,
 }) => {
   const history = useHistory();
   const [avatarSrc, setAvatarSrc] = useState(null);
@@ -103,7 +105,7 @@ const MessageItem = ({
   const aiBubbleBg = isDark ? "#2a2d35" : "#f4f6fa";
   const aiBubbleBorder = isDark ? "1px solid #383d47" : "1px solid #eaedf3";
 
-  const renderThinkingAnimation = () => {
+  const renderThinkingAnimation = (label) => {
     return (
       <div className="message-thinking" style={{
         padding: "10px",
@@ -115,7 +117,7 @@ const MessageItem = ({
           fontWeight: "bold",
           color: themeColor,
         }}>
-          {i18next.t("chat:Thinking")}
+          {label || i18next.t("chat:Thinking")}
         </div>
         <div className="thinking-animation" style={{
           marginLeft: "8px",
@@ -228,7 +230,13 @@ const MessageItem = ({
     }
 
     if (message.text === "" && message.author === "AI" && !message.reasonText && (!message.toolCalls || message.toolCalls.length === 0)) {
-      return null;
+      // The status strip above already shows a spinner + status text while the
+      // generation is active; skip the bouncing-dot animation to avoid two
+      // competing "working" indicators on the same bubble.
+      if (isGenerating && isLastMessage && !message.errorText) {
+        return null;
+      }
+      return renderThinkingAnimation(message.statusText);
     }
 
     if (message.isReasoningPhase && message.author === "AI" && !message.toolCalls && !message.text) {
@@ -342,6 +350,12 @@ const MessageItem = ({
                   <span>{message.hintText}</span>
                 </div>
               )}
+              <StatusStrip
+                message={message}
+                isLastMessage={isLastMessage}
+                isGenerating={isGenerating}
+                themeColor={themeColor}
+              />
               {renderMessageContent()}
             </div>
           }
@@ -405,7 +419,6 @@ const MessageItem = ({
               )}
             </div>
           }
-          loading={message.text === "" && message.author === "AI" && !message.reasonText && !message.errorText && (!message.toolCalls || message.toolCalls.length === 0)}
           typing={message.author === "AI" && !message.isReasoningPhase ? {
             step: 2,
             interval: 50,

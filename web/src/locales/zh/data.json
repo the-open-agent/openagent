@@ -50,6 +50,7 @@
   "chat": {
     "Add attachment": "添加附件",
     "Arguments": "参数",
+    "Calling tool": "调用工具",
     "Default Category": "默认分类",
     "Done": "完成",
     "Drop files here to upload": "将文件拖至此处上传",

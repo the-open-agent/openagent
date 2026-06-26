@@ -25,6 +25,7 @@ class MessageList extends React.Component {
       nextProps.store !== this.props.store ||
       nextProps.hideInput !== this.props.hideInput ||
       nextProps.disableInput !== this.props.disableInput ||
+      nextProps.isGenerating !== this.props.isGenerating ||
       nextProps.isReading !== this.props.isReading ||
       nextProps.isLoadingTTS !== this.props.isLoadingTTS ||
       nextProps.readingMessage !== this.props.readingMessage ||
@@ -45,6 +46,7 @@ class MessageList extends React.Component {
       onEditMessage,
       hideInput,
       disableInput,
+      isGenerating,
       isReading,
       isLoadingTTS,
       readingMessage,
@@ -89,6 +91,7 @@ class MessageList extends React.Component {
             onEditMessage={onEditMessage}
             disableInput={disableInput}
             hideInput={hideInput}
+            isGenerating={isGenerating}
             isReading={isReading}
             isLoadingTTS={isLoadingTTS}
             readingMessage={readingMessage}

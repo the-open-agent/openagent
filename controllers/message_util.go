@@ -95,6 +95,19 @@ func writeInfoStream(responseWriter http.ResponseWriter, infoText string) error 
 	return nil
 }
 
+func writeStatusStream(responseWriter http.ResponseWriter, statusText string) error {
+	sseData := strings.ReplaceAll(statusText, "\n", "\ndata: ")
+	event := fmt.Sprintf("event: status\ndata: %s\n\n", sseData)
+	_, err := responseWriter.Write([]byte(event))
+	if err != nil {
+		return err
+	}
+	if flusher, ok := responseWriter.(http.Flusher); ok {
+		flusher.Flush()
+	}
+	return nil
+}
+
 func writeChatUpdateStream(responseWriter http.ResponseWriter, chat *object.Chat) error {
 	if chat == nil {
 		return nil

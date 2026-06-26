@@ -146,6 +146,10 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 		}
 	}
 
+	emitStatus := func(statusText string) {
+		_ = writeStatusStream(responseWriter, statusText)
+	}
+
 	message, err := object.GetMessage(id)
 	if err != nil {
 		responseErrorStream(message, err.Error())
@@ -267,6 +271,8 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 		}
 	}
 
+	emitStatus(i18n.Translate(lang, "chat:Preparing"))
+
 	modelProviderName := store.ModelProvider
 	if chat.ModelProvider != "" {
 		modelProviderName = chat.ModelProvider
@@ -338,6 +344,7 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 	embeddingResult := &embedding.EmbeddingResult{}
 
 	if chat.Tool == "" && store.KnowledgeCount != 0 && embeddingProviderObj != nil {
+		emitStatus(i18n.Translate(lang, "chat:Searching knowledge base"))
 		knowledge, vectorScores, embeddingResult, err = object.GetNearestKnowledge(store.Name, store.VectorStores, store.SearchProvider, embeddingProvider, embeddingProviderObj, modelProvider, store.Owner, question, store.KnowledgeCount, lang)
 		if err != nil && err.Error() != "no knowledge vectors found" {
 			err = fmt.Errorf(i18n.Translate(lang, "message_answer:object.GetNearestKnowledge() error, %s"), err.Error())
@@ -396,6 +403,12 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 			return
 		}
 	}
+
+	modelProviderDisplayName := modelProvider.DisplayName
+	if modelProviderDisplayName == "" {
+		modelProviderDisplayName = modelProviderName
+	}
+	emitStatus(fmt.Sprintf(i18n.Translate(lang, "chat:Generating answer with %s"), modelProviderDisplayName))
 
 	var modelResult *model.ModelResult
 	if mcpToolSet != nil {
