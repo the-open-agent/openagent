@@ -83,10 +83,7 @@ func (c *ApiController) ResponseAudio(audioData []byte, contentType string, file
 }
 
 func (c *ApiController) GetAcceptLanguage() string {
-	language := c.Input().Get("language")
-	if language == "" {
-		language = c.Ctx.Request.Header.Get("Accept-Language")
-	}
+	language := c.Ctx.Request.Header.Get("Accept-Language")
 	if len(language) > 2 {
 		language = language[0:2]
 	}
