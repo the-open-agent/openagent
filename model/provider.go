@@ -175,6 +175,8 @@ func GetModelProvider(typ string, subType string, clientId string, clientSecret 
 		p, err = NewWriterModelProvider(subType, clientSecret, temperature, topP)
 	} else if typ == "OpenCode" {
 		p, err = NewOpenCodeProvider(providerUrl, clientSecret)
+	} else if typ == "LiteLLM" {
+		p, err = NewLiteLLMModelProvider(subType, clientSecret, temperature, topP, frequencyPenalty, presencePenalty, providerUrl, inputPricePerThousandTokens, outputPricePerThousandTokens, Currency)
 	} else {
 		return nil, nil
 	}

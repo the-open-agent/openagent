@@ -605,6 +605,7 @@ export function getProviderTypeOptions(category) {
         {id: "GitHub", name: "GitHub"},
         {id: "Writer", name: "Writer"},
         {id: "OpenCode", name: "OpenCode"},
+        {id: "LiteLLM", name: "LiteLLM"},
       ]
     );
   } else if (category === "Embedding") {
@@ -1194,6 +1195,8 @@ export function getModelSubTypeOptions(type) {
       {id: "palmyra-fin", name: "Palmyra Fin"},
       {id: "palmyra-creative", name: "Palmyra Creative"},
     ];
+  } else if (type === "LiteLLM") {
+    return [];
   } else {
     return [];
   }
