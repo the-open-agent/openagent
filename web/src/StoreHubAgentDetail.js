@@ -14,6 +14,7 @@
 
 import React from "react";
 import {Avatar, Button, Card, Col, Empty, Row, Space, Tabs, Tag, Typography} from "antd";
+import StoreInsights from "./StoreInsights";
 import {AppstoreOutlined, BarChartOutlined, BugOutlined, CommentOutlined, EyeOutlined, FolderOpenOutlined, ForkOutlined, SettingOutlined, StarOutlined} from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -197,22 +198,11 @@ function renderIssues() {
   );
 }
 
-function renderInsights(store, onOpenAnalysis) {
-  return (
-    <Card>
-      <Empty
-        image={<BarChartOutlined style={{fontSize: 44, color: "var(--ant-color-primary)"}} />}
-        description={i18next.t("store:Open analysis to view agent insights")}
-      >
-        <Button icon={<BarChartOutlined />} onClick={onOpenAnalysis}>
-          {i18next.t("store:Analysis")}
-        </Button>
-      </Empty>
-    </Card>
-  );
+function renderInsights(store) {
+  return <StoreInsights owner={store.owner} storeName={store.name} />;
 }
 
-function renderTabContent(account, store, activeTab, onStoreUpdate, onRefresh, onOpenAnalysis) {
+function renderTabContent(account, store, activeTab, onStoreUpdate, onRefresh) {
   if (activeTab === "files") {
     return renderFiles(account, store, onStoreUpdate, onRefresh);
   }
@@ -220,12 +210,12 @@ function renderTabContent(account, store, activeTab, onStoreUpdate, onRefresh, o
     return renderIssues();
   }
   if (activeTab === "insights") {
-    return renderInsights(store, onOpenAnalysis);
+    return renderInsights(store);
   }
   return renderOverview(account, store, onStoreUpdate, onRefresh);
 }
 
-function StoreHubAgentDetail({account, store, activeTab, canManage, onTabChange, onStartChat, onFork, forking, onPlaceholder, onStoreUpdate, onRefresh, onOpenAnalysis}) {
+function StoreHubAgentDetail({account, store, activeTab, canManage, onTabChange, onStartChat, onFork, forking, onPlaceholder, onStoreUpdate, onRefresh}) {
   const tabItems = [
     {key: "overview", label: <span><AppstoreOutlined /> {i18next.t("store:Overview")}</span>},
     {key: "files", label: <span><FolderOpenOutlined /> {i18next.t("general:Files")}</span>},
@@ -246,7 +236,7 @@ function StoreHubAgentDetail({account, store, activeTab, canManage, onTabChange,
         onChange={onTabChange}
         style={{marginBottom: 16}}
       />
-      {renderTabContent(account, store, activeTab, onStoreUpdate, onRefresh, onOpenAnalysis)}
+      {renderTabContent(account, store, activeTab, onStoreUpdate, onRefresh)}
     </div>
   );
 }

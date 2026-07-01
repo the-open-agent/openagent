@@ -102,6 +102,7 @@ p, anonymous, *, /api/claim-store
 p, anonymous, *, /api/is-session-duplicated
 p, anonymous, *, /api/add-node-tunnel
 p, anonymous, *, /api/chat-webhook/*
+p, anonymous, *, /api/get-store-insights-summary
 
 g, admin, user
 g, user, anonymous

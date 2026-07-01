@@ -23,3 +23,14 @@ export function getStoreWordCloud(storeName) {
     },
   }).then(res => Setting.handleFetchResponse(res));
 }
+
+export function getStoreInsightsSummary(owner, storeName, period) {
+  const url = `${Setting.ServerUrl}/api/get-store-insights-summary?owner=${encodeURIComponent(owner)}&storeName=${encodeURIComponent(storeName)}&period=${encodeURIComponent(period)}`;
+  return fetch(url, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Accept-Language": Setting.getAcceptLanguage(),
+    },
+  }).then(res => Setting.handleFetchResponse(res));
+}

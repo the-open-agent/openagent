@@ -44,3 +44,37 @@ func (c *ApiController) GetStoreWordCloud() {
 
 	c.ResponseOk(wordCount)
 }
+
+// GetStoreInsightsSummary
+// @Title GetStoreInsightsSummary
+// @Tag Analysis API
+// @Description Pulse-style aggregate over a time window for a store: totals, per-bucket time series, and top active users.
+// @Param   owner       query   string  true  "store owner"
+// @Param   storeName   query   string  true  "store name"
+// @Param   period      query   string  true  "time window: 24h | 7d | 30d"
+// @Success 200 {object} object.StoreInsightsSummary The Response object
+// @router /get-store-insights-summary [get]
+func (c *ApiController) GetStoreInsightsSummary() {
+	owner := c.Input().Get("owner")
+	storeName := c.Input().Get("storeName")
+	period := c.Input().Get("period")
+
+	if owner == "" || storeName == "" {
+		c.ResponseError("owner and storeName are required")
+		return
+	}
+	if period == "" {
+		period = "7d"
+	}
+
+	if _, ok := c.RequireSignedIn(); !ok {
+		return
+	}
+
+	summary, err := object.GetStoreInsightsSummary(owner, storeName, period)
+	if err != nil {
+		c.ResponseError(err.Error())
+		return
+	}
+	c.ResponseOk(summary)
+}

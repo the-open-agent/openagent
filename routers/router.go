@@ -73,6 +73,7 @@ func initAPI() {
 	beego.Router("/api/refresh-store-vectors", &controllers.ApiController{}, "POST:RefreshStoreVectors")
 	beego.Router("/api/get-storage-providers", &controllers.ApiController{}, "GET:GetStorageProviders")
 	beego.Router("/api/get-store-word-cloud", &controllers.ApiController{}, "GET:GetStoreWordCloud")
+	beego.Router("/api/get-store-insights-summary", &controllers.ApiController{}, "GET:GetStoreInsightsSummary")
 	beego.Router("/api/get-store-names", &controllers.ApiController{}, "GET:GetStoreNames")
 	beego.Router("/api/get-organization-users", &controllers.ApiController{}, "GET:GetOrganizationUsers")
 	beego.Router("/api/add-shared-store", &controllers.ApiController{}, "POST:AddSharedStore")
