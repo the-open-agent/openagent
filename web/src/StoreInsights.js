@@ -18,6 +18,7 @@ import {CloudOutlined, DollarOutlined, EnvironmentOutlined, ReloadOutlined, Team
 import i18next from "i18next";
 import InsightsPulse from "./InsightsPulse";
 import InsightsContributors from "./InsightsContributors";
+import InsightsWordCloud from "./InsightsWordCloud";
 
 const {Sider, Content} = Layout;
 const {Text} = Typography;
@@ -78,8 +79,8 @@ class StoreInsights extends React.Component {
     switch (activeSubTab) {
     case "pulse": return <InsightsPulse {...common} />;
     case "contributors": return <InsightsContributors {...common} />;
+    case "wordcloud": return <InsightsWordCloud {...common} />;
     case "traffic":
-    case "wordcloud":
     case "cost":
       return (
         <Card>
