@@ -115,3 +115,36 @@ func (c *ApiController) GetStoreContributors() {
 	}
 	c.ResponseOk(data)
 }
+
+// GetStoreTraffic
+// @Title GetStoreTraffic
+// @Tag Analysis API
+// @Description Traffic sub-tab data: views/unique visitors time series, top referrers, top paths.
+// @Param   owner       query   string  true  "store owner"
+// @Param   storeName   query   string  true  "store name"
+// @Param   period      query   string  true  "time window: 24h | 7d | 30d"
+// @Success 200 {object} object.StoreTraffic The Response object
+// @router /get-store-traffic [get]
+func (c *ApiController) GetStoreTraffic() {
+	owner := c.Input().Get("owner")
+	storeName := c.Input().Get("storeName")
+	period := c.Input().Get("period")
+	if owner == "" || storeName == "" {
+		c.ResponseError("owner and storeName are required")
+		return
+	}
+	if period == "" {
+		period = "7d"
+	}
+
+	if _, ok := c.RequireSignedIn(); !ok {
+		return
+	}
+
+	data, err := object.GetStoreTrafficData(owner, storeName, period)
+	if err != nil {
+		c.ResponseError(err.Error())
+		return
+	}
+	c.ResponseOk(data)
+}
