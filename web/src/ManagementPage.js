@@ -586,6 +586,8 @@ function ManagementPage(props) {
         <Route exact path="/quick-setup" render={(props) => renderSigninIfNotSignedIn(<QuickSetupPage account={account} {...props} />)} />
         <Route exact path="/hub" render={(props) => renderSigninIfNotSignedIn(<StoreHubPage account={account} site={site} {...props} />)} />
         <Route exact path="/agents/:owner/:storeName" render={(props) => renderSigninIfNotSignedIn(<StoreViewPage account={account} {...props} />)} />
+        <Route exact path="/agents/:owner/:storeName/insights/:sub" render={(props) => renderSigninIfNotSignedIn(<StoreViewPage account={account} {...props} />)} />
+        <Route exact path="/agents/:owner/:storeName/:tab" render={(props) => renderSigninIfNotSignedIn(<StoreViewPage account={account} {...props} />)} />
         <Route exact path="/chat" render={(props) => renderSigninIfNotSignedIn(<ChatPage account={account} site={site} {...props} />)} />
         <Route exact path="/chat/:chatName" render={(props) => renderSigninIfNotSignedIn(<ChatPage account={account} site={site} {...props} />)} />
         <Route exact path="/stores/:owner/:storeName/chat" render={(props) => renderSigninIfNotSignedIn(<ChatPage account={account} site={site} {...props} />)} />

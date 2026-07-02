@@ -20,6 +20,33 @@ import i18next from "i18next";
 import {getChatUrl} from "./StoreHubDrawer";
 import StoreHubAgentDetail from "./StoreHubAgentDetail";
 
+const VALID_TABS = new Set(["overview", "files", "issues", "insights"]);
+const VALID_INSIGHTS_SUBS = new Set(["pulse", "contributors", "traffic", "wordcloud", "cost"]);
+
+function resolveActiveTab(match) {
+  const {tab, sub} = match.params;
+  // /agents/:owner/:storeName/insights/:sub → activeTab = "insights"
+  if (sub && VALID_INSIGHTS_SUBS.has(sub)) {return "insights";}
+  if (tab && VALID_TABS.has(tab)) {return tab;}
+  return "overview";
+}
+
+function resolveActiveSub(match) {
+  const {sub} = match.params;
+  if (sub && VALID_INSIGHTS_SUBS.has(sub)) {return sub;}
+  return "pulse";
+}
+
+function buildTabUrl(owner, storeName, tab, sub) {
+  if (tab === "insights") {
+    return `/agents/${owner}/${storeName}/insights/${sub || "pulse"}`;
+  }
+  if (!tab || tab === "overview") {
+    return `/agents/${owner}/${storeName}`;
+  }
+  return `/agents/${owner}/${storeName}/${tab}`;
+}
+
 class StoreViewPage extends React.Component {
   constructor(props) {
     super(props);
@@ -29,12 +56,23 @@ class StoreViewPage extends React.Component {
       store: null,
       loading: true,
       forking: false,
-      activeTab: "overview",
     };
   }
 
   componentDidMount() {
     this.getStore();
+  }
+
+  componentDidUpdate(prevProps) {
+    // Route changed to a different store — refetch. Sub-tab / tab changes
+    // reuse the already-loaded store, so we only refetch when the store
+    // coordinates in the URL actually change.
+    const {owner: prevOwner, storeName: prevName} = prevProps.match.params;
+    const {owner, storeName} = this.props.match.params;
+    if (owner !== prevOwner || storeName !== prevName) {
+      this.setState({owner, storeName, store: null, loading: true},
+        () => this.getStore(owner, storeName));
+    }
   }
 
   // Page-view logging runs entirely on the backend (see routers/TrackStoreVisit).
@@ -84,13 +122,8 @@ class StoreViewPage extends React.Component {
         if (res.status === "ok") {
           const forkedStore = res.data;
           Setting.showMessage("success", i18next.t("store:Forked successfully"));
+          // Route change picks up in componentDidUpdate → refetch happens there.
           this.props.history.push(`/agents/${forkedStore.owner}/${forkedStore.name}`);
-          this.setState({
-            owner: forkedStore.owner,
-            storeName: forkedStore.name,
-            store: null,
-            loading: true,
-          }, () => this.getStore(forkedStore.owner, forkedStore.name));
         } else {
           Setting.showMessage("error", `${i18next.t("store:Fork failed")}: ${res.msg}`);
         }
@@ -115,11 +148,19 @@ class StoreViewPage extends React.Component {
       this.props.history.push(`/stores/${store.owner}/${store.name}`);
       return;
     }
-    this.setState({activeTab: key});
+    const {store} = this.state;
+    if (!store) {return;}
+    this.props.history.push(buildTabUrl(store.owner, store.name, key));
+  }
+
+  handleSubTabChange(sub) {
+    const {store} = this.state;
+    if (!store) {return;}
+    this.props.history.push(buildTabUrl(store.owner, store.name, "insights", sub));
   }
 
   render() {
-    const {store, loading, forking, activeTab} = this.state;
+    const {store, loading, forking} = this.state;
 
     if (loading) {
       return (
@@ -134,13 +175,18 @@ class StoreViewPage extends React.Component {
     }
 
     const canManage = this.canManageStore(store);
+    const activeTab = resolveActiveTab(this.props.match);
+    const activeSub = resolveActiveSub(this.props.match);
+
     return (
       <StoreHubAgentDetail
         account={this.props.account}
         store={store}
         activeTab={activeTab}
+        activeSub={activeSub}
         canManage={canManage}
         onTabChange={(key) => this.handleTabChange(key)}
+        onSubTabChange={(sub) => this.handleSubTabChange(sub)}
         onStartChat={() => this.handleStartChat()}
         onFork={() => this.handleFork()}
         forking={forking}

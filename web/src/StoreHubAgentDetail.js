@@ -198,11 +198,18 @@ function renderIssues() {
   );
 }
 
-function renderInsights(store) {
-  return <StoreInsights owner={store.owner} storeName={store.name} />;
+function renderInsights(store, activeSub, onSubTabChange) {
+  return (
+    <StoreInsights
+      owner={store.owner}
+      storeName={store.name}
+      activeSub={activeSub}
+      onSubTabChange={onSubTabChange}
+    />
+  );
 }
 
-function renderTabContent(account, store, activeTab, onStoreUpdate, onRefresh) {
+function renderTabContent(account, store, activeTab, activeSub, onStoreUpdate, onRefresh, onSubTabChange) {
   if (activeTab === "files") {
     return renderFiles(account, store, onStoreUpdate, onRefresh);
   }
@@ -210,12 +217,12 @@ function renderTabContent(account, store, activeTab, onStoreUpdate, onRefresh) {
     return renderIssues();
   }
   if (activeTab === "insights") {
-    return renderInsights(store);
+    return renderInsights(store, activeSub, onSubTabChange);
   }
   return renderOverview(account, store, onStoreUpdate, onRefresh);
 }
 
-function StoreHubAgentDetail({account, store, activeTab, canManage, onTabChange, onStartChat, onFork, forking, onPlaceholder, onStoreUpdate, onRefresh}) {
+function StoreHubAgentDetail({account, store, activeTab, activeSub, canManage, onTabChange, onSubTabChange, onStartChat, onFork, forking, onPlaceholder, onStoreUpdate, onRefresh}) {
   const tabItems = [
     {key: "overview", label: <span><AppstoreOutlined /> {i18next.t("store:Overview")}</span>},
     {key: "files", label: <span><FolderOpenOutlined /> {i18next.t("general:Files")}</span>},
@@ -236,7 +243,7 @@ function StoreHubAgentDetail({account, store, activeTab, canManage, onTabChange,
         onChange={onTabChange}
         style={{marginBottom: 16}}
       />
-      {renderTabContent(account, store, activeTab, onStoreUpdate, onRefresh)}
+      {renderTabContent(account, store, activeTab, activeSub, onStoreUpdate, onRefresh, onSubTabChange)}
     </div>
   );
 }

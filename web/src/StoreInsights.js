@@ -49,15 +49,24 @@ class StoreInsights extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      activeSubTab: "pulse",
       period: "7d",
       refreshTick: 0,
       asOf: null,
     };
   }
 
+  componentDidUpdate(prevProps) {
+    // Sub-tab switched via URL — clear the previously displayed asOf so the
+    // shell shows "—" until the newly-mounted sub-tab reports its own fetch time.
+    if (prevProps.activeSub !== this.props.activeSub) {
+      this.setState({asOf: null});
+    }
+  }
+
   handleSubTabChange = (key) => {
-    this.setState({activeSubTab: key, asOf: null});
+    if (this.props.onSubTabChange) {
+      this.props.onSubTabChange(key);
+    }
   };
 
   handlePeriodChange = (period) => {
@@ -73,11 +82,11 @@ class StoreInsights extends React.Component {
   };
 
   renderSubTabContent() {
-    const {activeSubTab, period, refreshTick} = this.state;
-    const {owner, storeName} = this.props;
+    const {period, refreshTick} = this.state;
+    const {owner, storeName, activeSub} = this.props;
     const common = {owner, storeName, period, refreshTick, onLoaded: this.handleChildLoaded};
 
-    switch (activeSubTab) {
+    switch (activeSub) {
     case "pulse": return <InsightsPulse {...common} />;
     case "contributors": return <InsightsContributors {...common} />;
     case "traffic": return <InsightsTraffic {...common} />;
@@ -93,7 +102,8 @@ class StoreInsights extends React.Component {
   }
 
   render() {
-    const {activeSubTab, period, asOf} = this.state;
+    const {period, asOf} = this.state;
+    const activeSub = this.props.activeSub || "pulse";
 
     return (
       <Layout style={{background: "transparent"}}>
@@ -103,7 +113,7 @@ class StoreInsights extends React.Component {
         >
           <Menu
             mode="inline"
-            selectedKeys={[activeSubTab]}
+            selectedKeys={[activeSub]}
             onClick={({key}) => this.handleSubTabChange(key)}
             style={{background: "transparent", border: "none"}}
             items={SUB_TABS.map((t) => ({
