@@ -15,6 +15,8 @@
 package controllers
 
 import (
+	"strconv"
+
 	"github.com/the-open-agent/openagent/object"
 )
 
@@ -77,4 +79,39 @@ func (c *ApiController) GetStoreInsightsSummary() {
 		return
 	}
 	c.ResponseOk(summary)
+}
+
+// GetStoreContributors
+// @Title GetStoreContributors
+// @Tag Analysis API
+// @Description Per-user rollup and time series for the Contributors sub-tab.
+// @Param   owner       query   string  true  "store owner"
+// @Param   storeName   query   string  true  "store name"
+// @Param   period      query   string  true  "time window: 24h | 7d | 30d"
+// @Param   topN        query   int     false "cap on returned contributors (default 20)"
+// @Success 200 {object} object.StoreContributorsData The Response object
+// @router /get-store-contributors [get]
+func (c *ApiController) GetStoreContributors() {
+	owner := c.Input().Get("owner")
+	storeName := c.Input().Get("storeName")
+	period := c.Input().Get("period")
+	if owner == "" || storeName == "" {
+		c.ResponseError("owner and storeName are required")
+		return
+	}
+	if period == "" {
+		period = "7d"
+	}
+	topN, _ := strconv.Atoi(c.Input().Get("topN"))
+
+	if _, ok := c.RequireSignedIn(); !ok {
+		return
+	}
+
+	data, err := object.GetStoreContributors(owner, storeName, period, topN)
+	if err != nil {
+		c.ResponseError(err.Error())
+		return
+	}
+	c.ResponseOk(data)
 }

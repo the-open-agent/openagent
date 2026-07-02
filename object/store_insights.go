@@ -58,6 +58,29 @@ type InsightsUser struct {
 	ChatCount    int    `json:"chatCount"`
 }
 
+type StoreContributorsData struct {
+	Period    string `json:"period"`
+	StartTime string `json:"startTime"`
+	EndTime   string `json:"endTime"`
+	AsOf      string `json:"asOf"`
+
+	TotalActiveUsers int             `json:"totalActiveUsers"`
+	TotalSeries      []*ContribPoint `json:"totalSeries"`
+	Contributors     []*ContribUser  `json:"contributors"`
+}
+
+type ContribPoint struct {
+	Date         string `json:"date"`
+	MessageCount int    `json:"messageCount"`
+}
+
+type ContribUser struct {
+	User         string          `json:"user"`
+	MessageCount int             `json:"messageCount"`
+	ChatCount    int             `json:"chatCount"`
+	Series       []*ContribPoint `json:"series"`
+}
+
 type periodSpec struct {
 	duration   time.Duration
 	bucketUnit time.Duration
@@ -143,8 +166,11 @@ func GetStoreInsightsSummary(owner string, storeName string, period string) (*St
 	summary.ChatCount = len(chats)
 
 	// Messages — aggregated per bucket, plus per-user rollup for TopUsers.
+	// Only fetch the fields the aggregation actually reads so we don't drag the
+	// mediumtext columns (Text, ReasonText, ErrorText, Comment) into memory.
 	messages := []*Message{}
 	if err = adapter.engine.
+		Cols("user", "chat", "created_time", "author", "token_count", "price", "currency").
 		Where("store = ? and created_time >= ? and created_time < ?", storeName, startStr, endStr).
 		Find(&messages); err != nil {
 		return nil, err
@@ -161,16 +187,21 @@ func GetStoreInsightsSummary(owner string, storeName string, period string) (*St
 		if idx < 0 {
 			continue
 		}
-		buckets[idx].Messages++
+		// Token/price include AI replies because billing does; but the message-
+		// count / per-user metrics only count human-authored messages, matching
+		// the pattern in object/analysis.go's GetStoreWordCloud.
 		buckets[idx].TokenCount += m.TokenCount
 		buckets[idx].Price += m.Price
-
-		summary.MessageCount++
 		summary.TotalTokenCount += m.TokenCount
 		summary.TotalPrice += m.Price
 		if m.Currency != "" && summary.Currency == "" {
 			summary.Currency = m.Currency
 		}
+		if m.Author == "AI" {
+			continue
+		}
+		buckets[idx].Messages++
+		summary.MessageCount++
 		if m.User != "" {
 			userMsgCount[m.User]++
 			activeUserSet[m.User] = true
@@ -245,4 +276,118 @@ func GetStoreInsightsSummary(owner string, storeName string, period string) (*St
 	summary.TopUsers = top
 
 	return summary, nil
+}
+
+// GetStoreContributors returns per-user rollup and per-bucket series for the Contributors sub-tab.
+// topN caps the number of user cards returned (defaults to 20 if <= 0).
+func GetStoreContributors(owner string, storeName string, period string, topN int) (*StoreContributorsData, error) {
+	spec, err := resolvePeriod(period)
+	if err != nil {
+		return nil, err
+	}
+	if topN <= 0 {
+		topN = 20
+	}
+
+	now := time.Now()
+	end := now.Truncate(spec.bucketUnit).Add(spec.bucketUnit)
+	start := end.Add(-spec.duration)
+
+	startStr := util.FormatTimeForCompare(start)
+	endStr := util.FormatTimeForCompare(end)
+
+	dates := make([]string, spec.bucketN)
+	for i := 0; i < spec.bucketN; i++ {
+		dates[i] = start.Add(time.Duration(i) * spec.bucketUnit).Format(spec.bucketFmt)
+	}
+
+	// Filter by store only. Message.Owner is always "admin" (system-created), so
+	// filtering by the store's owner would never match — same reasoning as
+	// GetStoreInsightsSummary. Also restrict fetched columns so we don't drag
+	// the mediumtext body columns into memory (Text, ReasonText, ErrorText,
+	// Comment) since the aggregation only needs the four short fields below.
+	messages := []*Message{}
+	if err = adapter.engine.
+		Cols("user", "chat", "created_time", "author").
+		Where("store = ? and created_time >= ? and created_time < ?", storeName, startStr, endStr).
+		Find(&messages); err != nil {
+		return nil, err
+	}
+
+	totalSeries := make([]*ContribPoint, spec.bucketN)
+	for i := 0; i < spec.bucketN; i++ {
+		totalSeries[i] = &ContribPoint{Date: dates[i]}
+	}
+
+	// One accumulator per user; we only allocate series for users that actually have activity.
+	type userAgg struct {
+		messageCount int
+		chatSet      map[string]bool
+		series       []*ContribPoint
+	}
+	users := map[string]*userAgg{}
+
+	for _, m := range messages {
+		t, perr := time.Parse(time.RFC3339, m.CreatedTime)
+		if perr != nil {
+			continue
+		}
+		idx := bucketIndex(t, start, spec.bucketUnit, spec.bucketN)
+		if idx < 0 {
+			continue
+		}
+		// Exclude AI replies — Contributors ranks people by how much they typed,
+		// not by how much AI answered them (matches GetStoreWordCloud's filter).
+		if m.Author == "AI" {
+			continue
+		}
+		totalSeries[idx].MessageCount++
+		if m.User == "" {
+			continue
+		}
+		u, ok := users[m.User]
+		if !ok {
+			series := make([]*ContribPoint, spec.bucketN)
+			for i := 0; i < spec.bucketN; i++ {
+				series[i] = &ContribPoint{Date: dates[i]}
+			}
+			u = &userAgg{chatSet: map[string]bool{}, series: series}
+			users[m.User] = u
+		}
+		u.messageCount++
+		u.series[idx].MessageCount++
+		if m.Chat != "" {
+			u.chatSet[m.Chat] = true
+		}
+	}
+
+	contributors := make([]*ContribUser, 0, len(users))
+	for name, u := range users {
+		contributors = append(contributors, &ContribUser{
+			User:         name,
+			MessageCount: u.messageCount,
+			ChatCount:    len(u.chatSet),
+			Series:       u.series,
+		})
+	}
+	sort.Slice(contributors, func(i, j int) bool {
+		if contributors[i].MessageCount != contributors[j].MessageCount {
+			return contributors[i].MessageCount > contributors[j].MessageCount
+		}
+		return contributors[i].User < contributors[j].User
+	})
+	totalActive := len(contributors)
+	if len(contributors) > topN {
+		contributors = contributors[:topN]
+	}
+
+	return &StoreContributorsData{
+		Period:           period,
+		StartTime:        startStr,
+		EndTime:          endStr,
+		AsOf:             now.Format(time.RFC3339),
+		TotalActiveUsers: totalActive,
+		TotalSeries:      totalSeries,
+		Contributors:     contributors,
+	}, nil
 }

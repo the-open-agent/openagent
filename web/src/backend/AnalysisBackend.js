@@ -34,3 +34,15 @@ export function getStoreInsightsSummary(owner, storeName, period) {
     },
   }).then(res => Setting.handleFetchResponse(res));
 }
+
+export function getStoreContributors(owner, storeName, period, topN) {
+  const extra = topN ? `&topN=${topN}` : "";
+  const url = `${Setting.ServerUrl}/api/get-store-contributors?owner=${encodeURIComponent(owner)}&storeName=${encodeURIComponent(storeName)}&period=${encodeURIComponent(period)}${extra}`;
+  return fetch(url, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Accept-Language": Setting.getAcceptLanguage(),
+    },
+  }).then(res => Setting.handleFetchResponse(res));
+}
