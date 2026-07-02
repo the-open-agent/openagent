@@ -37,6 +37,9 @@ class StoreViewPage extends React.Component {
     this.getStore();
   }
 
+  // Page-view logging runs entirely on the backend (see routers/TrackStoreVisit).
+  // getStore only fetches; the AfterExec filter records the visit if the response
+  // was ok — no separate frontend call, no forgeable endpoint.
   getStore(owner = this.state.owner, storeName = this.state.storeName) {
     StoreBackend.getStore(owner, storeName)
       .then((res) => {

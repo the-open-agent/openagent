@@ -81,6 +81,31 @@ type ContribUser struct {
 	Series       []*ContribPoint `json:"series"`
 }
 
+type StoreTraffic struct {
+	Period    string `json:"period"`
+	StartTime string `json:"startTime"`
+	EndTime   string `json:"endTime"`
+	AsOf      string `json:"asOf"`
+
+	TotalViews          int `json:"totalViews"`
+	TotalUniqueVisitors int `json:"totalUniqueVisitors"`
+
+	Buckets      []*TrafficBucket `json:"buckets"`
+	TopReferrers []*TrafficItem   `json:"topReferrers"`
+	TopPaths     []*TrafficItem   `json:"topPaths"`
+}
+
+type TrafficBucket struct {
+	Date           string `json:"date"`
+	Views          int    `json:"views"`
+	UniqueVisitors int    `json:"uniqueVisitors"`
+}
+
+type TrafficItem struct {
+	Label string `json:"label"`
+	Count int    `json:"count"`
+}
+
 type periodSpec struct {
 	duration   time.Duration
 	bucketUnit time.Duration
@@ -390,4 +415,105 @@ func GetStoreContributors(owner string, storeName string, period string, topN in
 		TotalSeries:      totalSeries,
 		Contributors:     contributors,
 	}, nil
+}
+
+// GetStoreTrafficData returns views/uniques time series plus referrer/path
+// breakdowns for the Traffic sub-tab. Unlike the Chat/Message aggregations,
+// StoreVisit has real StoreOwner/StoreName fields (we control the schema),
+// so filtering by both correctly disambiguates stores that share a name.
+func GetStoreTrafficData(owner string, storeName string, period string) (*StoreTraffic, error) {
+	spec, err := resolvePeriod(period)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+	end := now.Truncate(spec.bucketUnit).Add(spec.bucketUnit)
+	start := end.Add(-spec.duration)
+	startStr := util.FormatTimeForCompare(start)
+	endStr := util.FormatTimeForCompare(end)
+
+	buckets := make([]*TrafficBucket, spec.bucketN)
+	// Per-bucket visitor sets so a returning visitor counts once per bucket.
+	bucketVisitors := make([]map[string]bool, spec.bucketN)
+	for i := 0; i < spec.bucketN; i++ {
+		buckets[i] = &TrafficBucket{
+			Date: start.Add(time.Duration(i) * spec.bucketUnit).Format(spec.bucketFmt),
+		}
+		bucketVisitors[i] = map[string]bool{}
+	}
+
+	// Only fetch the four columns the aggregation reads — user_agent is a
+	// varchar(500) and client_ip / language / is_guest / session_id aren't
+	// used downstream, so leaving them on-disk keeps the loop lean.
+	visits := []*StoreVisit{}
+	if err = adapter.engine.
+		Cols("created_time", "visitor", "referrer", "path").
+		Where("store_owner = ? and store_name = ? and created_time >= ? and created_time < ?", owner, storeName, startStr, endStr).
+		Asc("created_time").
+		Find(&visits); err != nil {
+		return nil, err
+	}
+
+	referrerCount := map[string]int{}
+	pathCount := map[string]int{}
+	totalVisitorSet := map[string]bool{}
+
+	for _, v := range visits {
+		t, perr := time.Parse(time.RFC3339, v.CreatedTime)
+		if perr != nil {
+			continue
+		}
+		idx := bucketIndex(t, start, spec.bucketUnit, spec.bucketN)
+		if idx < 0 {
+			continue
+		}
+		buckets[idx].Views++
+		if v.Visitor != "" {
+			bucketVisitors[idx][v.Visitor] = true
+			totalVisitorSet[v.Visitor] = true
+		}
+		if v.Referrer != "" {
+			referrerCount[v.Referrer]++
+		}
+		if v.Path != "" {
+			pathCount[v.Path]++
+		}
+	}
+
+	for i, b := range buckets {
+		b.UniqueVisitors = len(bucketVisitors[i])
+	}
+
+	return &StoreTraffic{
+		Period:              period,
+		StartTime:           startStr,
+		EndTime:             endStr,
+		AsOf:                now.Format(time.RFC3339),
+		TotalViews:          len(visits),
+		TotalUniqueVisitors: len(totalVisitorSet),
+		Buckets:             buckets,
+		TopReferrers:        topItems(referrerCount, 10),
+		TopPaths:            topItems(pathCount, 10),
+	}, nil
+}
+
+// topItems sorts a label→count map descending (ties broken by label ascending)
+// and returns at most `limit` entries. Kept unexported since Traffic is its
+// only current consumer.
+func topItems(counts map[string]int, limit int) []*TrafficItem {
+	items := make([]*TrafficItem, 0, len(counts))
+	for label, count := range counts {
+		items = append(items, &TrafficItem{Label: label, Count: count})
+	}
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].Count != items[j].Count {
+			return items[i].Count > items[j].Count
+		}
+		return items[i].Label < items[j].Label
+	})
+	if len(items) > limit {
+		items = items[:limit]
+	}
+	return items
 }

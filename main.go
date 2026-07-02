@@ -73,6 +73,7 @@ func main() {
 	beego.InsertFilter("*", beego.BeforeRouter, routers.PrometheusFilter)
 	beego.InsertFilter("*", beego.BeforeRouter, routers.RecordMessage)
 	beego.InsertFilter("*", beego.AfterExec, routers.AfterRecordMessage, false)
+	beego.InsertFilter("*", beego.AfterExec, routers.TrackStoreVisit, false)
 	beego.InsertFilter("*", beego.AfterExec, routers.SecureCookieFilter, false)
 
 	beego.BConfig.CopyRequestBody = true
