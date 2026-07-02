@@ -105,6 +105,7 @@ p, anonymous, *, /api/chat-webhook/*
 p, anonymous, *, /api/get-store-insights-summary
 p, anonymous, *, /api/get-store-contributors
 p, anonymous, *, /api/get-store-traffic
+p, anonymous, *, /api/get-store-cost-series
 
 g, admin, user
 g, user, anonymous

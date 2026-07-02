@@ -148,3 +148,36 @@ func (c *ApiController) GetStoreTraffic() {
 	}
 	c.ResponseOk(data)
 }
+
+// GetStoreCostSeries
+// @Title GetStoreCostSeries
+// @Tag Analysis API
+// @Description Per-bucket token and price series for the Cost sub-tab, plus totals, peak-day info, and average cost per user message.
+// @Param   owner       query   string  true  "store owner"
+// @Param   storeName   query   string  true  "store name"
+// @Param   period      query   string  true  "time window: 24h | 7d | 30d"
+// @Success 200 {object} object.StoreCostSeries The Response object
+// @router /get-store-cost-series [get]
+func (c *ApiController) GetStoreCostSeries() {
+	owner := c.Input().Get("owner")
+	storeName := c.Input().Get("storeName")
+	period := c.Input().Get("period")
+	if owner == "" || storeName == "" {
+		c.ResponseError("owner and storeName are required")
+		return
+	}
+	if period == "" {
+		period = "7d"
+	}
+
+	if _, ok := c.RequireSignedIn(); !ok {
+		return
+	}
+
+	data, err := object.GetStoreCostSeries(owner, storeName, period)
+	if err != nil {
+		c.ResponseError(err.Error())
+		return
+	}
+	c.ResponseOk(data)
+}

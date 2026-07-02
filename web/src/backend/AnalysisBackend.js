@@ -57,3 +57,14 @@ export function getStoreTraffic(owner, storeName, period) {
     },
   }).then(res => Setting.handleFetchResponse(res));
 }
+
+export function getStoreCostSeries(owner, storeName, period) {
+  const url = `${Setting.ServerUrl}/api/get-store-cost-series?owner=${encodeURIComponent(owner)}&storeName=${encodeURIComponent(storeName)}&period=${encodeURIComponent(period)}`;
+  return fetch(url, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Accept-Language": Setting.getAcceptLanguage(),
+    },
+  }).then(res => Setting.handleFetchResponse(res));
+}

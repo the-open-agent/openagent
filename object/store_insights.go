@@ -81,6 +81,31 @@ type ContribUser struct {
 	Series       []*ContribPoint `json:"series"`
 }
 
+type StoreCostSeries struct {
+	Period    string `json:"period"`
+	StartTime string `json:"startTime"`
+	EndTime   string `json:"endTime"`
+	AsOf      string `json:"asOf"`
+
+	TotalTokenCount int     `json:"totalTokenCount"`
+	TotalPrice      float64 `json:"totalPrice"`
+	Currency        string  `json:"currency"`
+	MessageCount    int     `json:"messageCount"`
+	AvgPricePerMsg  float64 `json:"avgPricePerMsg"`
+	AvgTokensPerMsg float64 `json:"avgTokensPerMsg"`
+	PeakDate        string  `json:"peakDate"`
+	PeakTokenCount  int     `json:"peakTokenCount"`
+
+	Buckets []*CostBucket `json:"buckets"`
+}
+
+type CostBucket struct {
+	Date         string  `json:"date"`
+	TokenCount   int     `json:"tokenCount"`
+	Price        float64 `json:"price"`
+	MessageCount int     `json:"messageCount"`
+}
+
 type StoreTraffic struct {
 	Period    string `json:"period"`
 	StartTime string `json:"startTime"`
@@ -516,4 +541,88 @@ func topItems(counts map[string]int, limit int) []*TrafficItem {
 		items = items[:limit]
 	}
 	return items
+}
+
+// GetStoreCostSeries returns per-bucket token/price plus totals and peak-day
+// info for the Cost sub-tab. Token/price include AI replies (billing does),
+// but MessageCount only counts human-authored messages — that way the "avg per
+// message" reads as "avg cost per user interaction", not per DB row.
+func GetStoreCostSeries(owner string, storeName string, period string) (*StoreCostSeries, error) {
+	spec, err := resolvePeriod(period)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+	end := now.Truncate(spec.bucketUnit).Add(spec.bucketUnit)
+	start := end.Add(-spec.duration)
+	startStr := util.FormatTimeForCompare(start)
+	endStr := util.FormatTimeForCompare(end)
+
+	buckets := make([]*CostBucket, spec.bucketN)
+	for i := 0; i < spec.bucketN; i++ {
+		buckets[i] = &CostBucket{
+			Date: start.Add(time.Duration(i) * spec.bucketUnit).Format(spec.bucketFmt),
+		}
+	}
+
+	// Only fetch the fields the aggregation reads so the mediumtext body
+	// columns don't ride along per row. Filter by store only — Message.Owner
+	// is hardcoded to "admin" so filtering by the store's owner would miss
+	// data on non-admin stores (same reasoning as the sibling aggregations).
+	messages := []*Message{}
+	if err = adapter.engine.
+		Cols("created_time", "author", "token_count", "price", "currency").
+		Where("store = ? and created_time >= ? and created_time < ?", storeName, startStr, endStr).
+		Find(&messages); err != nil {
+		return nil, err
+	}
+
+	res := &StoreCostSeries{
+		Period:    period,
+		StartTime: startStr,
+		EndTime:   endStr,
+		AsOf:      now.Format(time.RFC3339),
+		Buckets:   buckets,
+	}
+	for _, m := range messages {
+		t, perr := time.Parse(time.RFC3339, m.CreatedTime)
+		if perr != nil {
+			continue
+		}
+		idx := bucketIndex(t, start, spec.bucketUnit, spec.bucketN)
+		if idx < 0 {
+			continue
+		}
+		b := buckets[idx]
+		b.TokenCount += m.TokenCount
+		b.Price += m.Price
+		res.TotalTokenCount += m.TokenCount
+		res.TotalPrice += m.Price
+		if m.Currency != "" && res.Currency == "" {
+			res.Currency = m.Currency
+		}
+		// Message count / avg denominator excludes AI replies (matches the
+		// pattern in object/analysis.go's GetStoreWordCloud); a chat's real
+		// billable unit is the user's turn, not each DB row.
+		if m.Author == "AI" {
+			continue
+		}
+		b.MessageCount++
+		res.MessageCount++
+	}
+	res.TotalPrice = model.RefinePrice(res.TotalPrice)
+
+	for _, b := range buckets {
+		b.Price = model.RefinePrice(b.Price)
+		if b.TokenCount > res.PeakTokenCount {
+			res.PeakTokenCount = b.TokenCount
+			res.PeakDate = b.Date
+		}
+	}
+	if res.MessageCount > 0 {
+		res.AvgPricePerMsg = model.RefinePrice(res.TotalPrice / float64(res.MessageCount))
+		res.AvgTokensPerMsg = float64(res.TotalTokenCount) / float64(res.MessageCount)
+	}
+	return res, nil
 }
