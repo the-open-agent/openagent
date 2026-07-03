@@ -728,6 +728,9 @@
     "Skill folder path placeholder": "例如：/Users/alice/skills/my-skill或D:\\skills\\my-skill"
   },
   "store": {
+    "24h": "24小时",
+    "30d": "30天",
+    "7d": "7天",
     "About": "关于",
     "Active users": "活跃用户",
     "Activity over time": "活动趋势",

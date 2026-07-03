@@ -26,9 +26,9 @@ const {Sider, Content} = Layout;
 const {Text} = Typography;
 
 const PERIOD_OPTIONS = [
-  {value: "24h", label: "24h"},
-  {value: "7d", label: "7d"},
-  {value: "30d", label: "30d"},
+  {value: "24h", i18nKey: "store:24h"},
+  {value: "7d", i18nKey: "store:7d"},
+  {value: "30d", i18nKey: "store:30d"},
 ];
 
 const SUB_TABS = [
@@ -133,7 +133,7 @@ class StoreInsights extends React.Component {
           >
             <Space size="middle">
               <Segmented
-                options={PERIOD_OPTIONS}
+                options={PERIOD_OPTIONS.map((o) => ({value: o.value, label: i18next.t(o.i18nKey)}))}
                 value={period}
                 onChange={this.handlePeriodChange}
               />

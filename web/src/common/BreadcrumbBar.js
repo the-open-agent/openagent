@@ -46,6 +46,17 @@ const RESOURCE_LABELS = {
   "scales": "general:Scales",
   "forms": "general:Forms",
   "sysinfo": "general:System Info",
+  // Store detail tabs
+  "overview": "store:Overview",
+  "issues": "store:Issues",
+  "insights": "store:Insights",
+  "settings": "general:Settings",
+  // Insights sub-tabs (deep-linked as the last path segment)
+  "pulse": "store:Pulse",
+  "contributors": "store:Contributors",
+  "traffic": "store:Traffic",
+  "wordcloud": "store:Word Cloud",
+  "cost": "store:Cost",
 };
 
 function buildBreadcrumbItems(uri) {

@@ -728,6 +728,9 @@
     "Skill folder path placeholder": "e.g. /Users/alice/skills/my-skill  or  D:\\skills\\my-skill"
   },
   "store": {
+    "24h": "24h",
+    "30d": "30d",
+    "7d": "7d",
     "About": "About",
     "Active users": "Active users",
     "Activity over time": "Activity over time",
