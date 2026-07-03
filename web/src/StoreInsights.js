@@ -84,9 +84,9 @@ class StoreInsights extends React.Component {
 
   renderSubTabContent() {
     const {period, refreshTick} = this.state;
-    const {owner, storeName} = this.props;
+    const {account, owner, storeName} = this.props;
     const activeSub = this.props.activeSub || "pulse";
-    const common = {owner, storeName, period, refreshTick, onLoaded: this.handleChildLoaded};
+    const common = {account, owner, storeName, period, refreshTick, onLoaded: this.handleChildLoaded};
 
     switch (activeSub) {
     case "pulse": return <InsightsPulse {...common} />;

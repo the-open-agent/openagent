@@ -198,9 +198,10 @@ function renderIssues() {
   );
 }
 
-function renderInsights(store, activeSub, onSubTabChange) {
+function renderInsights(account, store, activeSub, onSubTabChange) {
   return (
     <StoreInsights
+      account={account}
       owner={store.owner}
       storeName={store.name}
       activeSub={activeSub}
@@ -217,7 +218,7 @@ function renderTabContent(account, store, activeTab, activeSub, onStoreUpdate, o
     return renderIssues();
   }
   if (activeTab === "insights") {
-    return renderInsights(store, activeSub, onSubTabChange);
+    return renderInsights(account, store, activeSub, onSubTabChange);
   }
   return renderOverview(account, store, onStoreUpdate, onRefresh);
 }

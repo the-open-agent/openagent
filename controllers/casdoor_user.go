@@ -20,6 +20,7 @@ import (
 
 	"github.com/the-open-agent/openagent/auth"
 	"github.com/the-open-agent/openagent/conf"
+	"github.com/the-open-agent/openagent/object"
 )
 
 func userMatchesCasdoorOrganization(configOrg string, u *auth.User) bool {
@@ -107,4 +108,53 @@ func (c *ApiController) GetOrganizationUsers() {
 	})
 
 	c.ResponseOk(out)
+}
+
+// GetUserInfo returns the display name and avatar for a single user by name.
+// It is used by the reusable frontend UserLabel component to resolve a bare
+// username into a real profile (Casdoor display name + avatar). Any signed-in
+// user may call it; only low-sensitivity display fields are returned.
+// @router /get-user-info [get]
+func (c *ApiController) GetUserInfo() {
+	if _, ok := c.RequireSignedIn(); !ok {
+		return
+	}
+
+	name := c.Input().Get("name")
+	if name == "" {
+		c.ResponseError(c.T("application:Missing required parameters"))
+		return
+	}
+
+	// Fallback so the frontend always has something to render.
+	info := organizationUser{Name: name}
+
+	sessionUser := c.GetSessionUser()
+	if sessionUser != nil && sessionUser.Owner == object.UserOwner {
+		// Basic (local) login mode — resolve against the local user table.
+		user, err := object.GetUserByRuntimeName(name)
+		if err != nil {
+			c.ResponseError(err.Error())
+			return
+		}
+		if user != nil {
+			info.DisplayName = user.DisplayName
+			info.Avatar = user.Avatar
+		}
+	} else if conf.IsCasdoorAvailable() {
+		user, err := auth.GetUser(name)
+		if err != nil {
+			c.ResponseError(err.Error())
+			return
+		}
+		if user != nil {
+			info.DisplayName = user.DisplayName
+			info.Avatar = user.Avatar
+			if info.Avatar == "" {
+				info.Avatar = user.PermanentAvatar
+			}
+		}
+	}
+
+	c.ResponseOk(info)
 }

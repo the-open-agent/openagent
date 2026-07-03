@@ -31,6 +31,7 @@ import ToolCallSection from "./ToolCallSection";
 import ReasoningSection from "./ReasoningSection";
 import StatusStrip from "./StatusStrip";
 import GeneratedResourceList, {extractGeneratedResources} from "./GeneratedResourceList";
+import UserLabel from "../common/UserLabel";
 
 const MessageItem = ({
   message,
@@ -175,6 +176,27 @@ const MessageItem = ({
     setAvatarSrc(Setting.getAvatarFallback());
   };
 
+  // AI messages keep the plain avatar; human messages wrap the same avatar in a
+  // UserLabel so hovering shows the sender's profile card and clicking opens
+  // their Casdoor profile page. message.author is the sender's username here.
+  const renderAvatarNode = () => {
+    const avatarEl = <Avatar src={avatarSrc} onError={handleAvatarError} />;
+    if (message.author === "AI") {
+      return avatarEl;
+    }
+    const isSelf = account && message.author === account.name;
+    return (
+      <UserLabel
+        user={message.author}
+        account={account}
+        displayName={isSelf ? account.displayName : undefined}
+        avatar={isSelf ? account.avatar : undefined}
+      >
+        {avatarEl}
+      </UserLabel>
+    );
+  };
+
   const renderMessageContent = () => {
     if (message.errorText !== "") {
       const isNoModelProvider = message.errorText.includes("Please add a model provider first") || message.errorText.includes("请先添加模型提供商");
@@ -299,7 +321,7 @@ const MessageItem = ({
               step: 2,
               interval: 50,
             } : undefined}
-            avatar={<Avatar src={avatarSrc} onError={handleAvatarError} />}
+            avatar={renderAvatarNode()}
             styles={{
               content: {
                 borderRadius: "4px 18px 18px 18px",
@@ -423,7 +445,7 @@ const MessageItem = ({
             step: 2,
             interval: 50,
           } : undefined}
-          avatar={<Avatar src={avatarSrc} onError={handleAvatarError} />}
+          avatar={renderAvatarNode()}
           styles={{
             content: isUserMessage ? {
               borderRadius: "18px 18px 4px 18px",

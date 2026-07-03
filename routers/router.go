@@ -79,6 +79,7 @@ func initAPI() {
 	beego.Router("/api/get-store-cost-series", &controllers.ApiController{}, "GET:GetStoreCostSeries")
 	beego.Router("/api/get-store-names", &controllers.ApiController{}, "GET:GetStoreNames")
 	beego.Router("/api/get-organization-users", &controllers.ApiController{}, "GET:GetOrganizationUsers")
+	beego.Router("/api/get-user-info", &controllers.ApiController{}, "GET:GetUserInfo")
 	beego.Router("/api/add-shared-store", &controllers.ApiController{}, "POST:AddSharedStore")
 	beego.Router("/api/fork-store", &controllers.ApiController{}, "POST:ForkStore")
 	beego.Router("/api/claim-store", &controllers.ApiController{}, "POST:ClaimStore")

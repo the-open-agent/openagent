@@ -13,11 +13,12 @@
 // limitations under the License.
 
 import React, {useCallback, useEffect, useState} from "react";
-import {Avatar, Button, Card, Empty, Input, List, Modal, Pagination, Space, Typography} from "antd";
+import {Button, Card, Empty, Input, List, Modal, Pagination, Space, Typography} from "antd";
 import {CommentOutlined, DeleteOutlined} from "@ant-design/icons";
 import i18next from "i18next";
 import * as CommentBackend from "../backend/CommentBackend";
 import * as Setting from "../Setting";
+import UserLabel from "../common/UserLabel";
 
 const {Text, Paragraph} = Typography;
 const {TextArea} = Input;
@@ -125,12 +126,10 @@ function ReplyItem({account, reply, parentComment, targetOwner, replyTo, replyVa
   return (
     <div style={{padding: "10px 0", borderBottom: "1px solid var(--ant-color-border-secondary)"}}>
       <div style={{display: "flex", gap: 10, alignItems: "flex-start"}}>
-        <Avatar size={28} style={{backgroundColor: Setting.getAvatarColor(reply.owner), flexShrink: 0}}>
-          {(reply.owner || "?")[0].toUpperCase()}
-        </Avatar>
+        <UserLabel user={reply.owner} account={account} size={28} avatarOnly />
         <div style={{flex: 1, minWidth: 0}}>
           <Space size={8} wrap>
-            <Text strong>{reply.owner}</Text>
+            <UserLabel user={reply.owner} account={account} showAvatar={false} strong />
             <Text type="secondary" style={{fontSize: 12}}>{getCommentTime(reply.createdTime)}</Text>
           </Space>
           <ReplyQuote parentComment={parentComment} />
@@ -163,12 +162,10 @@ function RootCommentItem({account, comment, targetOwner, replyTo, replyValue, re
   return (
     <div style={{padding: "14px 0", borderBottom: "1px solid var(--ant-color-border-secondary)"}}>
       <div style={{display: "flex", gap: 12, alignItems: "flex-start"}}>
-        <Avatar size={32} style={{backgroundColor: Setting.getAvatarColor(comment.owner), flexShrink: 0}}>
-          {(comment.owner || "?")[0].toUpperCase()}
-        </Avatar>
+        <UserLabel user={comment.owner} account={account} size={32} avatarOnly />
         <div style={{flex: 1, minWidth: 0}}>
           <Space size={8} wrap>
-            <Text strong>{comment.owner}</Text>
+            <UserLabel user={comment.owner} account={account} showAvatar={false} strong />
             <Text type="secondary" style={{fontSize: 12}}>{getCommentTime(comment.createdTime)}</Text>
           </Space>
           <Paragraph style={{margin: "6px 0 8px", whiteSpace: "pre-wrap", wordBreak: "break-word"}}>

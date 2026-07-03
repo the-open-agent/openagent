@@ -13,12 +13,12 @@
 // limitations under the License.
 
 import React from "react";
-import {Alert, Avatar, Card, Col, Empty, Row, Spin, Statistic, Typography} from "antd";
+import {Alert, Card, Col, Empty, Row, Spin, Statistic, Typography} from "antd";
 import {TeamOutlined} from "@ant-design/icons";
 import ReactEcharts from "echarts-for-react";
 import i18next from "i18next";
 import * as AnalysisBackend from "./backend/AnalysisBackend";
-import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 
 const LINE_COLOR = "#1677ff";
 
@@ -137,15 +137,7 @@ class InsightsContributors extends React.Component {
           <Col key={c.user} xs={24} sm={12} lg={8} xl={6}>
             <Card size="small" styles={{body: {padding: 14}}}>
               <div style={{display: "flex", alignItems: "center", gap: 10, marginBottom: 8, minWidth: 0}}>
-                <Avatar
-                  size="default"
-                  style={{backgroundColor: Setting.getAvatarColor(c.user), flexShrink: 0}}
-                >
-                  {c.user[0].toUpperCase()}
-                </Avatar>
-                <Typography.Text strong ellipsis={{tooltip: c.user}} style={{minWidth: 0, flex: 1}}>
-                  {c.user}
-                </Typography.Text>
+                <UserLabel user={c.user} account={this.props.account} size="default" strong nameStyle={{flex: 1}} />
               </div>
               <Row gutter={8}>
                 <Col span={12}>

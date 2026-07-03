@@ -13,12 +13,12 @@
 // limitations under the License.
 
 import React from "react";
-import {Alert, Avatar, Card, Col, Empty, Progress, Row, Spin, Statistic, Typography} from "antd";
+import {Alert, Card, Col, Empty, Progress, Row, Spin, Statistic, Typography} from "antd";
 import {CommentOutlined, FileOutlined, MessageOutlined, TeamOutlined, ThunderboltOutlined} from "@ant-design/icons";
 import ReactEcharts from "echarts-for-react";
 import i18next from "i18next";
 import * as AnalysisBackend from "./backend/AnalysisBackend";
-import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 
 const SPARK_COLOR = "#1677ff";
 
@@ -138,12 +138,7 @@ class InsightsPulse extends React.Component {
         <div style={{display: "grid", rowGap: 10}}>
           {topUsers.map((u) => (
             <div key={u.user} style={{display: "grid", gridTemplateColumns: "180px 1fr 80px", gap: 12, alignItems: "center"}}>
-              <div style={{display: "flex", alignItems: "center", gap: 8, minWidth: 0}}>
-                <Avatar size="small" style={{backgroundColor: Setting.getAvatarColor(u.user), flexShrink: 0}}>
-                  {u.user[0].toUpperCase()}
-                </Avatar>
-                <Typography.Text ellipsis={{tooltip: u.user}} style={{minWidth: 0}}>{u.user}</Typography.Text>
-              </div>
+              <UserLabel user={u.user} account={this.props.account} size="small" />
               <Progress
                 percent={Math.round((u.messageCount / max) * 100)}
                 showInfo={false}
