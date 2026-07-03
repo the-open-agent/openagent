@@ -107,6 +107,13 @@
     "Target user not found": "Target user not found",
     "The task does not exist": "The task does not exist"
   },
+  "issue": {
+    "Issue content cannot be longer than %d characters": "Issue content cannot be longer than %d characters",
+    "Issue does not exist": "Issue does not exist",
+    "Issue store does not exist": "The issue's store does not exist",
+    "Issue title cannot be empty": "Issue title cannot be empty",
+    "Issue title cannot be longer than %d characters": "Issue title cannot be longer than %d characters"
+  },
   "model": {
     "QueryText() error: unknown model type: %s": "QueryText() error: unknown model type: %s",
     "The token count: [%d] exceeds the model: [%s]'s maximum token count: [%d]": "The token count: [%d] exceeds the model: [%s]'s maximum token count: [%d]",

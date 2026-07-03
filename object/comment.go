@@ -22,7 +22,10 @@ import (
 	"xorm.io/xorm"
 )
 
-const CommentTargetTypeAgentHub = "agenthub"
+const (
+	CommentTargetTypeAgentHub = "agenthub"
+	CommentTargetTypeIssue    = "issue"
+)
 
 type Comment struct {
 	Owner       string `xorm:"varchar(100) notnull pk" json:"owner"`

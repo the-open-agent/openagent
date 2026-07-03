@@ -49,8 +49,8 @@ func (c *ApiController) responseCommentError(message string) {
 }
 
 func getCommentPageSize(value string) int {
-	pageSize := util.ParseInt(value)
-	if pageSize <= 0 {
+	pageSize, err := util.ParseIntWithError(value)
+	if err != nil || pageSize <= 0 {
 		return defaultCommentPageSize
 	}
 	if pageSize > maxCommentPageSize {
@@ -60,10 +60,17 @@ func getCommentPageSize(value string) int {
 }
 
 func resolveCommentTarget(targetType string, targetKey string) (*commentTarget, error) {
-	if targetType != object.CommentTargetTypeAgentHub {
+	switch targetType {
+	case object.CommentTargetTypeAgentHub:
+		return resolveStoreCommentTarget(targetKey)
+	case object.CommentTargetTypeIssue:
+		return resolveIssueCommentTarget(targetKey)
+	default:
 		return nil, fmt.Errorf("Unsupported comment target type")
 	}
+}
 
+func resolveStoreCommentTarget(targetKey string) (*commentTarget, error) {
 	owner, name, err := util.GetOwnerAndNameFromIdWithError(targetKey)
 	if err != nil {
 		return nil, err
@@ -74,6 +81,37 @@ func resolveCommentTarget(targetType string, targetKey string) (*commentTarget, 
 		return nil, err
 	}
 	if store == nil || store.PublishState != "Published" {
+		return nil, fmt.Errorf("Comment target does not exist")
+	}
+
+	return &commentTarget{Owner: store.Owner}, nil
+}
+
+// resolveIssueCommentTarget validates that the issue exists and resolves the
+// owner allowed to moderate its comments (the issue's store owner).
+func resolveIssueCommentTarget(targetKey string) (*commentTarget, error) {
+	owner, name, err := util.GetOwnerAndNameFromIdWithError(targetKey)
+	if err != nil {
+		return nil, err
+	}
+
+	issue, err := object.GetIssue(owner, name)
+	if err != nil {
+		return nil, err
+	}
+	if issue == nil {
+		return nil, fmt.Errorf("Comment target does not exist")
+	}
+
+	storeOwner, storeName, err := util.GetOwnerAndNameFromIdWithError(issue.Store)
+	if err != nil {
+		return nil, err
+	}
+	store, err := object.GetStore(util.GetIdFromOwnerAndName(storeOwner, storeName))
+	if err != nil {
+		return nil, err
+	}
+	if store == nil {
 		return nil, fmt.Errorf("Comment target does not exist")
 	}
 

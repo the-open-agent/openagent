@@ -13,8 +13,9 @@
 // limitations under the License.
 
 import React from "react";
-import {Avatar, Button, Card, Col, Empty, Row, Space, Tabs, Tag, Typography} from "antd";
+import {Avatar, Button, Card, Col, Row, Space, Tabs, Tag, Typography} from "antd";
 import StoreInsights from "./StoreInsights";
+import StoreIssues from "./StoreIssues";
 import {AppstoreOutlined, BarChartOutlined, BugOutlined, CommentOutlined, EyeOutlined, FolderOpenOutlined, ForkOutlined, SettingOutlined, StarOutlined} from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -190,11 +191,9 @@ function renderOverview(account, store, onStoreUpdate, onRefresh) {
   );
 }
 
-function renderIssues() {
+function renderIssues(account, store) {
   return (
-    <Card>
-      <Empty description={i18next.t("store:Issues are coming soon")} />
-    </Card>
+    <StoreIssues account={account} store={store} />
   );
 }
 
@@ -215,7 +214,7 @@ function renderTabContent(account, store, activeTab, activeSub, onStoreUpdate, o
     return renderFiles(account, store, onStoreUpdate, onRefresh);
   }
   if (activeTab === "issues") {
-    return renderIssues();
+    return renderIssues(account, store);
   }
   if (activeTab === "insights") {
     return renderInsights(account, store, activeSub, onSubTabChange);

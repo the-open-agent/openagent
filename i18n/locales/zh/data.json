@@ -107,6 +107,13 @@
     "Target user not found": "目标用户不存在",
     "The task does not exist": "任务不存在"
   },
+  "issue": {
+    "Issue content cannot be longer than %d characters": "问题内容不能超过 %d 个字符",
+    "Issue does not exist": "问题不存在",
+    "Issue store does not exist": "该智能体不存在",
+    "Issue title cannot be empty": "问题标题不能为空",
+    "Issue title cannot be longer than %d characters": "问题标题不能超过 %d 个字符"
+  },
   "model": {
     "QueryText() error: unknown model type: %s": "QueryText()错误：未知模型类型：%s",
     "The token count: [%d] exceeds the model: [%s]'s maximum token count: [%d]": "标记（token）数量：[%d] 超过模型：[%s] 的最大标记数量：[%d]",

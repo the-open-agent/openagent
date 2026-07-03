@@ -106,6 +106,14 @@ p, anonymous, *, /api/get-store-insights-summary
 p, anonymous, *, /api/get-store-contributors
 p, anonymous, *, /api/get-store-traffic
 p, anonymous, *, /api/get-store-cost-series
+p, anonymous, *, /api/get-comments
+p, anonymous, *, /api/add-comment
+p, anonymous, *, /api/delete-comment
+p, anonymous, *, /api/get-issues
+p, anonymous, *, /api/get-issue
+p, anonymous, *, /api/add-issue
+p, anonymous, *, /api/update-issue
+p, anonymous, *, /api/delete-issue
 
 g, admin, user
 g, user, anonymous
