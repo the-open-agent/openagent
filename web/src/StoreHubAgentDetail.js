@@ -13,10 +13,10 @@
 // limitations under the License.
 
 import React from "react";
-import {Avatar, Button, Card, Col, Row, Space, Tabs, Tag, Typography} from "antd";
+import {Avatar, Button, Card, Col, Row, Space, Tabs, Tag, Tooltip, Typography} from "antd";
 import StoreInsights from "./StoreInsights";
 import StoreIssues from "./StoreIssues";
-import {AppstoreOutlined, BarChartOutlined, BugOutlined, CommentOutlined, EyeOutlined, FolderOpenOutlined, ForkOutlined, SettingOutlined, StarOutlined} from "@ant-design/icons";
+import {AppstoreOutlined, BarChartOutlined, BugOutlined, CommentOutlined, EyeFilled, EyeOutlined, FolderOpenOutlined, ForkOutlined, SettingOutlined, StarFilled, StarOutlined} from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import i18next from "i18next";
@@ -26,9 +26,25 @@ import * as Setting from "./Setting";
 
 const {Text, Title} = Typography;
 
-function renderHeader(store, onStartChat, onFork, forking, onPlaceholder) {
+function renderForkDisabledReason(favoriteStatus) {
+  if (!favoriteStatus) {
+    return "";
+  }
+  if (favoriteStatus.isOwner) {
+    return i18next.t("store:You cannot fork your own agent");
+  }
+  if (favoriteStatus.hasForked) {
+    return i18next.t("store:You have already forked this agent");
+  }
+  return "";
+}
+
+function renderHeader(store, onStartChat, onFork, forking, favoriteStatus, starLoading, watchLoading, onToggleFavorite) {
   const initials = (store.displayName || store.name || "?")[0].toUpperCase();
   const authorName = store.author || store.owner;
+  const status = favoriteStatus || {};
+  const forkDisabledReason = renderForkDisabledReason(status);
+  const isForked = Boolean(store.forkedFromOwner && store.forkedFromName);
 
   return (
     <div style={{display: "flex", alignItems: "flex-start", gap: 20, marginBottom: 16, flexWrap: "wrap"}}>
@@ -46,20 +62,39 @@ function renderHeader(store, onStartChat, onFork, forking, onPlaceholder) {
               <Text type="secondary" style={{fontSize: 20, fontWeight: 400}}>{store.owner} / </Text>
               {store.displayName || store.name}
             </Title>
-            <Text type="secondary" style={{fontSize: 14}}>
-              {i18next.t("store:By")} <strong>{authorName}</strong>
-            </Text>
+            <div style={{display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap"}}>
+              <Text type="secondary" style={{fontSize: 14}}>
+                {i18next.t("store:By")} <strong>{authorName}</strong>
+              </Text>
+              {isForked ? (
+                <Tag icon={<ForkOutlined />} color="blue" style={{margin: 0}}>
+                  {i18next.t("store:Forked from")} {store.forkedFromOwner}/{store.forkedFromName}
+                </Tag>
+              ) : null}
+            </div>
           </div>
           <Space wrap>
-            <Button icon={<StarOutlined />} onClick={() => onPlaceholder("star")}>
-              {i18next.t("store:Star")}
+            <Button
+              icon={status.starred ? <StarFilled style={{color: "#faad14"}} /> : <StarOutlined />}
+              loading={starLoading}
+              onClick={() => onToggleFavorite("star")}
+            >
+              {status.starred ? i18next.t("store:Starred") : i18next.t("store:Star")}
+              {status.starCount > 0 ? ` (${status.starCount})` : ""}
             </Button>
-            <Button icon={<EyeOutlined />} onClick={() => onPlaceholder("watch")}>
-              {i18next.t("store:Watch")}
+            <Button
+              icon={status.watched ? <EyeFilled style={{color: Setting.getThemeColor()}} /> : <EyeOutlined />}
+              loading={watchLoading}
+              onClick={() => onToggleFavorite("watch")}
+            >
+              {status.watched ? i18next.t("store:Watching") : i18next.t("store:Watch")}
+              {status.watchCount > 0 ? ` (${status.watchCount})` : ""}
             </Button>
-            <Button icon={<ForkOutlined />} loading={forking} onClick={onFork}>
-              {i18next.t("store:Fork")}
-            </Button>
+            <Tooltip title={forkDisabledReason}>
+              <Button icon={<ForkOutlined />} loading={forking} disabled={Boolean(forkDisabledReason)} onClick={onFork}>
+                {i18next.t("store:Fork")}
+              </Button>
+            </Tooltip>
             <Button type="primary" icon={<CommentOutlined />} onClick={onStartChat}>
               {i18next.t("store:Start Chat")}
             </Button>
@@ -223,7 +258,7 @@ function renderTabContent(account, store, activeTab, activeSub, onStoreUpdate, o
   return renderOverview(account, store, onStoreUpdate, onRefresh);
 }
 
-function StoreHubAgentDetail({account, store, activeTab, activeSub, canManage, onTabChange, onSubTabChange, onStartChat, onFork, forking, onPlaceholder, onStoreUpdate, onRefresh}) {
+function StoreHubAgentDetail({account, store, activeTab, activeSub, canManage, onTabChange, onSubTabChange, onStartChat, onFork, forking, favoriteStatus, starLoading, watchLoading, onToggleFavorite, onStoreUpdate, onRefresh}) {
   const tabItems = [
     {key: "overview", label: <span><AppstoreOutlined /> {i18next.t("store:Overview")}</span>},
     {key: "files", label: <span><FolderOpenOutlined /> {i18next.t("general:Files")}</span>},
@@ -237,7 +272,7 @@ function StoreHubAgentDetail({account, store, activeTab, activeSub, canManage, o
 
   return (
     <div style={{padding: "24px 32px", maxWidth: 1280, margin: "0 auto"}}>
-      {renderHeader(store, onStartChat, onFork, forking, onPlaceholder)}
+      {renderHeader(store, onStartChat, onFork, forking, favoriteStatus, starLoading, watchLoading, onToggleFavorite)}
       <Tabs
         activeKey={activeTab}
         items={tabItems}

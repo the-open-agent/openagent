@@ -89,6 +89,9 @@ func initAPI() {
 	beego.Router("/api/add-shared-store", &controllers.ApiController{}, "POST:AddSharedStore")
 	beego.Router("/api/fork-store", &controllers.ApiController{}, "POST:ForkStore")
 	beego.Router("/api/claim-store", &controllers.ApiController{}, "POST:ClaimStore")
+	beego.Router("/api/toggle-store-favorite", &controllers.ApiController{}, "POST:ToggleStoreFavorite")
+	beego.Router("/api/get-favored-stores", &controllers.ApiController{}, "GET:GetFavoredStores")
+	beego.Router("/api/get-store-favorite-status", &controllers.ApiController{}, "GET:GetStoreFavoriteStatus")
 
 	beego.Router("/api/get-global-providers", &controllers.ApiController{}, "GET:GetGlobalProviders")
 	beego.Router("/api/get-providers", &controllers.ApiController{}, "GET:GetProviders")

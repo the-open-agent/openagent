@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import React from "react";
-import {Avatar, Button, Card, Col, Empty, Input, Row, Select, Spin, Tag, Tooltip, Typography} from "antd";
+import {Avatar, Button, Card, Col, Empty, Input, Row, Segmented, Select, Spin, Tag, Tooltip, Typography} from "antd";
 import {CopyOutlined, InfoCircleOutlined, LinkOutlined, RobotOutlined, SortAscendingOutlined, SortDescendingOutlined} from "@ant-design/icons";
 import * as StoreBackend from "./backend/StoreBackend";
 import * as Setting from "./Setting";
@@ -28,6 +28,9 @@ class StoreHubPage extends React.Component {
     this.state = {
       stores: [],
       loading: true,
+      view: "all",
+      favoredStores: [],
+      favoredLoading: false,
       drawerVisible: false,
       selectedStore: null,
       searchText: "",
@@ -41,6 +44,33 @@ class StoreHubPage extends React.Component {
 
   componentDidMount() {
     this.getHubStores();
+  }
+
+  isSignedIn() {
+    const {account} = this.props;
+    return account && !Setting.isAnonymousUser(account);
+  }
+
+  getActiveStores() {
+    const {view, stores, favoredStores} = this.state;
+    return view === "all" ? stores : favoredStores;
+  }
+
+  handleViewChange(view) {
+    this.setState({view});
+    if (view === "star" || view === "watch") {
+      this.setState({favoredLoading: true});
+      StoreBackend.getFavoredStores(view)
+        .then((res) => {
+          if (res.status === "ok") {
+            this.setState({favoredStores: res.data || [], favoredLoading: false});
+          } else {
+            Setting.showMessage("error", `${i18next.t("general:Failed to get")}: ${res.msg}`);
+            this.setState({favoredLoading: false});
+          }
+        })
+        .catch(() => this.setState({favoredLoading: false}));
+    }
   }
 
   getHubStores() {
@@ -59,13 +89,12 @@ class StoreHubPage extends React.Component {
   }
 
   getUniqueValues(field) {
-    const {stores} = this.state;
-    return [...new Set(stores.map(s => s[field]).filter(Boolean))].sort();
+    return [...new Set(this.getActiveStores().map(s => s[field]).filter(Boolean))].sort();
   }
 
   getFilteredStores() {
-    const {stores, searchText, filterSubject, filterGrade, filterTopic, sortField, sortOrder} = this.state;
-    let result = [...stores];
+    const {searchText, filterSubject, filterGrade, filterTopic, sortField, sortOrder} = this.state;
+    let result = [...this.getActiveStores()];
 
     if (searchText) {
       const q = searchText.toLowerCase();
@@ -157,7 +186,8 @@ class StoreHubPage extends React.Component {
   }
 
   renderFilterBar() {
-    const {searchText, filterSubject, filterGrade, filterTopic, sortField, sortOrder, stores} = this.state;
+    const {searchText, filterSubject, filterGrade, filterTopic, sortField, sortOrder} = this.state;
+    const activeStores = this.getActiveStores();
     const subjects = this.getUniqueValues("subject");
     const grades = this.getUniqueValues("grade");
     const topics = this.getUniqueValues("topic");
@@ -177,6 +207,17 @@ class StoreHubPage extends React.Component {
 
     return (
       <div style={{marginBottom: 16, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center"}}>
+        {this.isSignedIn() ? (
+          <Segmented
+            value={this.state.view}
+            onChange={(v) => this.handleViewChange(v)}
+            options={[
+              {value: "all", label: i18next.t("store:All agents")},
+              {value: "star", label: i18next.t("store:Starred")},
+              {value: "watch", label: i18next.t("store:Watching")},
+            ]}
+          />
+        ) : null}
         <Input.Search
           placeholder={i18next.t("store:Please input your search term")}
           value={searchText}
@@ -236,7 +277,7 @@ class StoreHubPage extends React.Component {
         ) : null}
         {isFiltered ? (
           <Text type="secondary" style={{fontSize: 13}}>
-            {filteredCount} / {stores.length}
+            {filteredCount} / {activeStores.length}
           </Text>
         ) : null}
       </div>
@@ -360,9 +401,21 @@ class StoreHubPage extends React.Component {
     );
   }
 
+  renderEmptyForView() {
+    const {view} = this.state;
+    if (view === "star") {
+      return <Empty description={i18next.t("store:No starred agents yet")} style={{marginTop: 60}} />;
+    }
+    if (view === "watch") {
+      return <Empty description={i18next.t("store:No watched agents yet")} style={{marginTop: 60}} />;
+    }
+    return <Empty description={i18next.t("general:No published agents yet")} style={{marginTop: 60}} />;
+  }
+
   render() {
-    const {loading, stores, drawerVisible, selectedStore} = this.state;
+    const {loading, favoredLoading, drawerVisible, selectedStore} = this.state;
     const filteredStores = this.getFilteredStores();
+    const activeStores = this.getActiveStores();
 
     return (
       <div style={{padding: "24px 32px", minHeight: "100vh", background: "var(--ant-color-bg-layout)"}}>
@@ -376,12 +429,16 @@ class StoreHubPage extends React.Component {
           <div style={{textAlign: "center", padding: "80px 0"}}>
             <Spin size="large" />
           </div>
-        ) : stores.length === 0 ? (
-          <Empty description={i18next.t("general:No published agents yet")} style={{marginTop: 80}} />
         ) : (
           <>
             {this.renderFilterBar()}
-            {filteredStores.length === 0 ? (
+            {favoredLoading ? (
+              <div style={{textAlign: "center", padding: "80px 0"}}>
+                <Spin size="large" />
+              </div>
+            ) : activeStores.length === 0 ? (
+              this.renderEmptyForView()
+            ) : filteredStores.length === 0 ? (
               <Empty description={i18next.t("general:No data")} style={{marginTop: 60}} />
             ) : (
               <Row gutter={[16, 16]}>

@@ -114,6 +114,12 @@ p, anonymous, *, /api/get-issue
 p, anonymous, *, /api/add-issue
 p, anonymous, *, /api/update-issue
 p, anonymous, *, /api/delete-issue
+p, anonymous, *, /api/get-store-favorite-status
+p, anonymous, *, /api/toggle-store-favorite
+p, anonymous, *, /api/get-favored-stores
+p, anonymous, *, /api/get-hub-stores
+p, anonymous, *, /api/fork-store
+p, anonymous, *, /api/get-user-info
 
 g, admin, user
 g, user, anonymous

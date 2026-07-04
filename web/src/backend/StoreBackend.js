@@ -112,6 +112,38 @@ export function deleteStore(store) {
   }).then(res => Setting.handleFetchResponse(res));
 }
 
+export function toggleStoreFavorite(favoriteType, storeOwner, storeName) {
+  return fetch(`${Setting.ServerUrl}/api/toggle-store-favorite`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Accept-Language": Setting.getAcceptLanguage(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({type: favoriteType, storeOwner, storeName}),
+  }).then(res => Setting.handleFetchResponse(res));
+}
+
+export function getStoreFavoriteStatus(storeOwner, storeName) {
+  return fetch(`${Setting.ServerUrl}/api/get-store-favorite-status?storeOwner=${encodeURIComponent(storeOwner)}&storeName=${encodeURIComponent(storeName)}`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Accept-Language": Setting.getAcceptLanguage(),
+    },
+  }).then(res => Setting.handleFetchResponse(res));
+}
+
+export function getFavoredStores(favoriteType) {
+  return fetch(`${Setting.ServerUrl}/api/get-favored-stores?type=${encodeURIComponent(favoriteType)}`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Accept-Language": Setting.getAcceptLanguage(),
+    },
+  }).then(res => Setting.handleFetchResponse(res));
+}
+
 export function refreshStoreVectors(store) {
   const newStore = Setting.deepCopy(store);
   return fetch(`${Setting.ServerUrl}/api/refresh-store-vectors`, {

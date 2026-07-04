@@ -83,7 +83,11 @@ class FileTree extends React.Component {
   }
 
   UNSAFE_componentWillMount() {
-    this.getPermissions();
+    // Only store managers can view/edit file permissions; plain viewers must not
+    // hit the admin-gated permissions endpoint (it would just error for them).
+    if (Setting.isLocalAndStoreAdminUser(this.props.account)) {
+      this.getPermissions();
+    }
   }
 
   batchDeleteFiles() {

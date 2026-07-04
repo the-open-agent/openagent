@@ -87,6 +87,19 @@ func applyForkOwnerProviders(store *Store, targetOwner string) error {
 	return nil
 }
 
+// HasUserForkedStore reports whether targetOwner already owns a store forked
+// from the given source store.
+func HasUserForkedStore(targetOwner, srcOwner, srcName string) (bool, error) {
+	if targetOwner == "" || srcOwner == "" || srcName == "" {
+		return false, nil
+	}
+	count, err := adapter.engine.Where("owner = ? and forked_from_owner = ? and forked_from_name = ?", targetOwner, srcOwner, srcName).Count(&Store{})
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 // ForkStore duplicates only the store configuration for targetOwner and records the source store.
 func ForkStore(srcOwner, srcName, targetOwner string) (*Store, error) {
 	if srcOwner == "" || srcName == "" || targetOwner == "" {

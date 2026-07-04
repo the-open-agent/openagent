@@ -202,6 +202,9 @@
   },
   "store": {
     "Cannot delete the default store": "Cannot delete the default store",
+    "The agent does not exist": "The agent does not exist",
+    "You cannot fork your own agent": "You cannot fork your own agent",
+    "You have already forked this agent": "You have already forked this agent",
     "given that there must be one default store in OpenAgent, you cannot set this store to non-default. You can directly set another store as default": "given that there must be one default store in OpenAgent, you cannot set this store to non-default. You can directly set another store as default"
   },
   "stt": {

@@ -202,6 +202,9 @@
   },
   "store": {
     "Cannot delete the default store": "无法删除默认存储库",
+    "The agent does not exist": "智能体不存在",
+    "You cannot fork your own agent": "无法复刻自己的智能体",
+    "You have already forked this agent": "你已经复刻过这个智能体了",
     "given that there must be one default store in OpenAgent, you cannot set this store to non-default. You can directly set another store as default": "OpenAgent中必须保留至少一个默认存储，因此无法将当前存储设为非默认。您可以直接将另一个存储设为默认。"
   },
   "stt": {

@@ -544,6 +544,21 @@ func (c *ApiController) ForkStore() {
 		return
 	}
 
+	if src.Owner == targetOwner {
+		c.ResponseError(c.T("store:You cannot fork your own agent"))
+		return
+	}
+
+	alreadyForked, err := object.HasUserForkedStore(targetOwner, src.Owner, src.Name)
+	if err != nil {
+		c.ResponseError(err.Error())
+		return
+	}
+	if alreadyForked {
+		c.ResponseError(c.T("store:You have already forked this agent"))
+		return
+	}
+
 	newStore, err := object.ForkStore(src.Owner, src.Name, targetOwner)
 	if err != nil {
 		c.ResponseError(err.Error())

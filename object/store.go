@@ -392,6 +392,12 @@ func DeleteStore(store *Store) (bool, error) {
 		return false, err
 	}
 
+	_, err = session.Where("store_owner = ? and store_name = ?", store.Owner, store.Name).Delete(&StoreFavorite{})
+	if err != nil {
+		session.Rollback()
+		return false, err
+	}
+
 	err = session.Commit()
 	if err != nil {
 		return false, err
