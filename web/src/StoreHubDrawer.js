@@ -16,6 +16,7 @@ import React from "react";
 import {Avatar, Button, Divider, Drawer, Tag, Tooltip, Typography} from "antd";
 import {CommentOutlined, CopyOutlined, LinkOutlined, RobotOutlined} from "@ant-design/icons";
 import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 import i18next from "i18next";
 
 const {Text, Paragraph} = Typography;
@@ -36,7 +37,7 @@ export function getChatUrl(store) {
 //   onStartChat – (store) => void
 //   onCopyLink  – (store) => void
 //   onViewAgent – (store) => void
-function StoreHubDrawer({store, visible, onClose, onStartChat, onCopyLink, onViewAgent}) {
+function StoreHubDrawer({store, visible, onClose, onStartChat, onCopyLink, onViewAgent, account}) {
   if (!store) {
     return null;
   }
@@ -87,7 +88,10 @@ function StoreHubDrawer({store, visible, onClose, onStartChat, onCopyLink, onVie
             {store.displayName || store.name}
           </div>
           <Text type="secondary" style={{fontSize: 13}}>
-            {i18next.t("store:By")} {authorName}
+            {i18next.t("store:By")}{" "}
+            {store.author
+              ? authorName
+              : <UserLabel user={store.owner} account={account} showAvatar={false} nameStyle={{fontSize: 13}} />}
           </Text>
           {store.affiliation ? (
             <div style={{fontSize: 12, color: "var(--ant-color-text-tertiary)", marginTop: 2}}>

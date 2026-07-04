@@ -10,6 +10,7 @@ import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 import * as ScaleBackend from "./backend/ScaleBackend";
 import i18next from "i18next";
 
@@ -90,6 +91,7 @@ class ScaleListPage extends BaseListPage {
         width: "90px",
         sorter: (a, b) => (a.owner || "").localeCompare(b.owner || ""),
         ...this.getColumnSearchProps("owner"),
+        render: (text) => (text && !text.startsWith("u-") ? <UserLabel user={text} account={this.props.account} size={22} /> : text),
       },
       {
         title: i18next.t("general:Name"),

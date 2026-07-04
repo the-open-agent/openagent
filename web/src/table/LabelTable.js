@@ -16,10 +16,10 @@ import React from "react";
 import {DeleteOutlined, DownOutlined, UpOutlined} from "@ant-design/icons";
 import {Button, Col, Input, InputNumber, Row, Switch, Table, Tooltip} from "antd";
 import * as Setting from "../Setting";
+import UserLabel from "../common/UserLabel";
 import i18next from "i18next";
 import xlsx from "xlsx";
 import FileSaver from "file-saver";
-import * as Conf from "../Conf";
 
 const {TextArea} = Input;
 
@@ -173,13 +173,7 @@ class LabelTable extends React.Component {
         dataIndex: "user",
         key: "user",
         width: "110px",
-        render: (text, record, index) => {
-          return (
-            <a target="_blank" rel="noreferrer" href={Setting.getMyProfileUrl(this.props.account).replace("/account", `/users/${Conf.AuthConfig.organizationName}/${text}`)}>
-              {text}
-            </a>
-          );
-        },
+        render: (text) => (text && !text.startsWith("u-") ? <UserLabel user={text} account={this.props.account} size={22} /> : text),
       },
       // {
       //   title: i18next.t("general:Type"),

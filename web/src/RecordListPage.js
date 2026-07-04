@@ -17,6 +17,7 @@ import {Link} from "react-router-dom";
 import {Alert, Button, Popconfirm, Popover, Switch, Table, Tooltip, Typography} from "antd";
 import moment from "moment";
 import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 import * as RecordBackend from "./backend/RecordBackend";
 import * as ProviderBackend from "./backend/ProviderBackend";
 import i18next from "i18next";
@@ -321,11 +322,7 @@ class RecordListPage extends BaseListPage {
         sorter: true,
         ...this.getColumnSearchProps("user"),
         render: (text, record, index) => {
-          return (
-            <a target="_blank" rel="noreferrer" href={Setting.getMyProfileUrl(this.props.account).replace("/account", `/users/${record.organization}/${record.user}`)}>
-              {text}
-            </a>
-          );
+          return <UserLabel user={text} account={this.props.account} size={22} />;
         },
       },
       {

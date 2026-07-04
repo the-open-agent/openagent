@@ -17,7 +17,7 @@ import {Link} from "react-router-dom";
 import {Button, Image, Popconfirm, Table, Tooltip, Upload} from "antd";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
-import * as Conf from "./Conf";
+import UserLabel from "./common/UserLabel";
 import * as FileBackend from "./backend/FileBackend";
 import * as StorageProviderBackend from "./backend/StorageProviderBackend";
 import * as ProviderBackend from "./backend/ProviderBackend";
@@ -156,11 +156,7 @@ class FileListPage extends BaseListPage {
           if (!text || text.startsWith("u-")) {
             return text;
           }
-          return (
-            <a target="_blank" rel="noreferrer" href={Setting.getMyProfileUrl(this.props.account).replace("/account", `/users/${Conf.AuthConfig.organizationName}/${text}`)}>
-              {text}
-            </a>
-          );
+          return <UserLabel user={text} account={this.props.account} size={22} />;
         },
       },
       {

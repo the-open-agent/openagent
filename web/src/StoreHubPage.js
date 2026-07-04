@@ -19,6 +19,7 @@ import * as StoreBackend from "./backend/StoreBackend";
 import * as Setting from "./Setting";
 import i18next from "i18next";
 import StoreHubDrawer, {getChatUrl} from "./StoreHubDrawer";
+import UserLabel from "./common/UserLabel";
 
 const {Text, Paragraph} = Typography;
 
@@ -325,8 +326,11 @@ class StoreHubPage extends React.Component {
                   </Tooltip>
                 ) : null}
               </div>
-              <Text type="secondary" style={{fontSize: 12}}>
-                {i18next.t("store:By")} {authorName}
+              <Text type="secondary" style={{fontSize: 12}} onClick={(e) => e.stopPropagation()}>
+                {i18next.t("store:By")}{" "}
+                {store.author
+                  ? authorName
+                  : <UserLabel user={store.owner} account={this.props.account} showAvatar={false} nameStyle={{fontSize: 12}} />}
               </Text>
               {store.affiliation ? (
                 <div style={{fontSize: 11, color: "var(--ant-color-text-tertiary)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
@@ -448,6 +452,7 @@ class StoreHubPage extends React.Component {
           </>
         )}
         <StoreHubDrawer
+          account={this.props.account}
           store={selectedStore}
           visible={drawerVisible}
           onClose={() => this.closeDrawer()}

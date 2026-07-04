@@ -18,6 +18,7 @@ import {Avatar, Button, Popconfirm, Switch, Table, Tag, Tooltip} from "antd";
 import moment from "moment";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 import * as StoreBackend from "./backend/StoreBackend";
 import i18next from "i18next";
 import * as Conf from "./Conf";
@@ -280,11 +281,7 @@ class StoreListPage extends BaseListPage {
             return text;
           }
 
-          return (
-            <a target="_blank" rel="noreferrer" href={Setting.getMyProfileUrl(this.props.account).replace("/account", `/users/${Conf.AuthConfig.organizationName}/${text}`)}>
-              {text}
-            </a>
-          );
+          return <UserLabel user={text} account={this.props.account} size={22} />;
         },
       },
       {

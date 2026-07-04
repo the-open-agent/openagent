@@ -16,9 +16,9 @@ import React from "react";
 import {Button, Col, Input, Row, Select, Switch, Table, Tooltip} from "antd";
 import {DeleteOutlined, DownOutlined, UpOutlined} from "@ant-design/icons";
 import * as Setting from "../Setting";
+import UserLabel from "../common/UserLabel";
 import i18next from "i18next";
 import moment from "moment/moment";
-import * as Conf from "../Conf";
 
 const {TextArea} = Input;
 const {Option} = Select;
@@ -148,11 +148,7 @@ class RemarkTable extends React.Component {
             return "***";
           }
 
-          return (
-            <a target="_blank" rel="noreferrer" href={Setting.getMyProfileUrl(this.props.account).replace("/account", `/users/${Conf.AuthConfig.organizationName}/${text}`)}>
-              {text}
-            </a>
-          );
+          return <UserLabel user={text} account={this.props.account} size={22} />;
         },
       },
       {

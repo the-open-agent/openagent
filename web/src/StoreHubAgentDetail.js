@@ -23,6 +23,7 @@ import i18next from "i18next";
 import CommentArea from "./comment/CommentArea";
 import FileTree from "./FileTree";
 import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 
 const {Text, Title} = Typography;
 
@@ -39,9 +40,8 @@ function renderForkDisabledReason(favoriteStatus) {
   return "";
 }
 
-function renderHeader(store, onStartChat, onFork, forking, favoriteStatus, starLoading, watchLoading, onToggleFavorite) {
+function renderHeader(store, account, onStartChat, onFork, forking, favoriteStatus, starLoading, watchLoading, onToggleFavorite) {
   const initials = (store.displayName || store.name || "?")[0].toUpperCase();
-  const authorName = store.author || store.owner;
   const status = favoriteStatus || {};
   const forkDisabledReason = renderForkDisabledReason(status);
   const isForked = Boolean(store.forkedFromOwner && store.forkedFromName);
@@ -59,12 +59,16 @@ function renderHeader(store, onStartChat, onFork, forking, favoriteStatus, starL
         <div style={{display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 6}}>
           <div style={{minWidth: 0}}>
             <Title level={3} style={{margin: 0, wordBreak: "break-word"}}>
-              <Text type="secondary" style={{fontSize: 20, fontWeight: 400}}>{store.owner} / </Text>
+              <UserLabel user={store.owner} account={account} showAvatar={false} nameStyle={{fontSize: 20, fontWeight: 400, color: "var(--ant-color-text-secondary)"}} />
+              <Text type="secondary" style={{fontSize: 20, fontWeight: 400}}> / </Text>
               {store.displayName || store.name}
             </Title>
             <div style={{display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap"}}>
               <Text type="secondary" style={{fontSize: 14}}>
-                {i18next.t("store:By")} <strong>{authorName}</strong>
+                {i18next.t("store:By")}{" "}
+                {store.author
+                  ? <strong>{store.author}</strong>
+                  : <UserLabel user={store.owner} account={account} showAvatar={false} strong />}
               </Text>
               {isForked ? (
                 <Tag icon={<ForkOutlined />} color="blue" style={{margin: 0}}>
@@ -120,9 +124,9 @@ function renderHeader(store, onStartChat, onFork, forking, favoriteStatus, starL
   );
 }
 
-function renderAbout(store) {
+function renderAbout(store, account) {
   const rows = [
-    [i18next.t("general:Owner"), store.owner],
+    [i18next.t("general:Owner"), <UserLabel key="owner" user={store.owner} account={account} showAvatar={false} />],
     [i18next.t("store:Forked from"), store.forkedFromOwner && store.forkedFromName ? `${store.forkedFromOwner}/${store.forkedFromName}` : ""],
     [i18next.t("general:Author"), store.author],
     [i18next.t("store:Affiliation"), store.affiliation],
@@ -221,7 +225,7 @@ function renderOverview(account, store, onStoreUpdate, onRefresh) {
         </div>
       </Col>
       <Col xs={24} lg={8}>
-        {renderAbout(store)}
+        {renderAbout(store, account)}
       </Col>
     </Row>
   );
@@ -272,7 +276,7 @@ function StoreHubAgentDetail({account, store, activeTab, activeSub, canManage, o
 
   return (
     <div style={{padding: "24px 32px", maxWidth: 1280, margin: "0 auto"}}>
-      {renderHeader(store, onStartChat, onFork, forking, favoriteStatus, starLoading, watchLoading, onToggleFavorite)}
+      {renderHeader(store, account, onStartChat, onFork, forking, favoriteStatus, starLoading, watchLoading, onToggleFavorite)}
       <Tabs
         activeKey={activeTab}
         items={tabItems}

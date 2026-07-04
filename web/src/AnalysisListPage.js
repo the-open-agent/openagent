@@ -17,6 +17,7 @@ import {Avatar, Card, Col, Row, Space, Spin, Typography} from "antd";
 import * as StoreBackend from "./backend/StoreBackend";
 import * as AnalysisBackend from "./backend/AnalysisBackend";
 import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 import WordCloudChart from "./WordCloudChart";
 import BreadcrumbBar from "./common/BreadcrumbBar";
 import i18next from "i18next";
@@ -91,7 +92,7 @@ class AnalysisListPage extends Component {
                     <Space>
                       <Avatar src={store.avatar || Setting.getDefaultAiAvatar()} size={24} />
                       <span>{store.displayName || store.name}</span>
-                      <span style={{fontWeight: "normal", color: "#999", fontSize: "12px"}}>{store.owner}</span>
+                      <UserLabel user={store.owner} account={this.props.account} showAvatar={false} nameStyle={{fontWeight: "normal", color: "#999", fontSize: "12px"}} />
                     </Space>
                   }
                   extra={

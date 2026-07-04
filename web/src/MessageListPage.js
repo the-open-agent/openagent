@@ -18,11 +18,11 @@ import {Button, Popconfirm, Popover, Switch, Table, Tag, Tooltip} from "antd";
 import BaseListPage from "./BaseListPage";
 import {ThemeDefault} from "./Conf";
 import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 import * as MessageBackend from "./backend/MessageBackend";
 import * as ProviderBackend from "./backend/ProviderBackend";
 import moment from "moment";
 import i18next from "i18next";
-import * as Conf from "./Conf";
 import {DeleteOutlined, EditOutlined, EyeOutlined} from "@ant-design/icons";
 import VectorTooltip from "./VectorTooltip";
 
@@ -314,11 +314,7 @@ class MessageListPage extends BaseListPage {
             return text;
           }
 
-          return (
-            <a target="_blank" rel="noreferrer" href={Setting.getMyProfileUrl(this.props.account).replace("/account", `/users/${Conf.AuthConfig.organizationName}/${text}`)}>
-              {text}
-            </a>
-          );
+          return <UserLabel user={text} account={this.props.account} size={22} />;
         },
       },
       {
@@ -371,16 +367,7 @@ class MessageListPage extends BaseListPage {
             return text;
           }
 
-          let userId = text;
-          if (!userId.includes("/")) {
-            userId = `${record.organization}/${userId}`;
-          }
-
-          return (
-            <a target="_blank" rel="noreferrer" href={Setting.getMyProfileUrl(this.props.account).replace("/account", `/users/${userId}`)}>
-              {text}
-            </a>
-          );
+          return <UserLabel user={text} account={this.props.account} size={22} />;
         },
       },
       {

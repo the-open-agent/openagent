@@ -18,6 +18,7 @@ import {DeleteOutlined, UploadOutlined} from "@ant-design/icons";
 import copy from "copy-to-clipboard";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 import * as ResourceBackend from "./backend/ResourceBackend";
 import i18next from "i18next";
 
@@ -111,6 +112,7 @@ class ResourceListPage extends BaseListPage {
         width: "120px",
         sorter: true,
         ...this.getColumnSearchProps("user"),
+        render: (text) => (text && !text.startsWith("u-") ? <UserLabel user={text} account={this.props.account} size={22} /> : text),
       },
       {
         title: i18next.t("general:Category"),

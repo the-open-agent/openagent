@@ -14,6 +14,7 @@
 
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 import i18next from "i18next";
 import {Button, Popconfirm, Table, Tag, Tooltip} from "antd";
 import React from "react";
@@ -56,13 +57,7 @@ class SessionListPage extends BaseListPage {
         fixed: "left",
         sorter: (a, b) => a.name.localeCompare(b.name),
         ...this.getColumnSearchProps("name"),
-        render: (text, session, index) => {
-          return (
-            <a target="_blank" rel="noreferrer" href={Setting.getMyProfileUrl(this.props.account).replace("/account", `/users/${session.owner}/${session.name}`)}>
-              {text}
-            </a>
-          );
-        },
+        render: (text) => (text && !text.startsWith("u-") ? <UserLabel user={text} account={this.props.account} size={22} /> : text),
       },
       {
         title: i18next.t("general:Organization"),

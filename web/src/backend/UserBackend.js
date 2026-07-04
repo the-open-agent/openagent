@@ -32,9 +32,16 @@ function fetchUserInfo(name) {
       if (res.status === "ok" && res.data) {
         return res.data;
       }
+      // Unresolved (e.g. not signed in yet, or a transient error) — drop the
+      // cache entry so a later lookup retries instead of being stuck rendering
+      // the raw username for the rest of the page's lifetime.
+      userInfoCache.delete(name);
       return {name};
     })
-    .catch(() => ({name}));
+    .catch(() => {
+      userInfoCache.delete(name);
+      return {name};
+    });
 }
 
 // getUserInfo returns a Promise that resolves to {name, displayName, avatar}.

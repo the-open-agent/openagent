@@ -17,6 +17,7 @@ import {Link} from "react-router-dom";
 import {Button, Popconfirm, Table, Tooltip} from "antd";
 import BaseListPage from "./BaseListPage";
 import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 import * as CommentBackend from "./backend/CommentBackend";
 import i18next from "i18next";
 import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
@@ -57,6 +58,7 @@ class CommentListPage extends BaseListPage {
         width: "120px",
         sorter: (a, b) => a.owner.localeCompare(b.owner),
         ...this.getColumnSearchProps("owner"),
+        render: (text) => (text && !text.startsWith("u-") ? <UserLabel user={text} account={this.props.account} size={22} /> : text),
       },
       {
         title: i18next.t("general:Name"),

@@ -16,6 +16,7 @@ import React from "react";
 import {Table, Tag} from "antd";
 import i18next from "i18next";
 import * as Setting from "./Setting";
+import UserLabel from "./common/UserLabel";
 
 const UsageTable = ({data, account}) => {
   let columns = [
@@ -24,6 +25,7 @@ const UsageTable = ({data, account}) => {
       dataIndex: "user",
       key: "user",
       width: "12%",
+      render: (text) => (text && !text.startsWith("u-") ? <UserLabel user={text} account={account} size={22} /> : text),
     },
     {
       title: i18next.t("general:Chats"),
