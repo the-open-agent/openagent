@@ -93,6 +93,7 @@ function renderHeader(store, onStartChat, onFork, forking, favoriteStatus, starL
             <Tooltip title={forkDisabledReason}>
               <Button icon={<ForkOutlined />} loading={forking} disabled={Boolean(forkDisabledReason)} onClick={onFork}>
                 {i18next.t("store:Fork")}
+                {status.forkCount > 0 ? ` (${status.forkCount})` : ""}
               </Button>
             </Tooltip>
             <Button type="primary" icon={<CommentOutlined />} onClick={onStartChat}>

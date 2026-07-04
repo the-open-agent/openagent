@@ -37,6 +37,10 @@ func (c *ApiController) GetHubStores() {
 		c.ResponseError(err.Error())
 		return
 	}
+	if err := object.FillStoreFavoriteCounts(stores); err != nil {
+		c.ResponseError(err.Error())
+		return
+	}
 	c.ResponseOk(object.GetMaskedStores(stores, c.GetSessionUser()))
 }
 

@@ -122,10 +122,16 @@ func (c *ApiController) GetStoreFavoriteStatus() {
 		c.ResponseError(err.Error())
 		return
 	}
+	forkCount, err := object.GetStoreForkCount(storeOwner, storeName)
+	if err != nil {
+		c.ResponseError(err.Error())
+		return
+	}
 
 	result := map[string]interface{}{
 		"starCount":  starCount,
 		"watchCount": watchCount,
+		"forkCount":  forkCount,
 		"starred":    false,
 		"watched":    false,
 		"hasForked":  false,

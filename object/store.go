@@ -124,6 +124,9 @@ type Store struct {
 	ChatCount    int    `xorm:"-" json:"chatCount"`
 	MessageCount int    `xorm:"-" json:"messageCount"`
 	VectorCount  int    `xorm:"-" json:"vectorCount"`
+	StarCount    int    `xorm:"-" json:"starCount"`
+	WatchCount   int    `xorm:"-" json:"watchCount"`
+	ForkCount    int    `xorm:"-" json:"forkCount"`
 	HubDbName    string `xorm:"-" json:"hubDbName"`
 	Endpoint     string `xorm:"-" json:"endpoint"`
 

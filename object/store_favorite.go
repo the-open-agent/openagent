@@ -119,3 +119,71 @@ func GetFavoredStores(user, favoriteType string) ([]*Store, error) {
 	}
 	return stores, nil
 }
+
+// FillStoreFavoriteCounts populates StarCount / WatchCount / ForkCount on the
+// given stores using grouped queries (star/watch from store_favorite, fork from
+// the store table's forked_from columns) — avoids N+1 for hub/list rendering.
+func FillStoreFavoriteCounts(stores []*Store) error {
+	if len(stores) == 0 {
+		return nil
+	}
+
+	type favoriteCountRow struct {
+		Type       string
+		StoreOwner string
+		StoreName  string
+		Count      int
+	}
+	favoriteRows := []favoriteCountRow{}
+	err := adapter.engine.Table(new(StoreFavorite)).
+		Select("type, store_owner, store_name, count(*) as count").
+		GroupBy("type, store_owner, store_name").
+		Find(&favoriteRows)
+	if err != nil {
+		return err
+	}
+
+	starMap := map[string]int{}
+	watchMap := map[string]int{}
+	for _, row := range favoriteRows {
+		key := row.StoreOwner + "/" + row.StoreName
+		if row.Type == FavoriteTypeStar {
+			starMap[key] = row.Count
+		} else if row.Type == FavoriteTypeWatch {
+			watchMap[key] = row.Count
+		}
+	}
+
+	type forkCountRow struct {
+		ForkedFromOwner string
+		ForkedFromName  string
+		Count           int
+	}
+	forkRows := []forkCountRow{}
+	err = adapter.engine.Table(new(Store)).
+		Select("forked_from_owner, forked_from_name, count(*) as count").
+		Where("forked_from_owner <> ? and forked_from_name <> ?", "", "").
+		GroupBy("forked_from_owner, forked_from_name").
+		Find(&forkRows)
+	if err != nil {
+		return err
+	}
+
+	forkMap := map[string]int{}
+	for _, row := range forkRows {
+		forkMap[row.ForkedFromOwner+"/"+row.ForkedFromName] = row.Count
+	}
+
+	for _, store := range stores {
+		key := store.Owner + "/" + store.Name
+		store.StarCount = starMap[key]
+		store.WatchCount = watchMap[key]
+		store.ForkCount = forkMap[key]
+	}
+	return nil
+}
+
+// GetStoreForkCount returns how many stores were forked from the given store.
+func GetStoreForkCount(owner, name string) (int64, error) {
+	return adapter.engine.Where("forked_from_owner = ? and forked_from_name = ?", owner, name).Count(&Store{})
+}
