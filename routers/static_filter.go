@@ -78,7 +78,15 @@ func StaticFilter(ctx *context.Context) {
 	}
 
 	if strings.HasPrefix(urlPath, "/storage") {
-		ctx.Output.Header(headerAllowOrigin, "*")
+		// Echo the request Origin instead of "*": browsers reject a wildcard
+		// Allow-Origin when the request carries credentials, which the file
+		// preview fetch does (credentials: "include"). Same-origin / non-CORS
+		// requests have no Origin header and fall back to "*".
+		if origin := ctx.Input.Header(headerOrigin); origin != "" && origin != "null" {
+			ctx.Output.Header(headerAllowOrigin, origin)
+		} else {
+			ctx.Output.Header(headerAllowOrigin, "*")
+		}
 		ctx.Output.Header(headerAllowMethods, "POST, GET, OPTIONS, DELETE")
 		ctx.Output.Header(headerAllowHeaders, "Content-Type, Authorization")
 		ctx.Output.Header(headerAllowCredentials, "true")
