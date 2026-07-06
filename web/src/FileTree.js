@@ -30,6 +30,7 @@ import * as PermissionUtil from "./PermissionUtil";
 import * as Conf from "./Conf";
 import FileTable from "./table/FileTable";
 import Editor from "./common/Editor";
+import DocxViewer from "./common/DocxViewer";
 
 const {Search} = Input;
 
@@ -796,6 +797,12 @@ class FileTree extends React.Component {
 
     const ext = Setting.getExtFromPath(path);
     const url = this.state.selectedFile.url;
+
+    if (ext === "docx") {
+      // Render .docx client-side (docx-preview) so it works for local/private
+      // files; the Office Online viewer would need a publicly reachable URL.
+      return <DocxViewer key={path} url={url} height={this.getEditorHeightCss()} />;
+    }
 
     if (this.isExtForDocViewer(ext)) {
       // https://github.com/Alcumus/react-doc-viewer

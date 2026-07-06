@@ -129,6 +129,13 @@ code {
   height: auto;
 }
 
+/* docx-preview: DocxViewer scales the wrapper (CSS zoom) to fit the box, so
+   drop the wrapper's default outer margin/background to avoid a large gap. */
+.docx-wrapper {
+  padding: 8px !important;
+  background: transparent !important;
+}
+
 /*.ant-modal-content {*/
 /*  padding: 0 !important;*/
 /*  background-color: transparent !important;*/
