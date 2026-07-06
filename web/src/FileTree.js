@@ -384,6 +384,7 @@ class FileTree extends React.Component {
           selectedKeys: [],
           selectedFile: null,
         });
+        this.notifySelectedFile(null);
       }} />
     );
   }
@@ -411,6 +412,12 @@ class FileTree extends React.Component {
     return null;
   }
 
+  notifySelectedFile(file) {
+    if (this.props.onSelectFile) {
+      this.props.onSelectFile(file && file.isLeaf ? file : null);
+    }
+  }
+
   applyInitialSelection() {
     const {store, initialFileKey} = this.props;
 
@@ -434,6 +441,7 @@ class FileTree extends React.Component {
       selectedKeys: [file.key],
       selectedFile: file,
     });
+    this.notifySelectedFile(file);
 
     const ext = Setting.getExtFromPath(file.key);
     if (ext && file.url && !this.isExtForDocViewer(ext) && !this.isExtForFileViewer(ext)) {
@@ -499,6 +507,7 @@ class FileTree extends React.Component {
         selectedKeys: selectedKeys,
         selectedFile: info.node,
       });
+      this.notifySelectedFile(info.node);
     };
 
     const onCheck = (checkedKeys, info) => {
@@ -508,6 +517,7 @@ class FileTree extends React.Component {
         selectedKeys: [],
         selectedFile: null,
       });
+      this.notifySelectedFile(null);
     };
 
     let fileTree = Setting.getTreeWithParents(store.fileTree);
@@ -918,6 +928,9 @@ class FileTree extends React.Component {
   }
 
   renderProperties() {
+    if (this.props.showProperties === false) {
+      return null;
+    }
     if (this.state.selectedKeys.length === 0) {
       return null;
     }

@@ -19,7 +19,7 @@ import StoreIssues from "./StoreIssues";
 import StoreSecurity from "./StoreSecurity";
 import StoreEditPage from "./StoreEditPage";
 import ChatPage from "./ChatPage";
-import {AppstoreOutlined, BarChartOutlined, BugOutlined, CommentOutlined, EyeFilled, EyeOutlined, FolderOpenOutlined, ForkOutlined, SafetyCertificateOutlined, SettingOutlined, StarFilled, StarOutlined} from "@ant-design/icons";
+import {AppstoreOutlined, BarChartOutlined, BugOutlined, CommentOutlined, EyeFilled, EyeOutlined, FileTextOutlined, FolderOpenOutlined, ForkOutlined, SafetyCertificateOutlined, SettingOutlined, StarFilled, StarOutlined} from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import i18next from "i18next";
@@ -199,18 +199,48 @@ function renderReadme(store) {
   );
 }
 
-function renderFiles(account, store, onStoreUpdate, onRefresh) {
+function renderFiles(account, store, onStoreUpdate, onRefresh, onSelectFile) {
   return (
     <FileTree
       account={account}
       store={store}
       onUpdateStore={onStoreUpdate}
       onRefresh={onRefresh}
+      onSelectFile={onSelectFile}
+      showProperties={!onSelectFile}
     />
   );
 }
 
-function renderOverview(account, store, onStoreUpdate, onRefresh) {
+// File details shown under the About rail on the Overview tab (the file browser
+// reports the selected file via onSelectFile instead of rendering this inline).
+function renderFileProperties(file) {
+  if (!file) {
+    return null;
+  }
+  const rows = [
+    [i18next.t("store:File size"), Setting.getFriendlyFileSize(file.size)],
+    [i18next.t("general:Created time"), file.createdTime ? new Date(file.createdTime).toLocaleString() : "—"],
+  ];
+  return (
+    <Card title={i18next.t("store:File")} size="small">
+      <div style={{display: "flex", alignItems: "center", gap: 8, minWidth: 0, overflow: "hidden", marginBottom: 12, padding: "8px 10px", background: "var(--ant-color-fill-quaternary)", borderRadius: 6}}>
+        <FileTextOutlined style={{color: "var(--ant-color-primary)", flexShrink: 0}} />
+        <Text strong ellipsis={{tooltip: file.title}} style={{minWidth: 0}}>{file.title}</Text>
+      </div>
+      <div style={{display: "grid", gap: 8}}>
+        {rows.map(([label, value]) => (
+          <div key={label} style={{display: "flex", justifyContent: "space-between", gap: 12}}>
+            <Text type="secondary" style={{flexShrink: 0}}>{label}</Text>
+            <Text style={{textAlign: "right", wordBreak: "break-word", minWidth: 0}}>{value}</Text>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function renderOverview(account, store, onStoreUpdate, onRefresh, selectedFile, onSelectFile) {
   const isExternalStore = Boolean(store.endpoint || store.hubDbName);
   const areCommentsUnavailable = isExternalStore || store.publishState !== "Published";
 
@@ -219,7 +249,7 @@ function renderOverview(account, store, onStoreUpdate, onRefresh) {
       {/* The file section is clipped (overflow: hidden) so a wide preview can
           never spill over the About rail on the right. */}
       <div style={{flex: "1 1 520px", minWidth: 0, overflow: "hidden", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 16}}>
-        {renderFiles(account, store, onStoreUpdate, onRefresh)}
+        {renderFiles(account, store, onStoreUpdate, onRefresh, onSelectFile)}
         {renderReadme(store)}
         <CommentArea
           account={account}
@@ -230,8 +260,9 @@ function renderOverview(account, store, onStoreUpdate, onRefresh) {
           unavailableText={isExternalStore ? i18next.t("store:Comments are unavailable for external agents") : i18next.t("store:Comments are unavailable")}
         />
       </div>
-      <div style={{flex: "0 0 280px", maxWidth: "100%"}}>
+      <div style={{flex: "0 0 280px", maxWidth: "100%", minWidth: 0, display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 16}}>
         {renderAbout(store, account)}
+        {renderFileProperties(selectedFile)}
       </div>
     </div>
   );
@@ -296,7 +327,7 @@ function renderChat(account, store) {
   );
 }
 
-function renderTabContent(account, store, activeTab, activeSub, activeIssueName, onStoreUpdate, onRefresh, onSubTabChange, onIssueChange, history) {
+function renderTabContent(account, store, activeTab, activeSub, activeIssueName, onStoreUpdate, onRefresh, onSubTabChange, onIssueChange, history, selectedFile, onSelectFile) {
   if (activeTab === "files") {
     return renderFiles(account, store, onStoreUpdate, onRefresh);
   }
@@ -315,10 +346,11 @@ function renderTabContent(account, store, activeTab, activeSub, activeIssueName,
   if (activeTab === "chat") {
     return renderChat(account, store);
   }
-  return renderOverview(account, store, onStoreUpdate, onRefresh);
+  return renderOverview(account, store, onStoreUpdate, onRefresh, selectedFile, onSelectFile);
 }
 
 function StoreHubAgentDetail({account, store, activeTab, activeSub, activeIssueName, canManage, onTabChange, onSubTabChange, onIssueChange, onStartChat, onFork, forking, favoriteStatus, starLoading, watchLoading, onToggleFavorite, onStoreUpdate, onRefresh, history}) {
+  const [selectedFile, setSelectedFile] = React.useState(null);
   const tabItems = [
     {key: "overview", label: <span><AppstoreOutlined /> {i18next.t("store:Overview")}</span>},
     {key: "chat", label: <span><CommentOutlined /> {i18next.t("general:Chat")}</span>},
@@ -341,7 +373,7 @@ function StoreHubAgentDetail({account, store, activeTab, activeSub, activeIssueN
         onChange={onTabChange}
         style={{marginBottom: 16}}
       />
-      {renderTabContent(account, store, activeTab, activeSub, activeIssueName, onStoreUpdate, onRefresh, onSubTabChange, onIssueChange, history)}
+      {renderTabContent(account, store, activeTab, activeSub, activeIssueName, onStoreUpdate, onRefresh, onSubTabChange, onIssueChange, history, selectedFile, setSelectedFile)}
     </div>
   );
 }
