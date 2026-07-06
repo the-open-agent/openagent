@@ -188,6 +188,16 @@ code {
   margin: 0 auto;
 }
 
+/* react-doc-viewer doesn't ship react-pdf's TextLayer.css, so the text layer
+   renders as visible extracted text under each page instead of a transparent
+   selection overlay. The canvas already shows the page — hide these layers. */
+#pdf-renderer .react-pdf__Page__textContent,
+#pdf-renderer .react-pdf__Page__annotations,
+#pdf-renderer .react-pdf__Page__structTree,
+#pdf-renderer .react-pdf__message {
+  display: none !important;
+}
+
 #image-renderer img,
 #proxy-renderer img {
   max-width: 100% !important;
