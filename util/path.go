@@ -44,13 +44,11 @@ func EnsureFileFolderExists(path string) {
 	}
 }
 
-func EnsureFolderExists(path string) {
+func EnsureFolderExists(path string) error {
 	if !FileExist(path) {
-		err := os.MkdirAll(path, os.ModePerm)
-		if err != nil {
-			panic(err)
-		}
+		return os.MkdirAll(path, os.ModePerm)
 	}
+	return nil
 }
 
 func RemoveExt(filename string) string {

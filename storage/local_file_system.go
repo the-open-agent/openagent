@@ -38,7 +38,9 @@ func (p *LocalFileSystemStorageProvider) ListObjects(prefix string) ([]*Object, 
 	objects := []*Object{}
 	fullPath := filepath.Join(p.path, prefix)
 	fullPath = strings.ReplaceAll(fullPath, "\\", "/")
-	util.EnsureFolderExists(fullPath)
+	if err := util.EnsureFolderExists(fullPath); err != nil {
+		return nil, err
+	}
 
 	filepath.Walk(fullPath, func(path string, info os.FileInfo, err error) error {
 		if path == fullPath {
