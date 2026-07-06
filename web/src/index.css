@@ -150,6 +150,32 @@ code {
   max-width: 100% !important;
 }
 
+/* Keep the pages (paginated or continuous-scroll) scrolling INSIDE the fixed
+   preview box instead of growing the whole page. The DocViewer root is a flex
+   column; proxy-renderer fills the remaining height and pdf-renderer scrolls. */
+#proxy-renderer {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#pdf-renderer {
+  height: 100% !important;
+  overflow-y: auto !important;
+}
+
+/* Keep the toolbar pinned while the pages scroll under it. */
+#pdf-controls {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+#pdf-renderer #pdf-page-wrapper + #pdf-page-wrapper,
+#pdf-renderer .react-pdf__Page + .react-pdf__Page {
+  margin-top: 12px;
+}
+
 #pdf-renderer .react-pdf__Document,
 #pdf-renderer .react-pdf__Page {
   max-width: 100% !important;

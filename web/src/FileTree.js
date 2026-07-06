@@ -825,7 +825,7 @@ class FileTree extends React.Component {
       return (
         <DocViewer
           key={path}
-          style={{width: "100%", maxWidth: "100%", height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}
+          style={{width: "100%", maxWidth: "100%", height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px", display: "flex", flexDirection: "column", overflow: "hidden"}}
           pluginRenderers={DocViewerRenderers}
           documents={[{uri: url}]}
           theme={{
