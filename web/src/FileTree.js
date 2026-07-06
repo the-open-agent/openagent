@@ -829,12 +829,12 @@ class FileTree extends React.Component {
           pluginRenderers={DocViewerRenderers}
           documents={[{uri: url}]}
           theme={{
-            primary: "rgb(92,48,125)",
+            primary: "#ffffff",
             secondary: "#ffffff",
-            tertiary: "rgba(92,48,125,0.55)",
-            text_primary: "#ffffff",
-            text_secondary: "rgb(92,48,125)",
-            text_tertiary: "#00000099",
+            tertiary: "rgba(0, 0, 0, 0.05)",
+            text_primary: Setting.getThemeColor(),
+            text_secondary: Setting.getThemeColor(),
+            text_tertiary: "rgba(0, 0, 0, 0.45)",
             disableThemeScrollbar: false,
           }}
           config={{
