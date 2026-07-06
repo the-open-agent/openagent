@@ -219,6 +219,71 @@ code {
   z-index: 2;
 }
 
+/* react-doc-viewer PDF toolbar: tidy it up to match the app aesthetic — round
+   the top to match the preview box, flatten the shadow, and give the controls
+   consistent rounded hit-areas with a subtle hover. Its accent color comes from
+   the DocViewer `theme` prop (the app theme color). */
+#pdf-controls {
+  box-shadow: none !important;
+  border-radius: 6px 6px 0 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  min-height: 42px !important;
+  padding: 4px 12px !important;
+  gap: 6px;
+}
+
+/* Uniform, borderless icon buttons; the icons are hardcoded black in the lib,
+   so recolor them to the theme color and size them consistently. */
+#pdf-controls button,
+#pdf-controls a#pdf-download {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+  transition: background 0.15s ease;
+}
+
+#pdf-controls button svg,
+#pdf-controls a#pdf-download svg {
+  color: var(--theme-color, #404040) !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+#pdf-controls button:hover,
+#pdf-controls a#pdf-download:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+#pdf-controls button:active,
+#pdf-controls a#pdf-download:active {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+#pdf-controls button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+#pdf-controls button:disabled:hover {
+  background: transparent !important;
+}
+
+#pdf-pagination-info,
+#pdf-page-info {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--theme-color, #404040);
+  padding: 0 6px;
+}
+
 /*.ant-modal-content {*/
 /*  padding: 0 !important;*/
 /*  background-color: transparent !important;*/
