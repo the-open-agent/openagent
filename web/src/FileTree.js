@@ -30,6 +30,7 @@ import * as PermissionUtil from "./PermissionUtil";
 import * as Conf from "./Conf";
 import FileTable from "./table/FileTable";
 import Editor from "./common/Editor";
+import DocxViewer from "./common/DocxViewer";
 
 const {Search} = Input;
 
@@ -409,6 +410,12 @@ class FileTree extends React.Component {
     return null;
   }
 
+  notifySelectedFile(file) {
+    if (this.props.onSelectFile) {
+      this.props.onSelectFile(file && file.isLeaf ? file : null);
+    }
+  }
+
   applyInitialSelection() {
     const {store, initialFileKey} = this.props;
 
@@ -432,6 +439,7 @@ class FileTree extends React.Component {
       selectedKeys: [file.key],
       selectedFile: file,
     });
+    this.notifySelectedFile(file);
 
     const ext = Setting.getExtFromPath(file.key);
     if (ext && file.url && !this.isExtForDocViewer(ext) && !this.isExtForFileViewer(ext)) {
@@ -497,6 +505,7 @@ class FileTree extends React.Component {
         selectedKeys: selectedKeys,
         selectedFile: info.node,
       });
+      this.notifySelectedFile(info.node);
     };
 
     const onCheck = (checkedKeys, info) => {
@@ -515,7 +524,7 @@ class FileTree extends React.Component {
 
     return (
       <Tree
-        height={"calc(100vh - 220px)"}
+        height={this.getTreeHeightCss()}
         virtual={true}
         className="draggable-tree"
         multiple={false}
@@ -797,12 +806,18 @@ class FileTree extends React.Component {
     const ext = Setting.getExtFromPath(path);
     const url = this.state.selectedFile.url;
 
+    if (ext === "docx") {
+      // Render .docx client-side (docx-preview) so it works for local/private
+      // files; the Office Online viewer would need a publicly reachable URL.
+      return <DocxViewer key={path} url={url} height={this.getEditorHeightCss()} />;
+    }
+
     if (this.isExtForDocViewer(ext)) {
       // https://github.com/Alcumus/react-doc-viewer
       return (
         <DocViewer
           key={path}
-          style={{height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}
+          style={{width: "100%", maxWidth: "100%", height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}
           pluginRenderers={DocViewerRenderers}
           documents={[{uri: url}]}
           theme={{
@@ -866,6 +881,8 @@ class FileTree extends React.Component {
             key={path}
             value={this.state.text}
             fillHeight
+            fillWidth
+            lineWrapping
           />
         </div>
       );
@@ -903,6 +920,9 @@ class FileTree extends React.Component {
   }
 
   renderProperties() {
+    if (this.props.showProperties === false) {
+      return null;
+    }
     if (this.state.selectedKeys.length === 0) {
       return null;
     }
@@ -946,6 +966,17 @@ class FileTree extends React.Component {
     return `calc(100vh - ${filePaneHeight + 136}px)`;
   }
 
+  // Height for the tree so it lines up (bottom-aligns) with the preview box:
+  // the preview height minus the search bar that sits above the tree.
+  getTreeHeightCss() {
+    let filePaneHeight = this.filePane.current?.offsetHeight;
+    if (!filePaneHeight) {
+      filePaneHeight = 0;
+    }
+
+    return `calc(100vh - ${filePaneHeight + 136 + 44}px)`;
+  }
+
   render() {
     if (this.props.store.fileTree === null) {
       if (this.props.store.error) {
@@ -969,7 +1000,7 @@ class FileTree extends React.Component {
     return (
       <div>
         <Row>
-          <Col span={8}>
+          <Col span={6} style={{minWidth: 0}}>
             <Card className="content-warp-card-filetreeleft" style={{marginRight: "10px"}}>
               <div style={{margin: "-25px"}}>
                 {
@@ -981,10 +1012,10 @@ class FileTree extends React.Component {
               </div>
             </Card>
           </Col>
-          <Col span={16}>
+          <Col span={18} style={{minWidth: 0}}>
             <Card className="content-warp-card-filetreeright">
               <div style={{margin: "-25px"}}>
-                <div style={{height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}>
+                <div style={{height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px", overflow: "hidden"}}>
                   {
                     this.renderFileViewer(this.props.store)
                   }

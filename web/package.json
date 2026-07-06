@@ -37,6 +37,7 @@
     "d3-force": "^3.0.0",
     "dayjs": "^1.11.19",
     "docx": "^9.6.1",
+    "docx-preview": "^0.3.7",
     "dompurify": "^3.0.9",
     "echarts": "^5.4.2",
     "echarts-for-react": "^3.0.2",

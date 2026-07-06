@@ -46,8 +46,9 @@ module.exports = {
       paths.appBuild = path.resolve(__dirname, "build-temp");
       webpackConfig.output.path = path.resolve(__dirname, "build-temp");
 
-      // dompurify (pulled in by mermaid) ships sourceMappingURL pointing at src/*.ts
-      // that are not published on npm; source-map-loader then floods the console.
+      // Some deps (dompurify via mermaid, docx-preview) ship sourceMappingURL
+      // pointing at src/*.ts that are not published on npm; source-map-loader
+      // then floods the console. These are harmless — silence them.
       const prev = webpackConfig.ignoreWarnings;
       webpackConfig.ignoreWarnings = [
         ...(Array.isArray(prev) ? prev : prev ? [prev] : []),
@@ -56,7 +57,7 @@ module.exports = {
           return (
             typeof msg === "string" &&
             msg.includes("Failed to parse source map") &&
-            msg.includes("dompurify")
+            (msg.includes("dompurify") || msg.includes("docx-preview"))
           );
         },
       ];
