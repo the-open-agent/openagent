@@ -517,7 +517,7 @@ class FileTree extends React.Component {
 
     return (
       <Tree
-        height={"calc(100vh - 220px)"}
+        height={this.getTreeHeightCss()}
         virtual={true}
         className="draggable-tree"
         multiple={false}
@@ -815,7 +815,7 @@ class FileTree extends React.Component {
       return (
         <DocViewer
           key={path}
-          style={{height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}
+          style={{width: "100%", maxWidth: "100%", height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}
           pluginRenderers={DocViewerRenderers}
           documents={[{uri: url}]}
           theme={{
@@ -879,6 +879,8 @@ class FileTree extends React.Component {
             key={path}
             value={this.state.text}
             fillHeight
+            fillWidth
+            lineWrapping
           />
         </div>
       );
@@ -959,6 +961,17 @@ class FileTree extends React.Component {
     return `calc(100vh - ${filePaneHeight + 136}px)`;
   }
 
+  // Height for the tree so it lines up (bottom-aligns) with the preview box:
+  // the preview height minus the search bar that sits above the tree.
+  getTreeHeightCss() {
+    let filePaneHeight = this.filePane.current?.offsetHeight;
+    if (!filePaneHeight) {
+      filePaneHeight = 0;
+    }
+
+    return `calc(100vh - ${filePaneHeight + 136 + 44}px)`;
+  }
+
   render() {
     if (this.props.store.fileTree === null) {
       if (this.props.store.error) {
@@ -982,7 +995,7 @@ class FileTree extends React.Component {
     return (
       <div>
         <Row>
-          <Col span={8}>
+          <Col span={6} style={{minWidth: 0}}>
             <Card className="content-warp-card-filetreeleft" style={{marginRight: "10px"}}>
               <div style={{margin: "-25px"}}>
                 {
@@ -994,10 +1007,10 @@ class FileTree extends React.Component {
               </div>
             </Card>
           </Col>
-          <Col span={16}>
+          <Col span={18} style={{minWidth: 0}}>
             <Card className="content-warp-card-filetreeright">
               <div style={{margin: "-25px"}}>
-                <div style={{height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}>
+                <div style={{height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px", overflow: "hidden"}}>
                   {
                     this.renderFileViewer(this.props.store)
                   }

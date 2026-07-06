@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import React from "react";
-import {Avatar, Button, Card, Col, Row, Space, Tabs, Tag, Tooltip, Typography} from "antd";
+import {Avatar, Button, Card, Space, Tabs, Tag, Tooltip, Typography} from "antd";
 import StoreInsights from "./StoreInsights";
 import StoreIssues from "./StoreIssues";
 import StoreSecurity from "./StoreSecurity";
@@ -215,25 +215,25 @@ function renderOverview(account, store, onStoreUpdate, onRefresh) {
   const areCommentsUnavailable = isExternalStore || store.publishState !== "Published";
 
   return (
-    <Row gutter={[16, 16]}>
-      <Col xs={24} lg={18}>
-        <div style={{display: "grid", gap: 16}}>
-          {renderFiles(account, store, onStoreUpdate, onRefresh)}
-          {renderReadme(store)}
-          <CommentArea
-            account={account}
-            targetType="agenthub"
-            targetKey={`${store.owner}/${store.name}`}
-            targetOwner={store.owner}
-            disabled={areCommentsUnavailable}
-            unavailableText={isExternalStore ? i18next.t("store:Comments are unavailable for external agents") : i18next.t("store:Comments are unavailable")}
-          />
-        </div>
-      </Col>
-      <Col xs={24} lg={6}>
+    <div style={{display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap"}}>
+      {/* The file section is clipped (overflow: hidden) so a wide preview can
+          never spill over the About rail on the right. */}
+      <div style={{flex: "1 1 520px", minWidth: 0, overflow: "hidden", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 16}}>
+        {renderFiles(account, store, onStoreUpdate, onRefresh)}
+        {renderReadme(store)}
+        <CommentArea
+          account={account}
+          targetType="agenthub"
+          targetKey={`${store.owner}/${store.name}`}
+          targetOwner={store.owner}
+          disabled={areCommentsUnavailable}
+          unavailableText={isExternalStore ? i18next.t("store:Comments are unavailable for external agents") : i18next.t("store:Comments are unavailable")}
+        />
+      </div>
+      <div style={{flex: "0 0 280px", maxWidth: "100%"}}>
         {renderAbout(store, account)}
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 }
 

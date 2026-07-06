@@ -119,7 +119,10 @@ code {
 
 .markdownContainer {
   width: 100%;
-  overflow: hidden;
+  box-sizing: border-box;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   background-color: rgb(251,240,217);
   padding: 10px;
 }
@@ -127,6 +130,42 @@ code {
 .markdownContainer img {
   max-width: 100%;
   height: auto;
+}
+
+.markdownContainer pre,
+.markdownContainer table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* react-doc-viewer: fit the pdf page / image to the preview box width so the
+   document is fully visible (not clipped) and never spills over the About rail.
+   The root is styled-components, so target the stable renderer ids + react-pdf
+   canvas directly. */
+#pdf-renderer,
+#image-renderer,
+#msdoc-renderer,
+#proxy-renderer {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+#pdf-renderer .react-pdf__Document,
+#pdf-renderer .react-pdf__Page {
+  max-width: 100% !important;
+}
+
+#pdf-renderer canvas,
+#pdf-renderer .react-pdf__Page__svg {
+  height: auto !important;
+  max-width: 100% !important;
+  margin: 0 auto;
+}
+
+#image-renderer img,
+#proxy-renderer img {
+  max-width: 100% !important;
+  height: auto !important;
 }
 
 /* docx-preview: DocxViewer scales the wrapper (CSS zoom) to fit the box, so
