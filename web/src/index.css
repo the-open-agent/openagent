@@ -129,6 +129,15 @@ code {
   height: auto;
 }
 
+/* Make the Office Online (msdoc) docx / xlsx preview fill the preview box.
+   react-doc-viewer's #msdoc-iframe is height:100%, but its parent chain
+   (#proxy-renderer / #msdoc-renderer) had no height, so the iframe collapsed to
+   its default ~150px and only a top slice of the document was visible. */
+#proxy-renderer,
+#msdoc-renderer {
+  height: 100% !important;
+}
+
 /*.ant-modal-content {*/
 /*  padding: 0 !important;*/
 /*  background-color: transparent !important;*/
