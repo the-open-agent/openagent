@@ -803,17 +803,17 @@ class FileTree extends React.Component {
         <DocViewer
           key={path}
           className="filetree-doc-viewer"
-          style={{height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}
+          style={{width: "100%", maxWidth: "100%", height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}
           pluginRenderers={DocViewerRenderers}
           documents={[{uri: url}]}
           theme={{
-            primary: "rgb(92,48,125)",
+            primary: "#ffffff",
             secondary: "#ffffff",
-            tertiary: "rgba(92,48,125,0.55)",
-            text_primary: "#ffffff",
-            text_secondary: "rgb(92,48,125)",
-            text_tertiary: "#00000099",
-            disableThemeScrollbar: false,
+            tertiary: "rgba(0, 0, 0, 0.05)",
+            text_primary: Setting.getThemeColor(),
+            text_secondary: Setting.getThemeColor(),
+            text_tertiary: "rgba(0, 0, 0, 0.45)",
+            disableThemeScrollbar: true,
           }}
           config={{
             header: {

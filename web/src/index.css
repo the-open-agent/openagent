@@ -142,6 +142,142 @@ code {
   height: 100% !important;
 }
 
+/* PDF (react-pdf) preview: fit the page to the box width, scroll the page inside
+   the fixed box, and theme the toolbar. Scoped to .filetree-doc-viewer like the
+   block above (react-doc-viewer / react-pdf internal DOM ids — revisit when
+   upgrading @cyntler/react-doc-viewer). */
+.filetree-doc-viewer #pdf-renderer,
+.filetree-doc-viewer #image-renderer,
+.filetree-doc-viewer #proxy-renderer {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Scroll the (possibly tall) page inside the box so the mouse wheel works and
+   the page never overflows the frame. #proxy-renderer above is height:100%, so
+   giving #pdf-renderer height:100% gives the scroll area a fixed height. */
+.filetree-doc-viewer #pdf-renderer {
+  height: 100% !important;
+  overflow-y: auto !important;
+}
+
+/* Visible scrollbar (react-doc-viewer's themed one turned white against the
+   light toolbar and disappeared on scroll). */
+.filetree-doc-viewer #pdf-renderer::-webkit-scrollbar {
+  width: 10px;
+}
+
+.filetree-doc-viewer #pdf-renderer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filetree-doc-viewer #pdf-renderer::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+}
+
+.filetree-doc-viewer #pdf-renderer::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Keep the toolbar pinned while the page scrolls under it. */
+.filetree-doc-viewer #pdf-controls {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.filetree-doc-viewer #pdf-renderer .react-pdf__Document,
+.filetree-doc-viewer #pdf-renderer .react-pdf__Page {
+  max-width: 100% !important;
+}
+
+.filetree-doc-viewer #pdf-renderer canvas,
+.filetree-doc-viewer #pdf-renderer .react-pdf__Page__svg {
+  height: auto !important;
+  max-width: 100% !important;
+  margin: 0 auto;
+}
+
+/* react-doc-viewer doesn't ship react-pdf's TextLayer.css, so the text layer
+   renders as visible extracted text under the page instead of a transparent
+   selection overlay. The canvas already shows the page — hide these layers. */
+.filetree-doc-viewer #pdf-renderer .react-pdf__Page__textContent,
+.filetree-doc-viewer #pdf-renderer .react-pdf__Page__annotations,
+.filetree-doc-viewer #pdf-renderer .react-pdf__Page__structTree,
+.filetree-doc-viewer #pdf-renderer .react-pdf__message {
+  display: none !important;
+}
+
+.filetree-doc-viewer #image-renderer img,
+.filetree-doc-viewer #proxy-renderer img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* PDF toolbar: a light bar matching the app theme (accent color comes from the
+   DocViewer theme prop). */
+.filetree-doc-viewer #pdf-controls {
+  box-shadow: none !important;
+  border-radius: 6px 6px 0 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  min-height: 42px !important;
+  padding: 4px 12px !important;
+  gap: 6px;
+}
+
+/* Uniform, borderless icon buttons; the icons are hardcoded black in the lib,
+   so recolor them to the theme color and size them consistently. */
+.filetree-doc-viewer #pdf-controls button,
+.filetree-doc-viewer #pdf-controls a#pdf-download {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+  transition: background 0.15s ease;
+}
+
+.filetree-doc-viewer #pdf-controls button svg,
+.filetree-doc-viewer #pdf-controls a#pdf-download svg {
+  color: var(--theme-color, #404040) !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.filetree-doc-viewer #pdf-controls button:hover,
+.filetree-doc-viewer #pdf-controls a#pdf-download:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+.filetree-doc-viewer #pdf-controls button:active,
+.filetree-doc-viewer #pdf-controls a#pdf-download:active {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+.filetree-doc-viewer #pdf-controls button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.filetree-doc-viewer #pdf-controls button:disabled:hover {
+  background: transparent !important;
+}
+
+.filetree-doc-viewer #pdf-pagination-info,
+.filetree-doc-viewer #pdf-page-info {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--theme-color, #404040);
+  padding: 0 6px;
+}
+
 /*.ant-modal-content {*/
 /*  padding: 0 !important;*/
 /*  background-color: transparent !important;*/
