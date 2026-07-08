@@ -216,8 +216,8 @@ function renderOverview(account, store, onStoreUpdate, onRefresh) {
 
   return (
     <Row gutter={[16, 16]}>
-      <Col xs={24} lg={18}>
-        <div style={{display: "grid", gap: 16}}>
+      <Col xs={24} lg={18} style={{minWidth: 0}}>
+        <div style={{display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 16}}>
           {renderFiles(account, store, onStoreUpdate, onRefresh)}
           {renderReadme(store)}
           <CommentArea

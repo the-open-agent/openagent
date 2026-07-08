@@ -842,7 +842,7 @@ class FileTree extends React.Component {
     } else if (this.isExtForMarkdownViewer(ext)) {
       // https://github.com/remarkjs/react-markdown
       return (
-        <div className="markdownContainer" style={{height: this.getEditorHeightCss(), overflow: "auto", border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}>
+        <div className="markdownContainer" style={{height: this.getEditorHeightCss(), overflow: "auto", border: "1px solid rgb(242,242,242)", borderRadius: "6px", minWidth: 0, maxWidth: "100%"}}>
           <ReactMarkdown
             key={path}
             remarkPlugins={[remarkGfm, remarkFrontmatter]}
@@ -862,11 +862,13 @@ class FileTree extends React.Component {
       }
 
       return (
-        <div style={{height: this.getEditorHeightCss()}}>
+        <div style={{height: this.getEditorHeightCss(), minWidth: 0, maxWidth: "100%", overflow: "hidden"}}>
           <Editor
             key={path}
             value={this.state.text}
             fillHeight
+            fillWidth
+            lineWrapping
           />
         </div>
       );
@@ -968,8 +970,8 @@ class FileTree extends React.Component {
     }
 
     return (
-      <div>
-        <Row>
+      <div style={{minWidth: 0}}>
+        <Row style={{minWidth: 0}}>
           <Col span={8}>
             <Card className="content-warp-card-filetreeleft" style={{marginRight: "10px"}}>
               <div style={{margin: "-25px"}}>
@@ -982,10 +984,10 @@ class FileTree extends React.Component {
               </div>
             </Card>
           </Col>
-          <Col span={16}>
+          <Col span={16} style={{minWidth: 0}}>
             <Card className="content-warp-card-filetreeright">
               <div style={{margin: "-25px"}}>
-                <div style={{height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px"}}>
+                <div style={{height: this.getEditorHeightCss(), border: "1px solid rgb(242,242,242)", borderRadius: "6px", minWidth: 0, maxWidth: "100%", overflow: "hidden"}}>
                   {
                     this.renderFileViewer(this.props.store)
                   }
