@@ -88,7 +88,9 @@ func parseSkillMd(raw string) (name, description, homepage, metadata, emoji, bod
 	}
 
 	// Skip the opening "---" line
-	afterOpen := raw[strings.Index(raw, "---")+3:]
+	// Use the trimmed string for parsing so leading whitespace before the first
+	// front-matter delimiter does not break index calculations.
+	afterOpen := trimmed[strings.Index(trimmed, "---")+3:]
 	newlineIdx := strings.Index(afterOpen, "\n")
 	if newlineIdx >= 0 {
 		afterOpen = afterOpen[newlineIdx+1:]
