@@ -18,11 +18,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
-	"github.com/the-open-agent/openagent/i18n"
 )
 
 type MiniMaxEmbeddingProvider struct {
@@ -106,7 +104,7 @@ func (p *MiniMaxEmbeddingProvider) QueryVector(text string, ctx context.Context,
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:request failed with status code %d: %s"), resp.StatusCode, string(body))
+		return nil, nil, newI18nError(lang, "embedding:request failed with status code %d: %s", resp.StatusCode, string(body))
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -117,11 +115,11 @@ func (p *MiniMaxEmbeddingProvider) QueryVector(text string, ctx context.Context,
 	var embeddingResponse EmbeddingResponse
 	err = json.Unmarshal(body, &embeddingResponse)
 	if err != nil {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:error unmarshaling response JSON: %v"), err)
+		return nil, nil, newI18nError(lang, "embedding:error unmarshaling response JSON: %v", err)
 	}
 
 	if len(embeddingResponse.Vectors) == 0 {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:no embedding vector found in response"))
+		return nil, nil, newI18nError(lang, "embedding:no embedding vector found in response")
 	}
 
 	embeddingResult := &EmbeddingResult{

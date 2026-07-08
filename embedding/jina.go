@@ -18,11 +18,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/the-open-agent/openagent/i18n"
 )
 
 type JinaEmbeddingProvider struct {
@@ -59,7 +56,7 @@ func (p *JinaEmbeddingProvider) calculatePrice(res *EmbeddingResult) error {
 
 func (p *JinaEmbeddingProvider) QueryVector(text string, ctx context.Context, lang string) ([]float32, *EmbeddingResult, error) {
 	if text == "" {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:text cannot be empty"))
+		return nil, nil, newI18nError(lang, "embedding:text cannot be empty")
 	}
 
 	url := "https://api.jina.ai/v1/embeddings"
@@ -67,7 +64,7 @@ func (p *JinaEmbeddingProvider) QueryVector(text string, ctx context.Context, la
 	model := p.subType
 
 	if text == "" {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:text can not be empty."))
+		return nil, nil, newI18nError(lang, "embedding:text can not be empty.")
 	}
 
 	payload := map[string]interface{}{
@@ -79,12 +76,12 @@ func (p *JinaEmbeddingProvider) QueryVector(text string, ctx context.Context, la
 
 	reqBody, err := json.Marshal(payload)
 	if err != nil {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:failed to marshal payload: %v"), err)
+		return nil, nil, newI18nError(lang, "embedding:failed to marshal payload: %v", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(reqBody))
 	if err != nil {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:failed to create request: %v"), err)
+		return nil, nil, newI18nError(lang, "embedding:failed to create request: %v", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -98,12 +95,12 @@ func (p *JinaEmbeddingProvider) QueryVector(text string, ctx context.Context, la
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:failed to get valid response, status code: %d"), resp.StatusCode)
+		return nil, nil, newI18nError(lang, "embedding:failed to get valid response, status code: %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:failed to read response body: %v"), err)
+		return nil, nil, newI18nError(lang, "embedding:failed to read response body: %v", err)
 	}
 
 	var apiResponse struct {
@@ -118,11 +115,11 @@ func (p *JinaEmbeddingProvider) QueryVector(text string, ctx context.Context, la
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(body, &apiResponse); err != nil {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:failed to unmarshal response: %v"), err)
+		return nil, nil, newI18nError(lang, "embedding:failed to unmarshal response: %v", err)
 	}
 
 	if len(apiResponse.Data) == 0 {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:no embeddings found in the response"))
+		return nil, nil, newI18nError(lang, "embedding:no embeddings found in the response")
 	}
 	embedding := apiResponse.Data[0].Embedding
 
@@ -132,7 +129,7 @@ func (p *JinaEmbeddingProvider) QueryVector(text string, ctx context.Context, la
 
 	err = p.calculatePrice(embeddingResult)
 	if err != nil {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:failed to calculate price: %v"), err)
+		return nil, nil, newI18nError(lang, "embedding:failed to calculate price: %v", err)
 	}
 
 	return embedding, embeddingResult, nil

@@ -37,6 +37,19 @@ type LocalEmbeddingProvider struct {
 	currency               string
 }
 
+// normalizeOllamaBaseURL ensures the URL ends with exactly "/v1",
+// regardless of whether the user typed trailing slashes or included "/v1".
+func normalizeOllamaBaseURL(rawURL string) string {
+	u := strings.TrimRight(rawURL, "/")
+	if u == "" {
+		return ""
+	}
+	if !strings.HasSuffix(u, "/v1") {
+		u += "/v1"
+	}
+	return u
+}
+
 func NewLocalEmbeddingProvider(typ string, subType string, secretKey string, providerUrl string, compatibleProvider string, pricePerThousandTokens float64, currency string) (*LocalEmbeddingProvider, error) {
 	p := &LocalEmbeddingProvider{
 		typ:                    typ,
@@ -118,7 +131,7 @@ func (p *LocalEmbeddingProvider) QueryVector(text string, ctx context.Context, l
 	if model == "custom-embedding" && p.compatibleProvider != "" {
 		model = p.compatibleProvider
 	} else if model == "custom-embedding" && p.compatibleProvider == "" {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:no embedding provider specified"))
+		return nil, nil, newI18nError(lang, "embedding:no embedding provider specified")
 	}
 
 	resp, err := client.CreateEmbeddings(ctx, openai.EmbeddingRequest{

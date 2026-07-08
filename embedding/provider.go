@@ -46,7 +46,9 @@ func GetEmbeddingProvider(typ string, subType string, clientId string, clientSec
 	} else if typ == "Baidu Cloud" {
 		p, err = NewBaiduCloudEmbeddingProvider(subType, clientId, clientSecret)
 	} else if typ == "Ollama" {
-		p, err = NewLocalEmbeddingProvider("Custom", "custom-embedding", "randomString", providerUrl, subType, pricePerThousandTokens, currency)
+		// Ollama supports OpenAI-compatible embeddings under /v1/embeddings.
+		// Normalize the base URL so users can enter "http://localhost:11434".
+		p, err = NewLocalEmbeddingProvider("Ollama", "custom-embedding", "randomString", normalizeOllamaBaseURL(providerUrl), subType, pricePerThousandTokens, currency)
 	} else if typ == "Local" {
 		p, err = NewLocalEmbeddingProvider(typ, subType, clientSecret, providerUrl, compatibleProvider, pricePerThousandTokens, currency)
 	} else if typ == "Azure" {

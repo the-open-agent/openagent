@@ -22,7 +22,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/the-open-agent/openagent/i18n"
 )
 
 type Word2VecEmbeddingProvider struct {
@@ -41,7 +40,7 @@ func NewWord2VecEmbeddingProvider(typ string, subType string, lang string) (*Wor
 	// Initialize the dictionary
 	err := p.loadModel(lang)
 	if err != nil {
-		return nil, fmt.Errorf(i18n.Translate(lang, "embedding:failed to load word2vec model: %v"), err)
+		return nil, newI18nError(lang, "embedding:failed to load word2vec model: %v", err)
 	}
 
 	return p, nil
@@ -50,7 +49,7 @@ func NewWord2VecEmbeddingProvider(typ string, subType string, lang string) (*Wor
 func (p *Word2VecEmbeddingProvider) loadModel(lang string) error {
 	file, err := os.Open(p.modelPath)
 	if err != nil {
-		return fmt.Errorf(i18n.Translate(lang, "embedding:failed to open model file: %v"), err)
+		return newI18nError(lang, "embedding:failed to open model file: %v", err)
 	}
 	defer file.Close()
 
@@ -59,7 +58,7 @@ func (p *Word2VecEmbeddingProvider) loadModel(lang string) error {
 	var wordCount int
 	_, err = fmt.Fscanf(br, "%d %d\n", &wordCount, &p.dim)
 	if err != nil {
-		return fmt.Errorf(i18n.Translate(lang, "embedding:failed to read header: %v"), err)
+		return newI18nError(lang, "embedding:failed to read header: %v", err)
 	}
 
 	p.dict = make(map[string][]float32, wordCount)
@@ -67,14 +66,14 @@ func (p *Word2VecEmbeddingProvider) loadModel(lang string) error {
 	for i := 0; i < wordCount; i++ {
 		word, err := br.ReadString(' ')
 		if err != nil {
-			return fmt.Errorf(i18n.Translate(lang, "embedding:failed to read word: %v"), err)
+			return newI18nError(lang, "embedding:failed to read word: %v", err)
 		}
 		word = word[:len(word)-1] // Remove trailing space
 
 		vector := make([]float32, p.dim)
 		err = binary.Read(br, binary.LittleEndian, &vector)
 		if err != nil {
-			return fmt.Errorf(i18n.Translate(lang, "embedding:failed to read vector: %v"), err)
+			return newI18nError(lang, "embedding:failed to read vector: %v", err)
 		}
 
 		p.dict[word] = vector
@@ -93,7 +92,7 @@ func (p *Word2VecEmbeddingProvider) GetPricing() string {
 func (p *Word2VecEmbeddingProvider) QueryVector(text string, ctx context.Context, lang string) ([]float32, *EmbeddingResult, error) {
 	tokens := strings.Fields(text) // Split words by spaces
 	if len(tokens) == 0 {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:input text is empty"))
+		return nil, nil, newI18nError(lang, "embedding:input text is empty")
 	}
 
 	vectors := make([][]float32, 0, len(tokens))
@@ -107,7 +106,7 @@ func (p *Word2VecEmbeddingProvider) QueryVector(text string, ctx context.Context
 	}
 
 	if foundCount == 0 {
-		return nil, nil, fmt.Errorf(i18n.Translate(lang, "embedding:none of the tokens were found in the vocabulary"))
+		return nil, nil, newI18nError(lang, "embedding:none of the tokens were found in the vocabulary")
 	}
 
 	// Calculate the average vector
