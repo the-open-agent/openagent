@@ -76,6 +76,9 @@ Prerequisites:
 
 ```bash
 # Backend
+
+[![Listed on TakoAPI](https://takoapi.com/api/badge/the-open-agent-openagent)](https://takoapi.com/agents/the-open-agent-openagent)
+
 go build
 
 # Frontend
