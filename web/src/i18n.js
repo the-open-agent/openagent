@@ -15,14 +15,16 @@
 import i18n from "i18next";
 import zh from "./locales/zh/data.json";
 import en from "./locales/en/data.json";
+import ko from "./locales/ko/data.json";
 import {initReactI18next} from "react-i18next";
 
 const resources = {
   en: en,
   zh: zh,
+  ko: ko,
 };
 
-const supportedLanguages = ["en", "zh"];
+const supportedLanguages = ["en", "zh", "ko"];
 
 function initLanguage() {
   let language = localStorage.getItem("language");
@@ -40,6 +42,12 @@ function initLanguage() {
       break;
     case "zh":
       language = "zh";
+      break;
+    case "ko":
+      language = "ko";
+      break;
+    case "ko-KR":
+      language = "ko";
       break;
     default:
       language = "en";

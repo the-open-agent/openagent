@@ -41,6 +41,7 @@ export function getProviderDisplayName(provider) {
 export const Countries = [
   {label: "English", key: "en", country: "US", alt: "English"},
   {label: "中文", key: "zh", country: "CN", alt: "中文"},
+  {label: "한국어", key: "ko", country: "KR", alt: "한국어"},
 ];
 
 export function getOtherProviderInfo() {

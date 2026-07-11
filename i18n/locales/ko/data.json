@@ -1,0 +1,230 @@
+{
+  "account": {
+    "The default store is not found": "기본 스토어를 찾을 수 없습니다",
+    "The store: %s is not found": "스토어: %s를 찾을 수 없습니다"
+  },
+  "application": {
+    "Missing required parameters": "필수 파라미터가 누락되었습니다"
+  },
+  "audio": {
+    "complete slice upload failed: %s": "분할 업로드 완료에 실패했습니다: %s",
+    "get progress failed: %s": "진행 상태 조회에 실패했습니다: %s",
+    "get result failed: %s": "결과 조회에 실패했습니다: %s",
+    "init slice upload failed: %s": "분할 업로드 초기화에 실패했습니다: %s",
+    "perform slice upload failed: %s": "분할 업로드 수행에 실패했습니다: %s",
+    "worker upload failed: %s": "워커 업로드에 실패했습니다: %s"
+  },
+  "auth": {
+    "Invalid username or password": "아이디 또는 비밀번호가 올바르지 않습니다",
+    "Please sign in first": "먼저 로그인해 주세요",
+    "Sign in is unavailable": "로그인을 사용할 수 없습니다",
+    "Unauthorized operation": "권한이 없는 작업입니다",
+    "this operation requires admin privilege": "이 작업에는 관리자 권한이 필요합니다"
+  },
+  "blockchain": {
+    "The default blockchain provider is not found": "기본 블록체인 공급자를 찾을 수 없습니다",
+    "The default blockchain providers' Provider URL cannot be empty. The default value is: 'http://localhost:13900'": "기본 블록체인 공급자의 Provider URL은 비워둘 수 없습니다. 기본값은 'http://localhost:13900'입니다"
+  },
+  "bpmn": {
+    "Error parsing BPMN file: %v": "BPMN 파일 파싱 오류: %v"
+  },
+  "chain": {
+    "ChainTencentChainmakerClient.Client.Invoke() error: %v": "ChainTencentChainmakerClient.Client.Invoke() 오류: %v",
+    "ChainTencentChainmakerDemoClient.Client.InvokeChainMakerDemoContract() error: %v": "ChainTencentChainmakerDemoClient.Client.InvokeChainMakerDemoContract() 오류: %v",
+    "TencentCloudSDKError, code = %d, message = %s": "TencentCloudSDKError, code = %d, message = %s",
+    "TencentCloudSDKError: %v": "TencentCloudSDKError: %v",
+    "chainmakerEndpoint is not configured": "chainmakerEndpoint가 설정되지 않았습니다",
+    "event log value is not string: %v": "이벤트 로그 값이 문자열이 아닙니다: %v",
+    "failed to connect to Ethereum RPC: %v": "이더리움 RPC 연결에 실패했습니다: %v",
+    "failed to create string type: %v": "문자열 타입 생성에 실패했습니다: %v",
+    "failed to create tuple type: %v": "튜플 타입 생성에 실패했습니다: %v",
+    "failed to estimate gas: %v": "가스 추정에 실패했습니다: %v",
+    "failed to get chain ID: %v": "체인 ID 조회에 실패했습니다: %v",
+    "failed to get pending nonce: %v": "대기 중인 nonce 조회에 실패했습니다: %v",
+    "failed to get transaction receipt: %v": "트랜잭션 영수증 조회에 실패했습니다: %v",
+    "failed to pack arguments: %v": "인자 패킹에 실패했습니다: %v",
+    "failed to pack function data: %v": "함수 데이터 패킹에 실패했습니다: %v",
+    "failed to parse private key: %v": "개인 키 파싱에 실패했습니다: %v",
+    "failed to send transaction: %v": "트랜잭션 전송에 실패했습니다: %v",
+    "failed to sign transaction: %v": "트랜잭션 서명에 실패했습니다: %v",
+    "failed to suggest gas price: %v": "가스 가격 추천에 실패했습니다: %v",
+    "failed to unmarshal JSON: %v": "JSON 언마샬링에 실패했습니다: %v",
+    "failed to unpack event log: %v": "이벤트 로그 언패킹에 실패했습니다: %v",
+    "marshal normalized data error: %v": "정규화된 데이터 마샬링 오류: %v",
+    "newChainTencentChainmakerClient() error: %v": "newChainTencentChainmakerClient() 오류: %v",
+    "not enough string events found in transaction logs, expected at least 3, got %d": "트랜잭션 로그에서 문자열 이벤트가 부족합니다. 최소 3개가 필요하지만 %d개만 발견되었습니다",
+    "parse json data error: %v": "JSON 데이터 파싱 오류: %v",
+    "transaction failed to be mined: %v": "트랜잭션 채굴에 실패했습니다: %v",
+    "transaction failed with status: %d, reason: %s": "트랜잭션이 실패했습니다. 상태: %d, 사유: %s"
+  },
+  "comment": {
+    "Comment content cannot be longer than %d characters": "댓글 내용은 %d자를 초과할 수 없습니다"
+  },
+  "controllers": {
+    "API chat logs are read-only": "API 채팅 로그는 읽기 전용입니다",
+    "No permission": "권한이 없습니다",
+    "No records to add": "추가할 레코드가 없습니다",
+    "No sessions to delete": "삭제할 세션이 없습니다",
+    "You can only access data from your assigned store": "본인에게 할당된 스토어의 데이터에만 접근할 수 있습니다",
+    "You can only view your own chats": "본인의 채팅만 볼 수 있습니다",
+    "You can only view your own messages": "본인의 메시지만 볼 수 있습니다"
+  },
+  "embedding": {
+    "calculatePrice() error: unknown model type: %s": "calculatePrice() 오류: 알 수 없는 모델 타입입니다: %s",
+    "error unmarshaling response JSON: %v": "응답 JSON 언마샬링 오류: %v",
+    "failed to calculate price: %v": "가격 계산에 실패했습니다: %v",
+    "failed to create client: %v": "클라이언트 생성에 실패했습니다: %v",
+    "failed to create request: %v": "요청 생성에 실패했습니다: %v",
+    "failed to get valid response, status code: %d": "유효한 응답을 받지 못했습니다. 상태 코드: %d",
+    "failed to load word2vec model: %v": "word2vec 모델 로드에 실패했습니다: %v",
+    "failed to marshal payload: %v": "페이로드 마샬링에 실패했습니다: %v",
+    "failed to open model file: %v": "모델 파일 열기에 실패했습니다: %v",
+    "failed to read header: %v": "헤더 읽기에 실패했습니다: %v",
+    "failed to read response body: %v": "응답 본문 읽기에 실패했습니다: %v",
+    "failed to read vector: %v": "벡터 읽기에 실패했습니다: %v",
+    "failed to read word: %v": "단어 읽기에 실패했습니다: %v",
+    "failed to unmarshal response: %v": "응답 언마샬링에 실패했습니다: %v",
+    "input text is empty": "입력 텍스트가 비어 있습니다",
+    "no embedding provider specified": "임베딩 공급자가 지정되지 않았습니다",
+    "no embedding vector found in response": "응답에서 임베딩 벡터를 찾을 수 없습니다",
+    "no embeddings found in the response": "응답에서 임베딩을 찾을 수 없습니다",
+    "none of the tokens were found in the vocabulary": "어휘 사전에서 어떤 토큰도 찾을 수 없습니다",
+    "request failed with status code %d: %s": "요청이 실패했습니다. 상태 코드 %d: %s",
+    "text can not be empty.": "텍스트는 비워둘 수 없습니다.",
+    "text cannot be empty": "텍스트는 비워둘 수 없습니다"
+  },
+  "general": {
+    "Failed to update": "업데이트에 실패했습니다",
+    "Target user not found": "대상 사용자를 찾을 수 없습니다",
+    "The task does not exist": "작업이 존재하지 않습니다"
+  },
+  "issue": {
+    "Issue content cannot be longer than %d characters": "이슈 내용은 %d자를 초과할 수 없습니다",
+    "Issue title cannot be longer than %d characters": "이슈 제목은 %d자를 초과할 수 없습니다"
+  },
+  "model": {
+    "QueryText() error: unknown model type: %s": "QueryText() 오류: 알 수 없는 모델 타입입니다: %s",
+    "The token count: [%d] exceeds the model: [%s]'s maximum token count: [%d]": "토큰 수 [%d]가 모델 [%s]의 최대 토큰 수 [%d]를 초과했습니다",
+    "calculatePrice() error: video generation pricing requires duration information": "calculatePrice() 오류: 영상 생성 가격 계산에는 재생 시간 정보가 필요합니다",
+    "cannot calculate tokens": "토큰 수를 계산할 수 없습니다",
+    "error getting chat completion: %v": "채팅 완성 요청 중 오류가 발생했습니다: %v",
+    "exceed max tokens": "최대 토큰 수를 초과했습니다",
+    "failed to marshal content: %v": "콘텐츠 마샬링에 실패했습니다: %v",
+    "failed to marshal error content: %v": "오류 콘텐츠 마샬링에 실패했습니다: %v",
+    "failed to marshal tool response: %v": "도구 응답 마샬링에 실패했습니다: %v",
+    "failed to parse tool arguments: %v": "도구 인자 파싱에 실패했습니다: %v",
+    "failed to write response: %v": "응답 작성에 실패했습니다: %v",
+    "no generations returned": "생성된 결과가 반환되지 않았습니다",
+    "the token count: [%d] exceeds the model: [%s]'s maximum token count: [%d]": "토큰 수 [%d]가 모델 [%s]의 최대 토큰 수 [%d]를 초과했습니다",
+    "unsupported model: %s": "지원하지 않는 모델입니다: %s",
+    "writer does not implement http.Flusher": "writer가 http.Flusher를 구현하지 않았습니다"
+  },
+  "object": {
+    "Auth application: [%s] doesn't exist": "인증 애플리케이션 [%s]이(가) 존재하지 않습니다",
+    "Auth organization: [%s] doesn't exist": "인증 조직 [%s]이(가) 존재하지 않습니다",
+    "Auth user: [%s] doesn't exist": "인증 사용자 [%s]이(가) 존재하지 않습니다",
+    "Casdoor application: [%s] doesn't exist": "Casdoor 애플리케이션 [%s]이(가) 존재하지 않습니다",
+    "Casdoor organization: [%s] doesn't exist": "Casdoor 조직 [%s]이(가) 존재하지 않습니다",
+    "MCP test JSON must include non-empty \"tool\"": "MCP 테스트 JSON에는 비어 있지 않은 \"tool\" 필드가 포함되어야 합니다",
+    "No store found for user: %s, please create a store first": "사용자 %s의 스토어를 찾을 수 없습니다. 먼저 스토어를 생성해 주세요",
+    "Please add a model provider first": "먼저 모델 공급자를 추가해 주세요",
+    "Please add an embedding provider first": "이 기능을 사용하려면 먼저 설정에서 임베딩 모델을 구성해 주세요",
+    "Question message: [%s] doesn't exist": "질문 메시지 [%s]이(가) 존재하지 않습니다",
+    "SendErrorEmail() error, the receiver user: ": "SendErrorEmail() 오류, 수신 사용자: ",
+    "Server URL is empty": "서버 URL이 비어 있습니다",
+    "The MCP server: %s is not found": "MCP 서버: %s를 찾을 수 없습니다",
+    "The chat: %s is not found": "채팅: %s를 찾을 수 없습니다",
+    "The embedding provider for store: %s is not found": "스토어 %s의 임베딩 공급자를 찾을 수 없습니다",
+    "The embedding provider: %s is expected to be ": "임베딩 공급자 %s는 다음이어야 합니다: ",
+    "The embedding provider: %s is not found": "임베딩 공급자 %s를 찾을 수 없습니다",
+    "The embedding provider: %s's client secret should not be empty": "임베딩 공급자 %s의 클라이언트 시크릿은 비워둘 수 없습니다",
+    "The file URL for: %s is empty": "%s의 파일 URL이 비어 있습니다",
+    "The file: %s is not found": "파일: %s를 찾을 수 없습니다",
+    "The image provider for store: %s should not be empty": "스토어 %s의 이미지 공급자는 비워둘 수 없습니다",
+    "The message: %s is not found": "메시지: %s를 찾을 수 없습니다",
+    "The model provider for store: %s is not found": "스토어 %s의 모델 공급자를 찾을 수 없습니다",
+    "The model provider: %s is expected to be ": "모델 공급자 %s는 다음이어야 합니다: ",
+    "The model provider: %s is not found": "모델 공급자 %s를 찾을 수 없습니다",
+    "The model provider: %s's client secret should not be empty": "모델 공급자 %s의 클라이언트 시크릿은 비워둘 수 없습니다",
+    "The provider is not found": "공급자를 찾을 수 없습니다",
+    "The provider: %s does not exist": "공급자 %s가 존재하지 않습니다",
+    "The provider: %s is not found": "공급자 %s를 찾을 수 없습니다",
+    "The store's embedding provider: [%s] should equal to vector's embedding provider: [%s], vector = %v": "스토어의 임베딩 공급자 [%s]는 벡터의 임베딩 공급자 [%s]와 일치해야 합니다. vector = %v",
+    "The text-to-speech provider for store: %s is not found": "스토어 %s의 텍스트 음성 변환 공급자를 찾을 수 없습니다",
+    "empty caption returned by vision model for image: %s": "비전 모델이 이미지 %s에 대해 빈 캡션을 반환했습니다",
+    "empty provider key": "공급자 키가 비어 있습니다",
+    "failed to get record with id '%s': %w": "id '%s'에 해당하는 레코드 조회에 실패했습니다: %w",
+    "failed to parse record identifier '%s': neither a valid owner/[id|name] format": "레코드 식별자 '%s' 파싱에 실패했습니다: 유효한 owner/[id|name] 형식이 아닙니다",
+    "failed to parse record: name %s, field %s, error: %v": "레코드 파싱에 실패했습니다: name %s, field %s, error: %v",
+    "failed to update error text for record %s: %s": "레코드 %s의 오류 텍스트 업데이트에 실패했습니다: %s",
+    "getExtFromMimeType() error: unknown MimeType: %s": "getExtFromMimeType() 오류: 알 수 없는 MimeType입니다: %s",
+    "image caption requires a model provider; configure a vision-capable ModelProvider on the store": "이미지 캡션 생성에는 모델 공급자가 필요합니다. 스토어에 비전 기능을 지원하는 ModelProvider를 설정해 주세요",
+    "invalid MCP test JSON: %v": "잘못된 MCP 테스트 JSON입니다: %v",
+    "invalid range type: %s": "잘못된 range 타입입니다: %s",
+    "invalid tool test JSON in testContent: %v": "testContent의 도구 테스트 JSON이 잘못되었습니다: %v",
+    "no qVector found": "qVector를 찾을 수 없습니다",
+    "parseBase64Image() error: invalid image format": "parseBase64Image() 오류: 잘못된 이미지 형식입니다",
+    "queryVectorSafe() error, provider: %s, %s": "queryVectorSafe() 오류, provider: %s, %s",
+    "the STT provider type: %s is not supported": "STT 공급자 타입 %s는 지원하지 않습니다",
+    "the TTS provider type: %s is not supported": "TTS 공급자 타입 %s는 지원하지 않습니다",
+    "the blockchain provider: %s is not found": "블록체인 공급자 %s를 찾을 수 없습니다",
+    "the embedding provider type: %s is not supported": "임베딩 공급자 타입 %s는 지원하지 않습니다",
+    "the form: %s is not found": "폼: %s를 찾을 수 없습니다",
+    "the model provider type: %s is not supported": "모델 공급자 타입 %s는 지원하지 않습니다",
+    "the pipe type: %s is not supported": "파이프 타입 %s는 지원하지 않습니다",
+    "the record: %s does not exist": "레코드 %s가 존재하지 않습니다",
+    "the record: %s has already been committed, blockId = %s": "레코드 %s는 이미 커밋되었습니다. blockId = %s",
+    "the record: %s's block ID should not be empty": "레코드 %s의 block ID는 비워둘 수 없습니다",
+    "the storage provider type: %s is not supported": "스토리지 공급자 타입 %s는 지원하지 않습니다",
+    "the video provider type: %s is not supported": "영상 공급자 타입 %s는 지원하지 않습니다",
+    "there is no active blockchain provider": "활성화된 블록체인 공급자가 없습니다",
+    "tool test JSON must include non-empty \"tool\"": "도구 테스트 JSON에는 비어 있지 않은 \"tool\" 필드가 포함되어야 합니다",
+    "unsupported image type for: %s": "%s에 대해 지원하지 않는 이미지 형식입니다"
+  },
+  "openai": {
+    "Invalid API key format. Expected 'Bearer API_KEY'": "API 키 형식이 올바르지 않습니다. 'Bearer API_KEY' 형식이어야 합니다"
+  },
+  "resource": {
+    "Invalid file data format": "파일 데이터 형식이 올바르지 않습니다",
+    "Only docx and pdf files are allowed": "docx 및 pdf 파일만 허용됩니다"
+  },
+  "storage": {
+    "storage provider name: [%s] doesn't exist": "스토리지 공급자 이름 [%s]이(가) 존재하지 않습니다"
+  },
+  "store": {
+    "Cannot delete the default store": "기본 스토어는 삭제할 수 없습니다",
+    "Only the super admin can publish an agent directly. Please set the publish state to Pending Review instead": "최고 관리자만 에이전트를 직접 게시할 수 있습니다. 대신 게시 상태를 검토 대기 중으로 설정해 주세요",
+    "The agent does not exist": "에이전트가 존재하지 않습니다",
+    "You can only set the publish state to Private or Pending Review": "게시 상태는 비공개 또는 검토 대기 중으로만 설정할 수 있습니다",
+    "You cannot fork your own agent": "본인의 에이전트는 포크할 수 없습니다",
+    "You have already forked this agent": "이미 이 에이전트를 포크했습니다",
+    "given that there must be one default store in OpenAgent, you cannot set this store to non-default. You can directly set another store as default": "OpenAgent에는 반드시 하나의 기본 스토어가 있어야 하므로 이 스토어를 비기본으로 설정할 수 없습니다. 다른 스토어를 기본으로 직접 설정해 주세요"
+  },
+  "stt": {
+    "API error: %s": "API 오류: %s",
+    "Missing required parameter: storeId": "필수 파라미터가 누락되었습니다: storeId",
+    "speech recognition API error: %v": "음성 인식 API 오류: %v",
+    "speech recognition timed out after %v seconds": "음성 인식이 %v초 후 시간 초과되었습니다"
+  },
+  "tool": {
+    "unsupported tool type: %s": "지원하지 않는 도구 타입입니다: %s"
+  },
+  "tts": {
+    "The audio data is nil": "오디오 데이터가 nil입니다",
+    "error creating synthesizer: %v": "합성기 생성 중 오류가 발생했습니다: %v",
+    "error finishing task: %v": "작업 완료 처리 중 오류가 발생했습니다: %v",
+    "error running task: %v": "작업 실행 중 오류가 발생했습니다: %v",
+    "error sending text: %v": "텍스트 전송 중 오류가 발생했습니다: %v",
+    "output error: %v": "출력 오류: %v"
+  },
+  "txt": {
+    ".docx file is empty": ".docx 파일이 비어 있습니다",
+    "GetTextFromMarkitdown() error, failed to open file: %v": "GetTextFromMarkitdown() 오류, 파일 열기에 실패했습니다: %v",
+    "GetTextFromMarkitdown() error, markitdown does not exist": "GetTextFromMarkitdown() 오류, markitdown이 존재하지 않습니다",
+    "GetTextFromMarkitdown() error, markitdown failed to run: %v: %s": "GetTextFromMarkitdown() 오류, markitdown 실행에 실패했습니다: %v: %s",
+    "unsupported file type: %s": "지원하지 않는 파일 형식입니다: %s"
+  },
+  "video": {
+    "The prompt should not be empty": "프롬프트는 비워둘 수 없습니다"
+  }
+}
