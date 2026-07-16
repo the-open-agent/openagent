@@ -53,6 +53,7 @@ export const NavItemTree = ({disabled, casdoorAvailable, checkedKeys, defaultExp
             {title: i18next.t("general:Pipes"), key: "/pipes"},
             {title: i18next.t("general:Skills"), key: "/skills"},
             {title: i18next.t("general:Tools"), key: "/tools"},
+            {title: i18next.t("toolPolicy:Tool Permissions"), key: "/tool-policies"},
             {title: i18next.t("general:MCP Servers"), key: "/servers"},
           ],
         },

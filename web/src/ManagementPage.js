@@ -42,6 +42,7 @@ import {
   NotificationOutlined,
   OrderedListOutlined,
   RocketOutlined,
+  SafetyCertificateOutlined,
   SafetyOutlined,
   SettingOutlined,
   ShopOutlined,
@@ -75,6 +76,8 @@ import SkillListPage from "./SkillListPage";
 import SkillEditPage from "./SkillEditPage";
 import ToolListPage from "./ToolListPage";
 import ToolEditPage from "./ToolEditPage";
+import ToolPolicyListPage from "./ToolPolicyListPage";
+import ToolPolicyEditPage from "./ToolPolicyEditPage";
 import ServerListPage from "./ServerListPage";
 import ServerEditPage from "./ServerEditPage";
 import ServerStorePage from "./ServerStorePage";
@@ -117,7 +120,7 @@ const {Header, Footer, Content, Sider} = Layout;
 function getMenuParentKey(uri) {
   if (!uri) {return null;}
   if (uri.includes("/chats") || uri.includes("/messages") || uri.includes("/stores")) {return "/basic";}
-  if (uri.includes("/providers") || uri.includes("/pipes") || uri.includes("/tools") || uri.includes("/servers")) {return "/connectors";}
+  if (uri.includes("/providers") || uri.includes("/pipes") || uri.includes("/tools") || uri.includes("/tool-policies") || uri.includes("/servers")) {return "/connectors";}
   if (uri.includes("/files") || uri.includes("/vectors") || uri.includes("/resources")) {return "/knowledge-base";}
   if (uri.includes("/tasks") || uri.includes("/scales") || uri.includes("/forms")) {return "/multimedia";}
   if (uri.includes("/sessions") || uri.includes("/records") || uri.includes("/snapshots") || uri.includes("/notifications")) {return "/logs";}
@@ -478,6 +481,7 @@ function ManagementPage(props) {
         Setting.getItem(<Link to="/pipes">{i18next.t("general:Pipes")}</Link>, "/pipes", <MessageOutlined />),
         Setting.getItem(<Link to="/skills">{i18next.t("general:Skills")}</Link>, "/skills", <RocketOutlined />),
         Setting.getItem(<Link to="/tools">{i18next.t("general:Tools")}</Link>, "/tools", <ToolOutlined />),
+        Setting.getItem(<Link to="/tool-policies">{i18next.t("toolPolicy:Tool Permissions")}</Link>, "/tool-policies", <SafetyCertificateOutlined />),
         Setting.getItem(<Link to="/servers">{i18next.t("general:MCP Servers")}</Link>, "/servers", <ApiOutlined />),
       ]));
 
@@ -593,6 +597,8 @@ function ManagementPage(props) {
         <Route exact path="/skills/:skillName" render={(props) => renderSigninIfNotSignedIn(<SkillEditPage account={account} {...props} />)} />
         <Route exact path="/tools" render={(props) => renderSigninIfNotSignedIn(<ToolListPage account={account} {...props} />)} />
         <Route exact path="/tools/:toolName" render={(props) => renderSigninIfNotSignedIn(<ToolEditPage account={account} {...props} />)} />
+        <Route exact path="/tool-policies" render={(props) => renderSigninIfNotSignedIn(<ToolPolicyListPage account={account} {...props} />)} />
+        <Route exact path="/tool-policies/:toolPolicyName" render={(props) => renderSigninIfNotSignedIn(<ToolPolicyEditPage account={account} {...props} />)} />
         <Route exact path="/servers" render={(props) => renderSigninIfNotSignedIn(<ServerListPage account={account} {...props} />)} />
         <Route exact path="/servers/:serverName" render={(props) => renderSigninIfNotSignedIn(<ServerEditPage account={account} {...props} />)} />
         <Route exact path="/server-store" render={(props) => renderSigninIfNotSignedIn(<ServerStorePage account={account} {...props} />)} />

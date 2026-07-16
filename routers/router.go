@@ -150,6 +150,12 @@ func initAPI() {
 	beego.Router("/api/delete-tool", &controllers.ApiController{}, "POST:DeleteTool")
 	beego.Router("/api/test-tool", &controllers.ApiController{}, "POST:TestTool")
 
+	beego.Router("/api/get-tool-policies", &controllers.ApiController{}, "GET:GetToolPolicies")
+	beego.Router("/api/get-tool-policy", &controllers.ApiController{}, "GET:GetToolPolicy")
+	beego.Router("/api/update-tool-policy", &controllers.ApiController{}, "POST:UpdateToolPolicy")
+	beego.Router("/api/add-tool-policy", &controllers.ApiController{}, "POST:AddToolPolicy")
+	beego.Router("/api/delete-tool-policy", &controllers.ApiController{}, "POST:DeleteToolPolicy")
+
 	beego.Router("/api/get-global-files", &controllers.ApiController{}, "GET:GetGlobalFiles")
 	beego.Router("/api/get-files", &controllers.ApiController{}, "GET:GetFiles")
 	beego.Router("/api/get-file", &controllers.ApiController{}, "GET:GetFileMy")
