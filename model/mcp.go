@@ -312,13 +312,27 @@ func callMcpTool(toolCall openai.ToolCall, serverName, toolName string, isVision
 	heartbeat := startHeartbeat(writer, &mu)
 	defer close(heartbeat)
 
-	if serverName == "" {
+	// Permission gate: consult the injected guard before executing the tool.
+	// A denial short-circuits execution and is surfaced to the model as an
+	// error tool result so it can react instead of silently proceeding.
+	if mcpToolSet != nil && mcpToolSet.CheckPermission != nil {
+		if allowed, reason := mcpToolSet.CheckPermission(toolName, arguments); !allowed {
+			result = &protocol.CallToolResult{
+				IsError: true,
+				Content: []protocol.Content{
+					&protocol.TextContent{Type: "text", Text: "Permission denied: " + reason},
+				},
+			}
+		}
+	}
+
+	if result == nil && serverName == "" {
 		// builtin tools
 		if mcpToolSet.BuiltinTools == nil {
 			return messages, nil, false, nil
 		}
 		result, err = mcpToolSet.BuiltinTools.ExecuteTool(ctx, toolName, arguments)
-	} else {
+	} else if result == nil {
 		// MCP server tools
 		conn, ok := mcpToolSet.Connections[serverName]
 		if !ok {
