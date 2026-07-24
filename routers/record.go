@@ -17,6 +17,7 @@ package routers
 import (
 	"github.com/beego/beego/context"
 	"github.com/beego/beego/logs"
+	"github.com/the-open-agent/openagent/aiguard"
 	"github.com/the-open-agent/openagent/object"
 	"github.com/the-open-agent/openagent/util"
 )
@@ -47,4 +48,5 @@ func AfterRecordMessage(ctx *context.Context) {
 	}
 
 	object.AddRecord(record, "en")
+	aiguard.SubmitRecord(record)
 }
