@@ -44,6 +44,8 @@ func main() {
 		os.Exit(code)
 	}
 
+	cli.WriteVersionFile()
+
 	object.InitFlag()
 	object.InitAdapter()
 	object.CreateTables()

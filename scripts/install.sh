@@ -78,6 +78,15 @@ else
 	sudo chmod 755 "${INSTALL_DIR}/openagent"
 fi
 
+# ── record the version so it can be read without running the binary ────────────
+# The release binary is built with -trimpath and packed with UPX, which erases
+# the version from its Go build metadata, so record it next to the binary here.
+if [[ -w "${INSTALL_DIR}" ]]; then
+	printf '%s\n' "${OPENAGENT_VERSION}" > "${INSTALL_DIR}/version"
+else
+	printf '%s\n' "${OPENAGENT_VERSION}" | sudo tee "${INSTALL_DIR}/version" >/dev/null
+fi
+
 # ── add binary to PATH via BIN_DIR symlink ────────────────────────────────────
 mkdir -p "${BIN_DIR}"
 if [[ -w "${BIN_DIR}" ]]; then
