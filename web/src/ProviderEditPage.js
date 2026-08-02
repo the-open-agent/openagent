@@ -213,7 +213,7 @@ class ProviderEditPage extends React.Component {
 
   isTemperatureEnabled(provider) {
     if (provider.category === "Model") {
-      if (["OpenRouter", "iFlytek", "Hugging Face", "Baidu Cloud", "MiniMax", "Gemini", "Alibaba Cloud", "Baichuan", "Volcano Engine", "DeepSeek", "StepFun", "Tencent Cloud", "Mistral", "Yi", "Silicon Flow", "Ollama", "Writer"].includes(provider.type)) {
+      if (["OpenRouter", "OrcaRouter", "iFlytek", "Hugging Face", "Baidu Cloud", "MiniMax", "Gemini", "Alibaba Cloud", "Baichuan", "Volcano Engine", "DeepSeek", "StepFun", "Tencent Cloud", "Mistral", "Yi", "Silicon Flow", "Ollama", "Writer"].includes(provider.type)) {
         return true;
       } else if (provider.type === "OpenAI") {
         if (provider.subType.includes("o1") || provider.subType.includes("o3") || provider.subType.includes("o4")) {
@@ -228,7 +228,7 @@ class ProviderEditPage extends React.Component {
 
   isTopPEnabled(provider) {
     if (provider.category === "Model") {
-      if (["OpenRouter", "Baidu Cloud", "Gemini", "Alibaba Cloud", "Baichuan", "Volcano Engine", "DeepSeek", "StepFun", "Tencent Cloud", "Mistral", "Yi", "Silicon Flow", "Ollama", "Writer"].includes(provider.type)) {
+      if (["OpenRouter", "OrcaRouter", "Baidu Cloud", "Gemini", "Alibaba Cloud", "Baichuan", "Volcano Engine", "DeepSeek", "StepFun", "Tencent Cloud", "Mistral", "Yi", "Silicon Flow", "Ollama", "Writer"].includes(provider.type)) {
         return true;
       } else if (provider.type === "OpenAI") {
         if (provider.subType.includes("o1") || provider.subType.includes("o3") || provider.subType.includes("o4")) {
@@ -390,6 +390,8 @@ class ProviderEditPage extends React.Component {
                     this.updateProviderField("subType", "gemini-pro");
                   } else if (value === "OpenRouter") {
                     this.updateProviderField("subType", "openai/gpt-4");
+                  } else if (value === "OrcaRouter") {
+                    this.updateProviderField("subType", "orcarouter/auto");
                   } else if (value === "iFlytek") {
                     this.updateProviderField("subType", "spark4.0-ultra");
                   } else if (value === "Baidu Cloud") {
@@ -514,7 +516,7 @@ class ProviderEditPage extends React.Component {
                         }
                       </Select>
                     )}
-                    {["OpenAI", "OpenRouter", "Local", "OpenAI Compatible", "Ollama", "DeepSeek", "Moonshot", "Grok", "Silicon Flow", "Mistral", "StepFun"].includes(provider.type) && (
+                    {["OpenAI", "OpenRouter", "OrcaRouter", "Local", "OpenAI Compatible", "Ollama", "DeepSeek", "Moonshot", "Grok", "Silicon Flow", "Mistral", "StepFun"].includes(provider.type) && (
                       <Button
                         type="primary"
                         icon={<SyncOutlined spin={this.state.isFetchingModels} />}
@@ -1072,7 +1074,7 @@ class ProviderEditPage extends React.Component {
                   <div style={{marginBottom: "4px"}}>{Setting.getLabel(i18next.t("provider:Temperature"), i18next.t("provider:Temperature - Tooltip"))}</div>
                   <Slider
                     min={0}
-                    max={["Alibaba Cloud", "Gemini", "OpenAI", "OpenRouter", "Baichuan", "DeepSeek", "StepFun", "Tencent Cloud", "Mistral", "Yi", "Ollama", "Writer"].includes(provider.type) ? 2 : 1}
+                    max={["Alibaba Cloud", "Gemini", "OpenAI", "OpenRouter", "OrcaRouter", "Baichuan", "DeepSeek", "StepFun", "Tencent Cloud", "Mistral", "Yi", "Ollama", "Writer"].includes(provider.type) ? 2 : 1}
                     step={0.01}
                     value={provider.temperature}
                     disabled={isRemote}
@@ -1085,7 +1087,7 @@ class ProviderEditPage extends React.Component {
                   <div style={{marginBottom: "4px"}}>&nbsp;</div>
                   <InputNumber
                     min={0}
-                    max={["Alibaba Cloud", "Gemini", "OpenAI", "OpenRouter", "Baichuan", "DeepSeek", "StepFun", "Tencent Cloud", "Mistral", "Yi", "Ollama", "Writer"].includes(provider.type) ? 2 : 1}
+                    max={["Alibaba Cloud", "Gemini", "OpenAI", "OpenRouter", "OrcaRouter", "Baichuan", "DeepSeek", "StepFun", "Tencent Cloud", "Mistral", "Yi", "Ollama", "Writer"].includes(provider.type) ? 2 : 1}
                     step={0.01}
                     style={{width: "100%"}}
                     value={provider.temperature}

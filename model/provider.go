@@ -137,6 +137,8 @@ func GetModelProvider(typ string, subType string, clientId string, clientSecret 
 		p, err = NewGrokModelProvider(subType, clientSecret, temperature, topP)
 	} else if typ == "OpenRouter" {
 		p, err = NewOpenRouterModelProvider(subType, clientSecret, temperature, topP)
+	} else if typ == "OrcaRouter" {
+		p, err = NewOrcaRouterModelProvider(subType, clientSecret, temperature, topP)
 	} else if typ == "Baidu Cloud" {
 		p, err = NewBaiduCloudModelProvider(subType, clientSecret, temperature, topP)
 	} else if typ == "iFlytek" {

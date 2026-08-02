@@ -30,6 +30,21 @@ import "strings"
 
 func getContextLength(typ string) int {
 	typ = strings.ToLower(typ)
+
+	// OrcaRouter model ids are namespaced like openai/gpt-5.5,
+	// anthropic/claude-opus-5, google/gemini-3.5-flash or orcarouter/auto.
+	// Strip the router namespace so the per-vendor rules below match, and
+	// give the router itself (orcarouter/*) a conservative default.
+	if strings.HasPrefix(typ, "orcarouter/") {
+		return 200000
+	}
+	if strings.HasPrefix(typ, "openai/") || strings.HasPrefix(typ, "anthropic/") ||
+		strings.HasPrefix(typ, "google/") || strings.HasPrefix(typ, "deepseek/") ||
+		strings.HasPrefix(typ, "grok/") || strings.HasPrefix(typ, "qwen/") ||
+		strings.HasPrefix(typ, "minimax/") {
+		typ = typ[strings.Index(typ, "/")+1:]
+	}
+
 	if strings.Contains(typ, "deepseek") {
 		if strings.Contains(typ, "distill") {
 			if strings.Contains(typ, "qwen") {
@@ -122,11 +137,20 @@ func getContextLength(typ string) int {
 				return 1048576
 			}
 			return 1048576
+		} else if strings.Contains(typ, "flash") {
+			return 1048576
 		}
 	} else if strings.Contains(typ, "claude") {
-		if strings.Contains(typ, "4") {
+		if strings.Contains(typ, "5") {
+			if strings.Contains(typ, "haiku") {
+				return 200000
+			}
+			return 1000000
+		} else if strings.Contains(typ, "4") {
 			if strings.Contains(typ, "sonnet") {
 				return 64000
+			} else if strings.Contains(typ, "haiku") {
+				return 200000
 			} else if strings.Contains(typ, "opus") {
 				if strings.Contains(typ, "4-7") {
 					return 1000000

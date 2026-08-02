@@ -74,6 +74,10 @@ export function getOtherProviderInfo() {
         logo: `${StaticBaseUrl}/img/social_openrouter.png`,
         url: "https://openrouter.ai/",
       },
+      "OrcaRouter": {
+        logo: "https://www.orcarouter.ai/orca-logo-classic.png",
+        url: "https://www.orcarouter.ai/",
+      },
       "Baidu Cloud": {
         logo: `${StaticBaseUrl}/img/social_baidu_cloud.png`,
         url: "https://cloud.baidu.com/",
@@ -588,6 +592,7 @@ export function getProviderTypeOptions(category) {
         {id: "Claude", name: "Claude"},
         {id: "Grok", name: "Grok"},
         {id: "OpenRouter", name: "OpenRouter"},
+        {id: "OrcaRouter", name: "OrcaRouter"},
         {id: "Baidu Cloud", name: "Baidu Cloud"},
         {id: "iFlytek", name: "iFlytek"},
         {id: "ChatGLM", name: "ChatGLM"},
@@ -820,6 +825,19 @@ export function getModelSubTypeOptions(type) {
       {id: "meta-llama/llama-3.3-70b-instruct", name: "meta-llama/llama-3.3-70b-instruct"},
       {id: "mistralai/mistral-large", name: "mistralai/mistral-large"},
       {id: "qwen/qwen3-235b-a22b", name: "qwen/qwen3-235b-a22b"},
+    ];
+  } else if (type === "OrcaRouter") {
+    return [
+      {id: "orcarouter/auto", name: "orcarouter/auto"},
+      {id: "openai/gpt-5.5", name: "openai/gpt-5.5"},
+      {id: "anthropic/claude-opus-5", name: "anthropic/claude-opus-5"},
+      {id: "anthropic/claude-sonnet-5", name: "anthropic/claude-sonnet-5"},
+      {id: "anthropic/claude-haiku-4.5", name: "anthropic/claude-haiku-4.5"},
+      {id: "google/gemini-3.5-flash", name: "google/gemini-3.5-flash"},
+      {id: "deepseek/deepseek-v4-pro", name: "deepseek/deepseek-v4-pro"},
+      {id: "grok/grok-4.3", name: "grok/grok-4.3"},
+      {id: "qwen/qwen3-max", name: "qwen/qwen3-max"},
+      {id: "minimax/minimax-m2.7", name: "minimax/minimax-m2.7"},
     ];
   } else if (type === "Baidu Cloud") {
     return [
@@ -1364,7 +1382,7 @@ export function getProviderAzureApiVersionOptions() {
 }
 
 export function getQuickSetupModelTypes() {
-  return ["OpenAI", "Claude", "Gemini", "DeepSeek", "Grok", "Ollama", "OpenRouter", "Mistral", "MiniMax", "Azure", "OpenAI Compatible", "Alibaba Cloud", "Moonshot", "Silicon Flow", "Volcano Engine", "Baidu Cloud", "Amazon Bedrock", "Hugging Face", "iFlytek", "ChatGLM", "Cohere", "Baichuan", "StepFun", "Tencent Cloud", "Yi", "GitHub", "Writer", "Local", "OpenCode"];
+  return ["OpenAI", "Claude", "Gemini", "DeepSeek", "Grok", "Ollama", "OpenRouter", "OrcaRouter", "Mistral", "MiniMax", "Azure", "OpenAI Compatible", "Alibaba Cloud", "Moonshot", "Silicon Flow", "Volcano Engine", "Baidu Cloud", "Amazon Bedrock", "Hugging Face", "iFlytek", "ChatGLM", "Cohere", "Baichuan", "StepFun", "Tencent Cloud", "Yi", "GitHub", "Writer", "Local", "OpenCode"];
 }
 
 export function getModelProviderMetadata(type) {
@@ -1376,6 +1394,7 @@ export function getModelProviderMetadata(type) {
     "Grok": {desc: "Grok-3, Grok-2...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "grok-3-latest"},
     "Ollama": {desc: "Run models locally", needsApiKey: false, needsUrl: true, needsClientId: false, needsRegion: false, defaultSubType: "deepseek-r1:671b", urlPlaceholder: "http://localhost:11434", defaultUrl: "http://localhost:11434"},
     "OpenRouter": {desc: "100+ models unified", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "anthropic/claude-opus-4-7"},
+    "OrcaRouter": {desc: "200+ models via one smart router", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "orcarouter/auto"},
     "Mistral": {desc: "Mistral Large, Medium...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "mistral-large-latest"},
     "MiniMax": {desc: "MiniMax-M3, M2...", needsApiKey: true, needsUrl: false, needsClientId: false, needsRegion: false, defaultSubType: "MiniMax-M3"},
     "Azure": {desc: "Azure-hosted GPT models", needsApiKey: true, needsUrl: true, needsClientId: false, needsRegion: false, defaultSubType: "gpt-5.5", urlPlaceholder: "https://your-resource.openai.azure.com"},

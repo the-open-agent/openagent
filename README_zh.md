@@ -94,7 +94,7 @@ docker-compose up
 
 <div align="center">
 
-`OpenAI` · `Azure OpenAI` · `Anthropic Claude` · `Google Gemini` · `DeepSeek` · `Mistral` · `Grok` · `通义千问` · `豆包` · `月之暗面` · `智谱 ChatGLM` · `百川` · `文心一言` · `讯飞星火` · `HuggingFace` · `Cohere` · `Amazon Bedrock` · `OpenRouter` · `Ollama` · `以及更多`
+`OpenAI` · `Azure OpenAI` · `Anthropic Claude` · `Google Gemini` · `DeepSeek` · `Mistral` · `Grok` · `通义千问` · `豆包` · `月之暗面` · `智谱 ChatGLM` · `百川` · `文心一言` · `讯飞星火` · `HuggingFace` · `Cohere` · `Amazon Bedrock` · `OpenRouter` · `OrcaRouter` · `Ollama` · `以及更多`
 
 </div>
 
