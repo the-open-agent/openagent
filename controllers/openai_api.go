@@ -116,7 +116,8 @@ func (c *ApiController) chatCompletionsViaStore(store *object.Store, request ope
 				Messages:  []*model.RawMessage{},
 				ToolCalls: nil,
 			},
-			IsVision: model.IsVisionModel(modelProviderRecord.SubType),
+			IsVision:  model.IsVisionModel(modelProviderRecord.SubType),
+			SessionID: chat.Name,
 		}
 		modelResult, err = model.QueryTextWithTools(modelProviderObj, question, writer, history, prompt, []*model.RawMessage{}, toolSession, lang)
 	} else {

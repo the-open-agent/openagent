@@ -27,6 +27,7 @@ import (
 	"github.com/ThinkInAIXYZ/go-mcp/protocol"
 	"github.com/openai/openai-go/v2/responses"
 	"github.com/sashabaranov/go-openai"
+	"github.com/the-open-agent/openagent/audit"
 	"github.com/the-open-agent/openagent/i18n"
 	"github.com/the-open-agent/openagent/mcp"
 	"github.com/the-open-agent/openagent/tool"
@@ -42,6 +43,10 @@ type ToolSession struct {
 	McpToolSet   *mcp.ToolSet
 	ToolMessages *ToolMessages
 	IsVision     bool
+	// SessionID identifies the chat/session these tool calls belong to. It is
+	// stamped onto every audit event so the audit log lands in one file per
+	// session; empty falls back to a shared file.
+	SessionID string
 }
 
 type ToolCallResponse struct {
@@ -206,7 +211,7 @@ func QueryTextWithTools(p ModelProvider, question string, writer io.Writer, hist
 
 			var toolFailed bool
 			var images []ImageAttachment
-			messages, images, toolFailed, err = callMcpTool(toolCall, serverName, toolName, toolSession.IsVision, toolSession.McpToolSet, messages, writer, lang)
+			messages, images, toolFailed, err = callMcpTool(toolCall, serverName, toolName, toolSession.SessionID, toolSession.IsVision, toolSession.McpToolSet, messages, writer, lang)
 			if err != nil {
 				return nil, err
 			}
@@ -286,11 +291,30 @@ func startHeartbeat(writer io.Writer, mu *sync.Mutex) chan<- struct{} {
 	return stop
 }
 
-func callMcpTool(toolCall openai.ToolCall, serverName, toolName string, isVision bool, mcpToolSet *mcp.ToolSet, messages []*RawMessage, writer io.Writer, lang string) ([]*RawMessage, []ImageAttachment, bool, error) {
+func callMcpTool(toolCall openai.ToolCall, serverName, toolName, sessionID string, isVision bool, mcpToolSet *mcp.ToolSet, messages []*RawMessage, writer io.Writer, lang string) ([]*RawMessage, []ImageAttachment, bool, error) {
 	var arguments map[string]interface{}
 	ctx := tool.WithModelVision(context.Background(), isVision)
 
+	// One audit event is emitted for every exit path, including the early
+	// failures below - a malformed-argument call and a call to an unregistered
+	// tool are exactly what an audit log must not miss. The deferred Record runs
+	// whichever way the function returns; each path sets the final outcome.
+	start := time.Now()
+	auditEvent := audit.Event{
+		Type:            "tool_call",
+		Tool:            toolName,
+		Server:          serverName,
+		SessionID:       sessionID,
+		ArgumentsLength: len(toolCall.Function.Arguments),
+		Outcome:         "attempted",
+	}
+	defer func() {
+		auditEvent.DurationMs = time.Since(start).Milliseconds()
+		audit.Record(auditEvent)
+	}()
+
 	if err := json.Unmarshal([]byte(toolCall.Function.Arguments), &arguments); err != nil {
+		auditEvent.Outcome = "failure"
 		return nil, nil, false, fmt.Errorf(i18n.Translate(lang, "model:failed to parse tool arguments: %v"), err)
 	}
 
@@ -315,6 +339,7 @@ func callMcpTool(toolCall openai.ToolCall, serverName, toolName string, isVision
 	if serverName == "" {
 		// builtin tools
 		if mcpToolSet.BuiltinTools == nil {
+			auditEvent.Outcome = "not_found"
 			return messages, nil, false, nil
 		}
 		result, err = mcpToolSet.BuiltinTools.ExecuteTool(ctx, toolName, arguments)
@@ -322,6 +347,7 @@ func callMcpTool(toolCall openai.ToolCall, serverName, toolName string, isVision
 		// MCP server tools
 		conn, ok := mcpToolSet.Connections[serverName]
 		if !ok {
+			auditEvent.Outcome = "not_found"
 			return messages, nil, false, nil
 		}
 		req := &protocol.CallToolRequest{
@@ -368,6 +394,11 @@ func callMcpTool(toolCall openai.ToolCall, serverName, toolName string, isVision
 		} else {
 			response.Data = string(contentBytes)
 		}
+	}
+
+	auditEvent.Outcome = "success"
+	if !response.Success {
+		auditEvent.Outcome = "failure"
 	}
 
 	responseJson, err := json.Marshal(response)

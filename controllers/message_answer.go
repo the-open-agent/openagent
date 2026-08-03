@@ -420,6 +420,7 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 			McpToolSet:   mcpToolSet,
 			ToolMessages: messages,
 			IsVision:     model.IsVisionModel(modelProvider.SubType),
+			SessionID:    chat.Name,
 		}
 		modelResult, err = model.QueryTextWithTools(modelProviderObj, question, writer, history, prompt, knowledge, toolSession, lang)
 	} else {
