@@ -58,6 +58,41 @@ func TestRecordFallsBackToDefaultSessionFile(t *testing.T) {
 	}
 }
 
+// TestAuditDirForResolvesSymlinks is a regression test: OpenAgent is commonly
+// invoked through a symlink (e.g. a package manager's ~/.local/bin/openagent
+// pointing at the real binary elsewhere). os.Executable() returns the symlink
+// path used to invoke the process, not the real one, so without resolving it
+// events used to land next to the symlink - a directory aiguard's
+// agentmonitor.ResolveOpenAgentAuditDir, which does resolve it, never looks
+// in, leaving the Sessions/Records page permanently showing "waiting for
+// activity" despite real events being recorded.
+func TestAuditDirForResolvesSymlinks(t *testing.T) {
+	realDir := t.TempDir()
+	realBinary := filepath.Join(realDir, "openagent")
+	if err := os.WriteFile(realBinary, []byte("stub"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	// t.TempDir() can itself sit behind a symlink (e.g. macOS's /tmp ->
+	// /private/tmp), so resolve realDir the same way auditDirFor resolves the
+	// binary path, or the comparison below would fail on that alone.
+	resolvedRealDir, err := filepath.EvalSymlinks(realDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	linkDir := t.TempDir()
+	symlinkBinary := filepath.Join(linkDir, "openagent")
+	if err := os.Symlink(realBinary, symlinkBinary); err != nil {
+		t.Fatal(err)
+	}
+
+	got := auditDirFor(symlinkBinary)
+	want := filepath.Join(resolvedRealDir, "audit")
+	if got != want {
+		t.Errorf("auditDirFor(%q) = %q, want %q (the real binary's directory, not the symlink's)", symlinkBinary, got, want)
+	}
+}
+
 func TestSanitizeSession(t *testing.T) {
 	tests := map[string]string{
 		"":             "openagent",

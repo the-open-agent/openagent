@@ -136,7 +136,15 @@ func flush() {
 }
 
 // auditDir is <dir-of-binary>/audit, mirroring how the SQLite database is placed
-// next to the binary, unless OPENAGENT_AUDIT_DIR overrides it.
+// next to the binary, unless OPENAGENT_AUDIT_DIR overrides it. The binary path
+// is resolved through any symlink first: os.Executable() returns the path used
+// to invoke the process, which is the symlink itself when OpenAgent is started
+// through one (e.g. a package manager's ~/.local/bin/openagent link) rather
+// than the real binary it points at. An external reader has no reason to know
+// about that symlink - it locates the audit directory the same way aiguard's
+// agentmonitor.ResolveOpenAgentAuditDir does, by resolving the binary path it
+// found first - so this must resolve it too, or the two disagree on where the
+// directory is and every event silently lands somewhere nobody reads.
 func auditDir() string {
 	if override := strings.TrimSpace(os.Getenv("OPENAGENT_AUDIT_DIR")); override != "" {
 		return override
@@ -144,6 +152,15 @@ func auditDir() string {
 	exe, err := os.Executable()
 	if err != nil {
 		return "audit"
+	}
+	return auditDirFor(exe)
+}
+
+// auditDirFor is the symlink-resolving half of auditDir, split out so a test
+// can exercise it against a path it controls instead of the real executable.
+func auditDirFor(exe string) string {
+	if resolved, err := filepath.EvalSymlinks(exe); err == nil {
+		exe = resolved
 	}
 	return filepath.Join(filepath.Dir(exe), "audit")
 }
