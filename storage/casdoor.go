@@ -35,7 +35,20 @@ func NewCasdoorProvider(providerName string, lang string) (*CasdoorProvider, err
 	return &CasdoorProvider{providerName: providerName}, nil
 }
 
+// errCasdoorUnavailable is returned by every CasdoorProvider method instead of
+// reaching the SDK while Casdoor is not configured or not reachable: the SDK
+// client behind auth.* is never initialized in that state, and calling into
+// it nil-dereferences and crashes the process (auth/auth.go is a thin pass-
+// through with no guard of its own - see its package doc). conf.IsCasdoorAvailable
+// is the same flag every other Casdoor-backed feature already checks before a
+// call, e.g. object/message_email.go's SendEmail.
+var errCasdoorUnavailable = fmt.Errorf("casdoor storage provider is unavailable: casdoor is not configured or not reachable")
+
 func (p *CasdoorProvider) ListObjects(prefix string) ([]*Object, error) {
+	if !conf.IsCasdoorAvailable() {
+		return nil, errCasdoorUnavailable
+	}
+
 	casdoorOrganization := conf.GetConfigString("casdoorOrganization")
 	casdoorApplication := conf.GetConfigString("casdoorApplication")
 	resources, err := auth.GetResources(casdoorOrganization, casdoorApplication, "provider", p.providerName, "Direct", prefix)
@@ -56,6 +69,10 @@ func (p *CasdoorProvider) ListObjects(prefix string) ([]*Object, error) {
 }
 
 func (p *CasdoorProvider) PutObject(user string, parent string, key string, fileBuffer *bytes.Buffer) (string, error) {
+	if !conf.IsCasdoorAvailable() {
+		return "", errCasdoorUnavailable
+	}
+
 	fileUrl, _, err := auth.UploadResource(user, "OpenAgent", parent, fmt.Sprintf("Direct/%s/%s", p.providerName, key), fileBuffer.Bytes())
 	if err != nil {
 		return "", err
@@ -64,6 +81,10 @@ func (p *CasdoorProvider) PutObject(user string, parent string, key string, file
 }
 
 func (p *CasdoorProvider) DeleteObject(key string) error {
+	if !conf.IsCasdoorAvailable() {
+		return errCasdoorUnavailable
+	}
+
 	resource := auth.Resource{
 		Name: key,
 	}
