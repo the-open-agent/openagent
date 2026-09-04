@@ -20,8 +20,10 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/beego/beego/context"
+	"github.com/the-open-agent/openagent/audit"
 	"github.com/the-open-agent/openagent/carrier"
 	"github.com/the-open-agent/openagent/conf"
 	"github.com/the-open-agent/openagent/embedding"
@@ -381,6 +383,12 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 
 	printAgentSessionStart(store, modelProviderName, mcpToolSet, history)
 
+	// The one place this log carries actual conversation text, not just its
+	// shape - see audit/audit.go's package doc. Recorded before the
+	// carrier-specific rewriting below (getQuestionWithCarriers etc.) touches
+	// question, so this is what the user actually typed.
+	audit.Record(audit.Event{Type: "message", SessionID: chat.Name, Role: "user", Text: question})
+
 	fmt.Printf("Question: [%s]\n", question)
 	fmt.Printf("Knowledge: [\n")
 	for i, k := range knowledge {
@@ -410,6 +418,7 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 	}
 	emitStatus(fmt.Sprintf(i18n.Translate(lang, "chat:Generating answer with %s"), modelProviderDisplayName))
 
+	llmCallStart := time.Now()
 	var modelResult *model.ModelResult
 	if mcpToolSet != nil {
 		messages := &model.ToolMessages{
@@ -430,6 +439,22 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 			modelResult, err = modelProviderObj.QueryText(question, writer, history, prompt, knowledge, nil, lang)
 		}
 	}
+	// One "llm_call" event per user message answered - the message-granularity
+	// counterpart to the tool_call events callMcpTool already records, and
+	// captured here rather than per internal tool-calling round (mcp.go's
+	// QueryTextWithTools can call the model several times for one message) so
+	// a session's audit log reads one entry per turn, matching what a chat UI
+	// itself would show as one exchange. ResponseTokenCount stands in for
+	// ContentLength: OpenAgent already computes it, so this needs no read of
+	// the answer text itself.
+	audit.Record(audit.Event{
+		Type:          "llm_call",
+		SessionID:     chat.Name,
+		Model:         modelProviderName,
+		Outcome:       llmCallOutcome(err),
+		DurationMs:    time.Since(llmCallStart).Milliseconds(),
+		ContentLength: llmResponseTokens(modelResult),
+	})
 	if err != nil {
 		if errors.Is(err, errMessageAnswerCanceled) {
 			return
@@ -511,6 +536,9 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 
 	message.Text = textAnswer
 	if message.Text != "" {
+		// The assistant-side half of the "message" event pair (see the
+		// "user" one recorded near the top of this function).
+		audit.Record(audit.Event{Type: "message", SessionID: chat.Name, Role: "assistant", Text: message.Text})
 		message.ErrorText = ""
 		message.IsAlerted = false
 	}
@@ -559,6 +587,11 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 			chat.DisplayName = resolvedTitle
 			chat.NeedTitle = false
 			emitChatUpdate = true
+			// Mirrors the tool_call event callMcpTool records: a title is a
+			// short label OpenAgent generated for its own chat list, not the
+			// text that produced it, so recording it here does not change
+			// what this log carries about conversation content.
+			audit.Record(audit.Event{Type: "chat_title", SessionID: chat.Name, Title: resolvedTitle})
 		}
 	}
 
@@ -746,6 +779,23 @@ func (c *ApiController) GetAnswer() {
 	}
 
 	c.ResponseOk(answer)
+}
+
+func llmCallOutcome(err error) string {
+	if err != nil {
+		return "failure"
+	}
+	return "success"
+}
+
+// llmResponseTokens is nil-safe: modelResult is nil on the error paths this
+// function's caller also records, and a "failure" audit event with no token
+// count is still a useful event, not one worth losing to a nil dereference.
+func llmResponseTokens(result *model.ModelResult) int {
+	if result == nil {
+		return 0
+	}
+	return result.ResponseTokenCount
 }
 
 func printAgentSessionStart(store *object.Store, modelProviderName string, mcpToolSet *mcp.ToolSet, history []*model.RawMessage) {

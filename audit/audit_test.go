@@ -46,6 +46,48 @@ func TestRecordAppendsJSONLPerSession(t *testing.T) {
 	}
 }
 
+// TestRecordMessageEvent covers "message", the one event type this log
+// carries actual conversation text on (see the package doc). It must
+// round-trip Role and Text intact, same as every other field.
+func TestRecordMessageEvent(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("OPENAGENT_AUDIT_DIR", dir)
+
+	Record(Event{Type: "message", SessionID: "sess1", Role: "user", Text: "现在几点？"})
+	Record(Event{Type: "message", SessionID: "sess1", Role: "assistant", Text: "现在是 UTC 12:00。"})
+	flush()
+
+	events := readEvents(t, filepath.Join(dir, "sess1.jsonl"))
+	if len(events) != 2 {
+		t.Fatalf("got %d events, want 2", len(events))
+	}
+	if events[0].Role != "user" || events[0].Text != "现在几点？" {
+		t.Errorf("user message event wrong: %+v", events[0])
+	}
+	if events[1].Role != "assistant" || events[1].Text != "现在是 UTC 12:00。" {
+		t.Errorf("assistant message event wrong: %+v", events[1])
+	}
+}
+
+// TestRecordChatTitleEvent covers the "chat_title" event message_answer.go
+// emits alongside chat.DisplayName: an external reader (aiguard's Sessions
+// page) needs the Title field to round-trip through the JSONL line intact.
+func TestRecordChatTitleEvent(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("OPENAGENT_AUDIT_DIR", dir)
+
+	Record(Event{Type: "chat_title", SessionID: "sess1", Title: "北京天气查询概况"})
+	flush()
+
+	events := readEvents(t, filepath.Join(dir, "sess1.jsonl"))
+	if len(events) != 1 {
+		t.Fatalf("got %d events, want 1", len(events))
+	}
+	if events[0].Type != "chat_title" || events[0].Title != "北京天气查询概况" {
+		t.Errorf("chat_title event fields wrong: %+v", events[0])
+	}
+}
+
 func TestRecordFallsBackToDefaultSessionFile(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("OPENAGENT_AUDIT_DIR", dir)

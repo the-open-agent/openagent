@@ -21,6 +21,13 @@
 // database uses), overridable with OPENAGENT_AUDIT_DIR. One file per session,
 // so a reader can use the file name as the session key and never has to
 // untangle interleaved sessions.
+//
+// Every event type but one is metadata-only - tool names, durations, token
+// counts, never the text that produced them. The one exception is "message":
+// it carries the actual question and answer text, by explicit request of a
+// reader that wants the conversation itself, not just its shape. Emitting it
+// is a deliberate, opt-in departure from every other event this package
+// writes, not an oversight - see Event.Text.
 package audit
 
 import (
@@ -44,13 +51,28 @@ type Event struct {
 	Server          string `json:"server,omitempty"`
 	Model           string `json:"model,omitempty"`
 	ArgumentsLength int    `json:"argumentsLength,omitempty"`
-	Outcome         string `json:"outcome,omitempty"`
-	DurationMs      int64  `json:"durationMs,omitempty"`
+	// ContentLength is a size, not content: characters for a tool result,
+	// tokens for an "llm_call" response (whichever the caller already had
+	// computed) - never the text itself.
+	ContentLength int    `json:"contentLength,omitempty"`
+	Outcome       string `json:"outcome,omitempty"`
+	DurationMs    int64  `json:"durationMs,omitempty"`
 	// Effect, Reason and Rule carry the guard verdict once the guard is wired
 	// into the tool path; empty until then.
 	Effect string `json:"effect,omitempty"`
 	Reason string `json:"reason,omitempty"`
 	Rule   string `json:"rule,omitempty"`
+	// Role and Text are only ever set on a "message" event: Role is "user" or
+	// "assistant", and Text is that message's actual content - the one
+	// deliberate exception to every other event in this log being metadata
+	// only. See the package doc before adding a second one.
+	Role string `json:"role,omitempty"`
+	Text string `json:"text,omitempty"`
+	// Title carries a "chat_title" event's chat.DisplayName: the short label
+	// OpenAgent generates for its own chat list, not conversation content. An
+	// external reader (aiguard's Sessions page) can show something better than
+	// a session id without this log carrying any prompt or response text.
+	Title string `json:"title,omitempty"`
 }
 
 // queueSize bounds how many events may be waiting to be written. It is generous
