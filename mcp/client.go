@@ -18,12 +18,31 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/ThinkInAIXYZ/go-mcp/client"
 	"github.com/ThinkInAIXYZ/go-mcp/protocol"
 	"github.com/ThinkInAIXYZ/go-mcp/transport"
 )
+
+type acceptNoContentTransport struct {
+	base http.RoundTripper
+}
+
+func (t acceptNoContentTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	resp, err := t.base.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+	// Some stateless Streamable HTTP servers acknowledge notifications with
+	// 204 No Content. go-mcp expects the equivalent 202 Accepted response.
+	if resp.StatusCode == http.StatusNoContent {
+		resp.StatusCode = http.StatusAccepted
+		resp.Status = "202 Accepted"
+	}
+	return resp, nil
+}
 
 type ServerConfig struct {
 	// Stdio config
@@ -110,11 +129,15 @@ func createClient(srv ServerConfig) (*client.Client, error) {
 		if srv.URL == "" {
 			return nil, fmt.Errorf("URL is required for StreamableHTTP transport")
 		}
-		if len(srv.Env) > 0 {
-			tr, err = transport.NewStreamableHTTPClientTransport(srv.URL, transport.WithStreamableHTTPClientOptionHeader(srv.Env))
-		} else {
-			tr, err = transport.NewStreamableHTTPClientTransport(srv.URL)
+		options := []transport.StreamableHTTPClientTransportOption{
+			transport.WithStreamableHTTPClientOptionHTTPClient(&http.Client{
+				Transport: acceptNoContentTransport{base: http.DefaultTransport},
+			}),
 		}
+		if len(srv.Env) > 0 {
+			options = append(options, transport.WithStreamableHTTPClientOptionHeader(srv.Env))
+		}
+		tr, err = transport.NewStreamableHTTPClientTransport(srv.URL, options...)
 	case "stdio":
 		envs := make([]string, 0, len(srv.Env))
 		for k, v := range srv.Env {

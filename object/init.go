@@ -38,8 +38,39 @@ func InitDb() {
 	initBuiltInStore(modelProviderName, embeddingProviderName, ttsProviderName, sttProviderName, imageProviderName)
 	initSkillsFromFolder()
 	initBuiltInTools()
+	initBuiltInServers()
 	InitUsers()
 	go printStartupStats()
+}
+
+func newBrowserUseCloudServer() *Server {
+	return &Server{
+		Owner:       "admin",
+		Name:        "browser_use_cloud",
+		CreatedTime: util.GetCurrentTime(),
+		DisplayName: "Browser Use Cloud",
+		Url:         "https://api.browser-use.com/v3/mcp",
+		Transport:   "streamablehttp",
+		Env: map[string]string{
+			"x-browser-use-api-key": "",
+		},
+		TestContent: `{"tool":"list_sessions","arguments":{}}`,
+		IsDefault:   false,
+	}
+}
+
+func initBuiltInServers() {
+	server := newBrowserUseCloudServer()
+	existing, err := getServer(server.Owner, server.Name)
+	if err != nil {
+		panic(err)
+	}
+	if existing != nil {
+		return
+	}
+	if _, err = AddServer(server); err != nil {
+		panic(err)
+	}
 }
 
 func printStartupStats() {
