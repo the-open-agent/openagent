@@ -54,10 +54,14 @@ func buildToolSetForBuiltinTool(toolName, user, origin, lang string) (*mcp.ToolS
 		return nil, nil
 	}
 
-	return &mcp.ToolSet{
+	ts := &mcp.ToolSet{
 		Tools:        allTools,
 		BuiltinTools: reg,
-	}, nil
+	}
+	// This path is store-less (admin-owned); without attaching the guard here the
+	// builtin tools would run completely ungated. Enforce owner-wide admin
+	// policies (rules with Store "" or "*") so a configured deny/ask still applies.
+	return attachPermissionChecker(ts, &Store{Owner: "admin", Name: ""}, user), nil
 }
 
 func GetAnswerWithTool(modelProviderName, toolName, question, user, origin, lang string) (string, *model.ModelResult, error) {

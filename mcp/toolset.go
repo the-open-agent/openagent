@@ -31,4 +31,9 @@ type ToolSet struct {
 	// BuiltinTools is the registry of server-side builtin tools.
 	BuiltinTools     *tool.ToolRegistry
 	WebSearchEnabled bool
+	// CheckPermission, when set, is consulted before every tool call. It
+	// returns whether the call is allowed and, if not, a reason. It is the
+	// injection point for the host-agnostic permission guard; leaving it nil
+	// disables permission checks (tools run unchanged).
+	CheckPermission func(toolName string, arguments map[string]interface{}) (allowed bool, reason string)
 }

@@ -77,17 +77,29 @@ func MergeMcpTools(mcpToolSet *mcp.ToolSet, store *Store, webSearchEnabled bool,
 	reg := buildMergedBuiltinRegistry(store, user, origin, lang)
 	allTools := reg.GetToolsAsProtocolTools()
 	if len(allTools) == 0 {
-		return mcpToolSet
+		return attachPermissionChecker(mcpToolSet, store, user)
 	}
 
 	if mcpToolSet == nil {
-		return &mcp.ToolSet{
+		return attachPermissionChecker(&mcp.ToolSet{
 			Tools:        allTools,
 			BuiltinTools: reg,
-		}
+		}, store, user)
 	}
 
 	mcpToolSet.Tools = append(mcpToolSet.Tools, allTools...)
 	mcpToolSet.BuiltinTools = reg
+	return attachPermissionChecker(mcpToolSet, store, user)
+}
+
+// attachPermissionChecker installs the store's tool-permission gate onto the
+// tool set (no-op if the set is nil or the store has no active policies).
+func attachPermissionChecker(mcpToolSet *mcp.ToolSet, store *Store, user string) *mcp.ToolSet {
+	if mcpToolSet == nil {
+		return nil
+	}
+	if checker := BuildToolPermissionChecker(store, user); checker != nil {
+		mcpToolSet.CheckPermission = checker
+	}
 	return mcpToolSet
 }

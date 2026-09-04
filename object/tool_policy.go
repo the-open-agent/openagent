@@ -148,3 +148,45 @@ func DeleteToolPolicy(p *ToolPolicy) (bool, error) {
 	}
 	return affected != 0, nil
 }
+
+// GetToolPoliciesForStore returns the active rules that apply to a store: rules
+// scoped to the store itself plus owner-wide rules (empty or "*" Store).
+func GetToolPoliciesForStore(owner, storeName string) ([]*ToolPolicy, error) {
+	all, err := GetToolPolicies(owner)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*ToolPolicy, 0, len(all))
+	for _, p := range all {
+		if p.State == "Disabled" {
+			continue
+		}
+		if p.Store == "" || p.Store == "*" || p.Store == storeName {
+			result = append(result, p)
+		}
+	}
+	return result, nil
+}
+
+// toGuardRule converts a stored policy row into an engine rule. Writes are
+// validated up front (see normalize); as a backstop the effect is normalized
+// here too: empty or any unrecognized value fails closed to deny — matching what
+// the edit page shows for a blank effect, never a silent allow in a security path.
+func (p *ToolPolicy) toGuardRule() guard.Rule {
+	effect := guard.Effect(strings.ToLower(strings.TrimSpace(p.Effect)))
+	switch effect {
+	case guard.EffectAllow, guard.EffectAsk, guard.EffectDeny:
+		// recognized
+	default:
+		effect = guard.EffectDeny
+	}
+	return guard.Rule{
+		Name:     p.Name,
+		Subject:  p.Subject,
+		Tool:     p.Tool,
+		Category: p.Category,
+		Resource: p.Resource,
+		Effect:   effect,
+		Priority: p.Priority,
+	}
+}
