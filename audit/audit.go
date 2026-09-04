@@ -32,20 +32,24 @@ import (
 	"time"
 )
 
-const timeFormat = "2006-01-02T15:04:05.000Z07:00"
+const (
+	timeFormat        = "2006-01-02T15:04:05.000Z07:00"
+	maxArgumentsBytes = 64 * 1024
+)
 
 // Event is one audit line. Fields are omitted when empty so the format stays
 // small and forward-compatible: a reader ignores fields it does not know.
 type Event struct {
-	Timestamp       string `json:"timestamp"`
-	SessionID       string `json:"sessionId,omitempty"`
-	Type            string `json:"type"`
-	Tool            string `json:"tool,omitempty"`
-	Server          string `json:"server,omitempty"`
-	Model           string `json:"model,omitempty"`
-	ArgumentsLength int    `json:"argumentsLength,omitempty"`
-	Outcome         string `json:"outcome,omitempty"`
-	DurationMs      int64  `json:"durationMs,omitempty"`
+	Timestamp       string                 `json:"timestamp"`
+	SessionID       string                 `json:"sessionId,omitempty"`
+	Type            string                 `json:"type"`
+	Tool            string                 `json:"tool,omitempty"`
+	Server          string                 `json:"server,omitempty"`
+	Model           string                 `json:"model,omitempty"`
+	Arguments       map[string]interface{} `json:"arguments,omitempty"`
+	ArgumentsLength int                    `json:"argumentsLength,omitempty"`
+	Outcome         string                 `json:"outcome,omitempty"`
+	DurationMs      int64                  `json:"durationMs,omitempty"`
 	// Effect, Reason and Rule carry the guard verdict once the guard is wired
 	// into the tool path; empty until then.
 	Effect string `json:"effect,omitempty"`
@@ -53,9 +57,8 @@ type Event struct {
 	Rule   string `json:"rule,omitempty"`
 }
 
-// queueSize bounds how many events may be waiting to be written. It is generous
-// because each event is tiny; if it is ever exceeded, events are dropped rather
-// than allowed to block a tool call.
+// queueSize bounds how many events may be waiting to be written. If it is ever
+// exceeded, events are dropped rather than allowed to block a tool call.
 const queueSize = 4096
 
 // queued is one unit of work for the background writer. A marker carries only
@@ -81,6 +84,15 @@ func Record(event Event) {
 		return
 	}
 	event.Timestamp = time.Now().UTC().Format(timeFormat)
+	event.Arguments = sanitizeToolInput(event.Tool, event.Arguments)
+	if encoded, err := json.Marshal(event.Arguments); err != nil {
+		return
+	} else if len(encoded) > maxArgumentsBytes {
+		event.Arguments = map[string]interface{}{
+			"truncated":     true,
+			"originalBytes": len(encoded),
+		}
+	}
 
 	line, err := json.Marshal(event)
 	if err != nil {
@@ -117,11 +129,14 @@ func writeLine(session string, line []byte) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return
 	}
-	file, err := os.OpenFile(filepath.Join(dir, session+".jsonl"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	file, err := os.OpenFile(filepath.Join(dir, session+".jsonl"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
 	if err != nil {
 		return
 	}
 	defer file.Close()
+	if err := file.Chmod(0o600); err != nil {
+		return
+	}
 	_, _ = file.Write(line)
 }
 

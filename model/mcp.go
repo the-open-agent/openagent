@@ -317,6 +317,7 @@ func callMcpTool(toolCall openai.ToolCall, serverName, toolName, sessionID strin
 		auditEvent.Outcome = "failure"
 		return nil, nil, false, fmt.Errorf(i18n.Translate(lang, "model:failed to parse tool arguments: %v"), err)
 	}
+	auditEvent.Arguments = arguments
 
 	// Send tool-start event immediately so the frontend can show the tool call before execution
 	toolStartData := ToolCall{
