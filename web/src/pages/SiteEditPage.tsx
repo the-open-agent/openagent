@@ -154,6 +154,12 @@ export default function SiteEditPage() {
               onChange={(value) => updateField("guardrailProvider", value)}
             />
           </FormRow>
+          <FormRow label="在线客服挂件" tooltip="Casdesk 在线客服的 widget.js 地址，例如 https://chat.casdoor.cn/widget.js；和下面的站点都填了，页面右上角才显示在线客服按钮">
+            <Input value={site.chatWidgetUrl ?? ""} onChange={(e) => updateField("chatWidgetUrl", e.target.value)} />
+          </FormRow>
+          <FormRow label="在线客服站点" tooltip="在线客服里这个网站的站点名">
+            <Input value={site.chatSite ?? ""} onChange={(e) => updateField("chatSite", e.target.value)} />
+          </FormRow>
         </FormSection>
 
         <FormSection title={i18next.t("general:Content")} description={i18next.t("general:Content desc")}>

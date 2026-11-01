@@ -43,6 +43,9 @@ type Site struct {
 	GuardrailLogoUrl  string `xorm:"varchar(500)" json:"guardrailLogoUrl"`
 	GuardrailProvider string `xorm:"varchar(100)" json:"guardrailProvider"`
 
+	ChatWidgetUrl string `xorm:"varchar(500)" json:"chatWidgetUrl"`
+	ChatSite      string `xorm:"varchar(100)" json:"chatSite"`
+
 	CheckUserBalance bool `xorm:"bool" json:"checkUserBalance"`
 
 	Issuer              string `xorm:"varchar(500)" json:"issuer"`

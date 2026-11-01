@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {BreadcrumbBar} from "@/components/layout/BreadcrumbBar";
 import {StoreSelect} from "@/components/layout/StoreSelect";
+import {LiveChatButton} from "@/components/layout/LiveChat";
 import {CustomHtml} from "@/components/common/CustomHtml";
 import {LanguageSelect} from "@/components/common/LanguageSelect";
 import {ThemeToggle} from "@/components/common/ThemeToggle";
@@ -68,6 +69,7 @@ export function Header() {
         {Setting.isLocalAdminUser(account) ? <StoreSelect account={account} /> : null}
         <LanguageSelect />
         <ThemeToggle />
+        <LiveChatButton account={account} />
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
