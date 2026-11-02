@@ -5,7 +5,7 @@ import {Button} from "@/components/ui/button";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {useSite} from "@/hooks/use-site";
 
-type ChatUser = {name?: string};
+type ChatUser = {username?: string; name?: string};
 
 declare global {
   interface Window {
@@ -17,8 +17,8 @@ declare global {
 /**
  * The live chat (Casdesk) of the built-in site, shown when it sets `chatWidgetUrl`
  * and `chatSite`: the widget loads without its round button, which would cover the
- * chat input, and this header button opens it. The user's name goes along, so the
- * agents know who is writing.
+ * chat input, and this header button opens it. The user's user name and name go
+ * along, so the agents know who is writing.
  */
 export function LiveChatButton({account}: {account: any}) {
   const {site} = useSite();
@@ -27,7 +27,7 @@ export function LiveChatButton({account}: {account: any}) {
 
   React.useEffect(() => {
     const name = [account?.displayName || account?.name, account?.affiliation].filter(Boolean).join("，");
-    const user = name ? {name} : {};
+    const user = account?.name ? {username: account.name, name} : {};
     window.CasdeskSettings = {user};
     window.Casdesk?.setUser(user);
   }, [account?.displayName, account?.name, account?.affiliation]);
