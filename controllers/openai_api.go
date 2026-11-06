@@ -95,7 +95,7 @@ func (c *ApiController) chatCompletionsViaStore(store *object.Store, request ope
 
 	if g := object.GetGuardrail(); g != nil {
 		question, _ = object.MaskQuestion(question)
-		if verdict := g.CheckInput(question, lang); verdict.IsBlocked() {
+		if verdict := g.CheckInput(question, object.GetGuardrailAgentName(store), "", lang); verdict.IsBlocked() {
 			c.ResponseError(guardrail.GetRefusal(g.Name, "input", verdict))
 			return
 		}

@@ -294,7 +294,12 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 	g := object.GetGuardrail()
 	if g != nil && questionMessage != nil {
 		emitStatus(fmt.Sprintf("%s安全检查中", g.Name))
-		if verdict := g.CheckInput(question, lang); verdict.IsBlocked() {
+		previousReply, err := object.GetPreviousAnswerText(chat.Name, questionMessage.CreatedTime)
+		if err != nil {
+			responseErrorStream(message, err.Error())
+			return
+		}
+		if verdict := g.CheckInput(question, object.GetGuardrailAgentName(store), previousReply, lang); verdict.IsBlocked() {
 			fmt.Printf("guardrail: blocked question %s: %s (%s, %s)\n", questionMessage.Name, verdict.Category, verdict.Source, verdict.Reason)
 			message.Text = guardrail.GetRefusal(g.Name, "input", verdict)
 			message.Guardrail = object.GetGuardrailTag("input", verdict)
@@ -565,7 +570,7 @@ func generateMessageAnswer(id string, responseWriter http.ResponseWriter, host s
 
 	if g != nil && questionMessage != nil {
 		emitStatus(fmt.Sprintf("%s审核回答中", g.Name))
-		if verdict := g.CheckOutput(reviewQuestion, message.Text, agentPrompt, lang); verdict.IsBlocked() {
+		if verdict := g.CheckOutput(reviewQuestion, message.Text, agentPrompt, object.GetGuardrailAgentName(store), lang); verdict.IsBlocked() {
 			fmt.Printf("guardrail: withdrew answer %s: %s (%s, %s)\n", message.Name, verdict.Category, verdict.Source, verdict.Reason)
 			message.Text = guardrail.GetRefusal(g.Name, "output", verdict)
 			message.ReasonText = ""
