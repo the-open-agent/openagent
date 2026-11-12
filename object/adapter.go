@@ -72,37 +72,47 @@ func sqliteDBPath() string {
 	return filepath.Join(filepath.Dir(exe), "openagent.db")
 }
 
+// mysqlProbeAddress is the endpoint probed to check whether the server behind
+// the shipped default MySQL DSN is reachable. It is a variable so tests can
+// simulate a MySQL outage without a real server.
+var mysqlProbeAddress = "localhost:3306"
+
+// isEmbeddedConf reports whether the binary runs from its embedded conf/app.conf.
+// It is a variable so tests can cover the single-binary branch.
+var isEmbeddedConf = embedsupport.IsEmbeddedConf
+
 // resolveDatabase returns the effective driver and DSN to use.
-// When the config still holds the default unmodified MySQL values and nothing
-// is listening on port 3306, it transparently falls back to SQLite so that
-// the binary works out-of-the-box without a MySQL installation.
-func resolveDatabase(driverName, dataSourceName string) (string, string) {
+// When the config holds the default unmodified MySQL values but no embedded
+// conf is in use, the MySQL server configured by the operator must be reachable:
+// an unreachable database is returned as an error so that startup fails instead
+// of creating a fresh SQLite database that would re-seed the default admin.
+// Single-binary (embedded conf) mode and an explicitly configured SQLite
+// database keep using SQLite.
+func resolveDatabase(driverName, dataSourceName string) (string, string, error) {
 	dbName := conf.GetConfigString("dbName")
 
 	if driverName != "mysql" || dataSourceName != defaultMySQLDataSourceName {
 		fmt.Printf("OpenAgent: connecting to database [driver=%s, dsn=%s, db=%s]\n", driverName, maskDSN(dataSourceName), dbName)
-		return driverName, dataSourceName
+		return driverName, dataSourceName, nil
 	}
 
 	// Single-binary mode: the embedded conf/app.conf was used because no
 	// conf/app.conf file exists on disk. Always use SQLite in this case —
 	// the default MySQL credentials are almost certainly wrong, and the user
 	// has no obvious way to edit the config without creating the file manually.
-	if embedsupport.IsEmbeddedConf() {
+	if isEmbeddedConf() {
 		dsn := sqliteDBPath()
 		fmt.Printf("OpenAgent: single-binary mode, using SQLite [dsn=%s]\n", dsn)
-		return "sqlite3", dsn
+		return "sqlite3", dsn, nil
 	}
 
-	conn, err := net.DialTimeout("tcp", "localhost:3306", 2*time.Second)
+	conn, err := net.DialTimeout("tcp", mysqlProbeAddress, 2*time.Second)
 	if err != nil {
-		dsn := sqliteDBPath()
-		fmt.Printf("OpenAgent: connecting to database [driver=sqlite3, dsn=%s]\n", dsn)
-		return "sqlite3", dsn
+		return "", "", fmt.Errorf("the configured MySQL database at %s is unreachable: %v. Refusing to fall back to a new SQLite database; start MySQL, or set driverName = sqlite3 and dataSourceName explicitly to use SQLite", mysqlProbeAddress, err)
 	}
 	conn.Close()
 	fmt.Printf("OpenAgent: connecting to database [driver=%s, dsn=%s, db=%s]\n", driverName, maskDSN(dataSourceName), dbName)
-	return driverName, dataSourceName
+	return driverName, dataSourceName, nil
 }
 
 var (
@@ -136,7 +146,10 @@ func InitConfig() {
 }
 
 func InitAdapter() {
-	driverName, dataSourceName := resolveDatabase(conf.GetConfigString("driverName"), conf.GetConfigDataSourceName())
+	driverName, dataSourceName, err := resolveDatabase(conf.GetConfigString("driverName"), conf.GetConfigDataSourceName())
+	if err != nil {
+		panic(err)
+	}
 
 	adapter = NewAdapter(driverName, dataSourceName)
 
