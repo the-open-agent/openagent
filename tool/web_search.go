@@ -104,6 +104,7 @@ const (
 	webSearchEngineBing       webSearchEngine = "bing"
 	webSearchEngineGoogle     webSearchEngine = "google"
 	webSearchEngineBaidu      webSearchEngine = "baidu"
+	webSearchEngineKeenable   webSearchEngine = "keenable"
 )
 
 var (
@@ -112,6 +113,8 @@ var (
 	bingHTMLSearchEndpoint       = "https://www.bing.com/search"
 	googleJSONSearchEndpoint     = "https://www.googleapis.com/customsearch/v1"
 	baiduWebSearchEndpoint       = "https://qianfan.baidubce.com/v2/ai_search/web_search"
+	keenableSearchEndpoint       = "https://api.keenable.ai/v1/search"
+	keenablePublicSearchEndpoint = "https://api.keenable.ai/v1/search/public"
 )
 
 type webSearchParams struct {
@@ -157,6 +160,20 @@ type googleSearchResponse struct {
 	Error *struct {
 		Message string `json:"message"`
 	} `json:"error,omitempty"`
+}
+
+type keenableSearchRequest struct {
+	Query      string `json:"query"`
+	MaxResults int    `json:"max_results"`
+}
+
+type keenableSearchResponse struct {
+	Results []struct {
+		Title       string `json:"title"`
+		URL         string `json:"url"`
+		Snippet     string `json:"snippet"`
+		PublishedAt string `json:"published_at"`
+	} `json:"results"`
 }
 
 type baiduWebSearchRequest struct {
@@ -340,6 +357,12 @@ func (t *webSearchBuiltin) runWebSearch(ctx context.Context, params webSearchPar
 			return nil, "", err
 		}
 		return results, "baidu", nil
+	case webSearchEngineKeenable:
+		results, err := runKeenableSearch(ctx, params, t.apiKey, t.endpoint, t.httpClient)
+		if err != nil {
+			return nil, "", err
+		}
+		return results, "keenable", nil
 	default:
 		return nil, "", fmt.Errorf("unsupported web search engine: %s", t.engine)
 	}
@@ -355,6 +378,8 @@ func parseWebSearchEngine(value string) (webSearchEngine, error) {
 		return webSearchEngineGoogle, nil
 	case "Baidu":
 		return webSearchEngineBaidu, nil
+	case "Keenable":
+		return webSearchEngineKeenable, nil
 	default:
 		return "", fmt.Errorf("unsupported web search engine subtype: %s", value)
 	}
@@ -460,6 +485,72 @@ func runBaiduSearch(ctx context.Context, params webSearchParams, apiKey string, 
 		return nil, fmt.Errorf("Baidu returned no results")
 	}
 	return limitWebSearchResults(results, params.Count), nil
+}
+
+// runKeenableSearch calls the Keenable Search API. The API key is optional:
+// without one the keyless public endpoint is used (rate-limited per IP); with
+// one the keyed endpoint is used and the key is sent as X-API-Key.
+func runKeenableSearch(ctx context.Context, params webSearchParams, apiKey string, endpoint string, httpClient *http.Client) ([]webSearchResult, error) {
+	requestBytes, err := json.Marshal(keenableSearchRequest{
+		Query:      params.Query,
+		MaxResults: params.Count,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	apiKey = strings.TrimSpace(apiKey)
+	defaultEndpoint := keenablePublicSearchEndpoint
+	headers := map[string]string{
+		"Content-Type":     "application/json",
+		"X-Keenable-Title": "OpenAgent",
+	}
+	if apiKey != "" {
+		defaultEndpoint = keenableSearchEndpoint
+		headers["X-API-Key"] = apiKey
+	}
+
+	body, err := fetchWebSearchAPI(
+		ctx,
+		http.MethodPost,
+		resolveWebSearchEndpoint(endpoint, defaultEndpoint),
+		nil,
+		bytes.NewReader(requestBytes),
+		headers,
+		httpClient,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var response keenableSearchResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, err
+	}
+
+	results := parseKeenableSearchResponse(response)
+	if len(results) == 0 {
+		return nil, fmt.Errorf("Keenable returned no results")
+	}
+	return limitWebSearchResults(results, params.Count), nil
+}
+
+func parseKeenableSearchResponse(response keenableSearchResponse) []webSearchResult {
+	results := make([]webSearchResult, 0, len(response.Results))
+	for _, item := range response.Results {
+		title := cleanWebSearchText(item.Title)
+		resultURL := strings.TrimSpace(item.URL)
+		if title == "" || resultURL == "" {
+			continue
+		}
+		results = append(results, webSearchResult{
+			Title:    title,
+			URL:      resultURL,
+			Snippet:  cleanWebSearchText(item.Snippet),
+			SiteName: resolveWebSearchSiteName(resultURL),
+		})
+	}
+	return results
 }
 
 func fetchBaiduSearch(ctx context.Context, params webSearchParams, apiKey string, endpoint string, resourceType string, httpClient *http.Client) (baiduWebSearchResponse, error) {

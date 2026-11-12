@@ -1371,6 +1371,7 @@ export function getProviderSubTypeOptions(category, type) {
         {id: "Bing", name: "Bing"},
         {id: "Google", name: "Google"},
         {id: "Baidu", name: "Baidu"},
+        {id: "Keenable", name: "Keenable"},
       ];
     } else if (type === "shell") {
       return [

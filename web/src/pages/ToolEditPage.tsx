@@ -89,7 +89,7 @@ export default function ToolEditPage() {
       type: "password",
       name: "clientSecret",
       labelKey: "general:API key",
-      when: (ctx) => ctx.record.type === "web_search" && ["Google", "Baidu"].includes(ctx.record.subType),
+      when: (ctx) => ctx.record.type === "web_search" && ["Google", "Baidu", "Keenable"].includes(ctx.record.subType),
     },
     {
       type: "text",
